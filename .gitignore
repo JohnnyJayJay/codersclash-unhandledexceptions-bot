@@ -1,4 +1,5 @@
 .idea/*
 *.class
+pom.xml
 
 bot-master.iml
