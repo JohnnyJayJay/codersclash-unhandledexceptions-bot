@@ -1,4 +1,4 @@
-package core;
+package de.unhandledexceptions.codersclash.bot.core;
 
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
