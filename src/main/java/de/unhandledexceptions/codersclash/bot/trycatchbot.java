@@ -1,5 +1,7 @@
 package de.unhandledexceptions.codersclash.bot;
 
+import de.johnnyjayjay.discord.api.command.Command;
+import de.johnnyjayjay.discord.api.command.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.BotBuilder;
 import de.unhandledexceptions.codersclash.bot.core.BotSettings;
@@ -15,6 +17,7 @@ public class trycatchbot {
         BotBuilder botBuilder = new BotBuilder(new BotSettings(config));
         botBuilder.addEventListener(new ready());
         bot = botBuilder.build();
+        new CommandSettings()
     }
 
     public Config getConfig() {
