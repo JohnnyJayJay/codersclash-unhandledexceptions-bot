@@ -1,10 +1,15 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
-/**
- * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
- */
 public class Bot {
 
+    //Attribute wie prefix, Token, alles, was vorher bestimmt werden kann über die config
+
+    public Bot(/*Attributwerte*/) {
+        // Attribute setzen
+    }
+
+    public void run() {
+        // Mit den gegebenen Attributen den Bot starten, JDA bauen
+    }
 
 }
