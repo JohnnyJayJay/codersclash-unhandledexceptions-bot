@@ -17,7 +17,6 @@ public class trycatchbot {
         BotBuilder botBuilder = new BotBuilder(new BotSettings(config));
         botBuilder.addEventListener(new ready());
         bot = botBuilder.build();
-        new CommandSettings()
     }
 
     public Config getConfig() {
