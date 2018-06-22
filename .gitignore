@@ -4,3 +4,5 @@ pom.xml
 
 bot-master.iml
 config.yml
+*.json
+config.json
