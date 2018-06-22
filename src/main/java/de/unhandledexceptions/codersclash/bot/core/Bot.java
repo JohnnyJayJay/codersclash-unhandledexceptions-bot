@@ -1,17 +1,15 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
-import net.dv8tion.jda.bot.sharding.ShardManager;
-
 public class Bot {
 
-    private ShardManager shardManager;
+    // Attribute wie prefix, Token - alles, was vorher bestimmt werden kann über die config
 
-    public Bot(ShardManager shardManager) {
-
+    public Bot(/*Attributwerte*/) {
+        // Attribute setzen
     }
 
-    // TODO: getSessionController usw.
-    public ShardManager getShardManager() {
-        return shardManager;
+    public void run() {
+        // Mit den gegebenen Attributen den Bot starten, ShardManager bauen
     }
+
 }
