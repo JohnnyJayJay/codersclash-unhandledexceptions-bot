@@ -1,14 +1,12 @@
 package de.unhandledexceptions.codersclash.bot;
 
-import de.johnnyjayjay.discord.api.command.Command;
-import de.johnnyjayjay.discord.api.command.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.BotBuilder;
 import de.unhandledexceptions.codersclash.bot.core.BotSettings;
 import de.unhandledexceptions.codersclash.bot.core.Config;
 import de.unhandledexceptions.codersclash.bot.listener.ready;
 
-public class trycatchbot {
+public class Main {
     public static de.unhandledexceptions.codersclash.bot.core.Bot bot;
     public static Config config;
 
