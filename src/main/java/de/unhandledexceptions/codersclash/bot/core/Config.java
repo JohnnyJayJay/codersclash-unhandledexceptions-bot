@@ -1,7 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
 
-import org.json.JSONObject;
 import org.json.JSONStringer;
 
 import java.io.IOException;
@@ -34,10 +33,10 @@ public class Config {
                 file = Files.createFile(file);
             JSONStringer stringer = new JSONStringer();
             stringer.object()
-                    .key("TOKEN").value("")
-                    .key("BOTOWNERS").value("")
-                    .key("PREFIX").value("")
-                    .key("TEST-KEY").value("")
+                    .key("TOKEN").value(null)
+                    .key("PREFIX").value(null)
+                    .key("MAX_SHARDS").value(null)
+                    .key("DATABASE").object().key("URL").value(null).key("USERNAME").value(null).key("PASSWORD").value(null).endObject()
                     .endObject();
             Files.write(file, stringer.toString().getBytes());
         } catch (IOException e) {
@@ -46,6 +45,6 @@ public class Config {
     }
 
     public String getToken() {
-
+        return null;
     }
 }
