@@ -11,7 +11,7 @@ public class Main {
     private static void config() {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader("config.yml"));
-            ArrayList<String> strings=new ArrayList<>();
+            ArrayList<String> strings = new ArrayList<>();
             for (String line = bufferedReader.readLine(); line != null;) {
                 strings.add(line);
                 line = null;
