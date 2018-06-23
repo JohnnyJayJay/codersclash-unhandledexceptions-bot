@@ -1,3 +1,2 @@
-## codersclash-unhandledexceptions-bot
-Bot für den CodersClash-Wettbewerb. 
-# Branch von Yann
+# codersclash-unhandledexceptions-bot
+Bot für den CodersClash-Wettbewerb
