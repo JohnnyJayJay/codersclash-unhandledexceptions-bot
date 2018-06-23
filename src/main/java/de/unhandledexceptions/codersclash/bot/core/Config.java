@@ -10,10 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-/**
- * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
- */
 public class Config {
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
