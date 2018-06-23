@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * @author Johnny_JayJay
@@ -37,10 +38,8 @@ public class Config {
         // Die Config laden, also dem Attribut config das JSONObject aus der Datei zuweisen
         boolean success;
         try {
-            config = new JSONObject(Files.readAllBytes(file)); // config file auslesen und das in ein JSONObject packen
-            var database = config.getJSONObject("DATABASE"); // JSONObject, in dem die Infos zur DB drinstehen
-            // wenn eines der benötigten Dinge in der Config keinen Wert hat
-            if (config.isNull("TOKEN") || config.isNull("DEFAULT_PREFIX") || database.isNull("URL") || database.isNull("USERNAME") || database.isNull("PASSWORD"))
+            config = new JSONObject(new String(Files.readAllBytes(file))); // config file auslesen und das in ein JSONObject packen
+            if (config.keySet().stream().anyMatch(config::isNull)) // wenn ein Key in der Config keinen Wert hat
                 success = false;
             else
                 success = true;
@@ -63,8 +62,7 @@ public class Config {
             JSONStringer stringer = new JSONStringer();
             stringer.object()
                     .key("BOTINFO").object()
-                        .key("OWNER")
-                        .array().value(BOT_OWNERS).endArray()
+                        .key("OWNER").value(BOT_OWNERS)
                         .key("VERSION").value(VERSION)
                         .key("NAME").value(BOT_NAME).endObject()
                     .key("TOKEN").value(null)
@@ -76,14 +74,42 @@ public class Config {
                         .key("USERNAME").value(null)
                         .key("PASSWORD").value(null).endObject()
                     .endObject();
-            Files.write(file, stringer.toString().getBytes()); // Das JSONObject als String in die config.json schreiben
+            Files.write(file, stringer.toString().getBytes()); // Das JSONObject als byte-array in die config.json schreiben
         } catch (IOException e) {
             System.err.println("JSON-Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
     }
 
+    public String getVersion() {
+        return config.getJSONObject("BOTINFO").getString("VERSION");
+    }
+
+    public String getName() {
+        return config.getJSONObject("BOTINFO").getString("NAME");
+    }
+
+    public List<Object> getBotOwners() {
+        return config.getJSONObject("BOTINFO").getJSONArray("OWNER").toList();
+    }
+
     public String getToken() {
         return config.getString("TOKEN");
+    }
+
+    public String getPrefix() {
+        return config.getString("DEFAULT_PREFIX");
+    }
+
+    public String getDBUrl() {
+        return config.getJSONObject("DATABASE").getString("URL");
+    }
+
+    public String getDBUsername() {
+        return config.getJSONObject("DATABASE").getString("USERNAME");
+    }
+
+    public String getDBPassword() {
+        return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
 }

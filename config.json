@@ -1,17 +1,1 @@
-{
-  "BOTINFO":
-  {
-    "OWNER":["oskar#7402","Hax#6775","Johnny#3826","Yann#4690"],
-    "VERSION":"Development",
-    "NAME":"try-catch"
-  },
-  "TOKEN":"",
-  "PREFIX":"",
-  "MAX_SHARDS":"",
-  "DATABASE":
-  {
-    "URL":"",
-    "USERNAME":"",
-    "PASSWORD":""
-  }
-}
+{"BOTINFO":{"OWNER":[226011931935375360,261083609148948488,234343108773412864,138607604506165248],"VERSION":"Development","NAME":"try-catch"},"TOKEN":null,"DEFAULT_PREFIX":null,"GUILDS_PER_SHARD":1000,"MAX_SHARDS":10,"DATABASE":{"URL":null,"USERNAME":null,"PASSWORD":null}}
