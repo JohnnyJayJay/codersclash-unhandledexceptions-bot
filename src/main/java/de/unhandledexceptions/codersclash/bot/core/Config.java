@@ -47,4 +47,9 @@ public class Config {
     public String getToken() {
         return null;
     }
+
+    public String getName()
+    {
+        return file.toString();
+    }
 }

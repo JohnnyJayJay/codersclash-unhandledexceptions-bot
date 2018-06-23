@@ -6,7 +6,8 @@ public class Main {
         Config config = new Config("./config.json");
         if (!config.exists()) {
             config.create();
-            System.out.println("config.json has been created. Please enter the values and restart the bot.");
+            System.out.println("Config " + config.getName() + " has been created. Please enter the values and restart the bot.");
+            System.exit(1);
         }
     }
 

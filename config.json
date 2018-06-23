@@ -1,6 +1,1 @@
-{
-	"TOKEN":"",
-	"BOTOWNERS":"",
-	"PREFIX":"",
-	"TEST-KEY":""
-}
+{"TOKEN":null,"PREFIX":null,"MAX_SHARDS":null,"DATABASE":{"URL":null,"USERNAME":null,"PASSWORD":null}}
