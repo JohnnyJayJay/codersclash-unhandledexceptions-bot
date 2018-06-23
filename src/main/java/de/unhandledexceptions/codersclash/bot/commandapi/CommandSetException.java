@@ -1,4 +1,4 @@
-package de.unhandledexceptions.codersclash.bot.commands.commandapi;
+package de.unhandledexceptions.codersclash.bot.commandapi;
 
 /**
  * Exception that is thrown in case of any problems concerning the CommandSettings. <p>
