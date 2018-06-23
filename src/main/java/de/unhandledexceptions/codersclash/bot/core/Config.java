@@ -14,7 +14,6 @@ public class Config {
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
     private final int DEFAULT_MAX_SHARDS = 10;
-    private final int DEFAULT_GUILDS_PER_SHARD = 1000;
     private final long[] BOT_OWNERS = {226011931935375360L, 261083609148948488L, 234343108773412864L, 138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Development";
@@ -32,15 +31,13 @@ public class Config {
 
     public boolean load() {
         // Die Config laden, also dem Attribut config das JSONObject aus der Datei zuweisen
-        boolean success;
+        boolean success = true;
         try {
             config = new JSONObject(new String(Files.readAllBytes(file))); // config file auslesen und das in ein JSONObject packen
-            if (config.keySet().stream().anyMatch(config::isNull)) // wenn ein Key in der Config keinen Wert hat
-                success = false;
-            else
-                success = true;
+            if (hasAnyNullValue(config)) // Wenn ein Key irgendwo in der config keinen Wert hat
+                success = false; // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
-            System.err.println("Config could not be loaded due to an IOException. Check the application's reading permissions.");
+            System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
             success = false;
         }
@@ -63,7 +60,6 @@ public class Config {
                         .key("NAME").value(BOT_NAME).endObject()
                     .key("TOKEN").value(null)
                     .key("DEFAULT_PREFIX").value(null)
-                    .key("GUILDS_PER_SHARD").value(DEFAULT_GUILDS_PER_SHARD)
                     .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                     .key("DATABASE").object()
                         .key("URL").value(null)
@@ -72,9 +68,18 @@ public class Config {
                     .endObject();
             Files.write(file, stringer.toString().getBytes()); // Das JSONObject als byte-array in die config.json schreiben
         } catch (IOException e) {
-            System.err.println("JSON-Config couldn't be created. Please check if this application has permission to write files.");
+            System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
+    }
+
+    private boolean hasAnyNullValue(JSONObject objectToCheck) {
+        for (String key : objectToCheck.keySet()) {
+            // wenn der value null ist ODER der value auch ein JSONObject ist und dort irgendein value null ist
+            if (objectToCheck.isNull(key) || (objectToCheck.get(key) instanceof JSONObject && hasAnyNullValue((JSONObject) objectToCheck.get(key))))
+                return true; // mindestens ein value ist null
+        }
+        return false; // kein value ist null
     }
 
     public String getVersion() {
@@ -87,6 +92,10 @@ public class Config {
 
     public List<Object> getBotOwners() {
         return config.getJSONObject("BOTINFO").getJSONArray("OWNER").toList();
+    }
+
+    public int getMaxShards() {
+        return config.getInt("MAX_SHARDS");
     }
 
     public String getToken() {

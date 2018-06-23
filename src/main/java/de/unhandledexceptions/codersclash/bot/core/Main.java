@@ -1,5 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
+import javax.security.auth.login.LoginException;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -11,7 +13,12 @@ public class Main {
         } else if (!config.load()) {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
         } else {
-            new Bot(config.getToken(), config).start();
+            try {
+                new Bot(config).start();
+            } catch (LoginException e) {
+                System.err.println("[ERROR] Login failed, reloading...");
+                main(null);
+            }
         }
     }
 

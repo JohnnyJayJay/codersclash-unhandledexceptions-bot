@@ -1,17 +1,17 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
+import javax.security.auth.login.LoginException;
+
 public class Bot {
 
-    private final String TOKEN;
-    private final Config CONFIG;
+    private final Config config;
 
-    public Bot(String token, Config config) {
-        this.TOKEN = token;
-        this.CONFIG = config;
+    public Bot(Config config) {
+        this.config = config;
     }
 
-    public void start() {
-
+    public void start() throws LoginException {
+        // Sharding einstellen, Commands und Listener hinzufügen...
     }
 
 }
