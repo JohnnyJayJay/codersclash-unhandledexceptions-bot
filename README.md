@@ -1,2 +1,2 @@
 # codersclash-unhandledexceptions-bot
-Bot für den CodersClash-Wettbewerb. 
+Bot für den CodersClash-Wettbewerb
