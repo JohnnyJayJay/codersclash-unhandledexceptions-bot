@@ -1,6 +1,17 @@
 {
-	"TOKEN":"",
-	"BOTOWNERS":"",
-	"PREFIX":"",
-	"TEST-KEY":""
+  "BOTINFO":
+  {
+    "OWNER":["oskar#7402","Hax#6775","Johnny#3826","Yann#4690"],
+    "VERSION":"Development",
+    "NAME":"try-catch"
+  },
+  "TOKEN":"",
+  "PREFIX":"",
+  "MAX_SHARDS":"",
+  "DATABASE":
+  {
+    "URL":"",
+    "USERNAME":"",
+    "PASSWORD":""
+  }
 }
