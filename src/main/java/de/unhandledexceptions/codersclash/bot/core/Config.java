@@ -117,4 +117,9 @@ public class Config {
     public String getDBPassword() {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
+
+    public String getName()
+    {
+        return file.toString();
+    }
 }
