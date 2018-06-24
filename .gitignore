@@ -1,7 +1,5 @@
 .idea/*
 *.class
-
 bot-master.iml
 config.yml
 *.json
-config.json
