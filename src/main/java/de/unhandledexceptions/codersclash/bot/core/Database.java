@@ -18,6 +18,14 @@ public class Database {
         this.connected = false;
     }
 
+    public boolean isSetUp() {
+       return false;
+    }
+
+    public void create() {
+
+    }
+
     public void connect() {
         if (!connected) {
             try {
