@@ -86,7 +86,7 @@ public class Config {
         return config.getJSONObject("BOTINFO").getString("VERSION");
     }
 
-    public String getName() {
+    public String getBotName() {
         return config.getJSONObject("BOTINFO").getString("NAME");
     }
 
@@ -118,8 +118,7 @@ public class Config {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
 
-    public String getName()
-    {
-        return file.toString();
+    public String getName() {
+        return file.getFileName().toString();
     }
 }

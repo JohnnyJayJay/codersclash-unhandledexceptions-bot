@@ -41,7 +41,7 @@ class CommandListener extends ListenerAdapter {
             builder.addField("Commands", format("```\n%s%s```", prefix, String.join(format("\n%s", prefix), commandLabels)), false);
             channel.sendMessage(builder.build()).queue();
         } else if (args.length == 1 && settings.getCommands().containsKey(args[0])) {
-            builder.appendDescription(format("Command Info for: `%s`\n\n", args[0]))
+            builder.appendDescription(format("**Command Info for:** `%s`\n\n", args[0]))
                     .appendDescription(settings.getCommands().get(args[0]).info());
             channel.sendMessage(builder.build()).queue();
         }
