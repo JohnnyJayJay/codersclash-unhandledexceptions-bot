@@ -16,7 +16,11 @@ public class Config {
     private final int DEFAULT_MAX_SHARDS = 10;
     private final long[] BOT_OWNERS = {226011931935375360L, 261083609148948488L, 234343108773412864L, 138607604506165248L};
     private final String BOT_NAME = "try-catch";
+<<<<<<< Updated upstream
     private final String VERSION = "Dev. Build";
+=======
+    private final String VERSION = "Dev Build";
+>>>>>>> Stashed changes
 
     private Path file; // config.json Datei
     private JSONObject config; // Inhalt von config.json
