@@ -51,26 +51,29 @@ public class Config {
                 Files.createDirectories(dir);
             if (Files.notExists(file)) // wenn die datei selbst noch nicht existiert
                 file = Files.createFile(file);
-            // Das Standard JSONOBject zusammenbauen
-            JSONStringer stringer = new JSONStringer();
-            stringer.object()
-                    .key("BOTINFO").object()
-                        .key("OWNER").value(BOT_OWNERS)
-                        .key("VERSION").value(VERSION)
-                        .key("NAME").value(BOT_NAME).endObject()
-                    .key("TOKEN").value(null)
-                    .key("DEFAULT_PREFIX").value(null)
-                    .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
-                    .key("DATABASE").object()
-                        .key("URL").value(null)
-                        .key("USERNAME").value(null)
-                        .key("PASSWORD").value(null).endObject()
-                    .endObject();
-            Files.write(file, stringer.toString().getBytes()); // Das JSONObject als byte-array in die config.json schreiben
+            Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
         } catch (IOException e) {
             System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
+    }
+
+    // Das, was am Anfang in der config stehen soll (default)
+    private String defaultConfigContent() {
+        return new JSONStringer().object()
+                .key("BOTINFO").object()
+                .key("OWNER").value(BOT_OWNERS)
+                .key("VERSION").value(VERSION)
+                .key("NAME").value(BOT_NAME).endObject()
+                .key("TOKEN").value(null)
+                .key("DEFAULT_PREFIX").value(null)
+                .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
+                .key("DATABASE").object()
+                .key("URL").value(null)
+                .key("PORT").value(null)
+                .key("USERNAME").value(null)
+                .key("PASSWORD").value(null).endObject()
+                .endObject().toString();
     }
 
     private boolean hasAnyNullValue(JSONObject objectToCheck) {
