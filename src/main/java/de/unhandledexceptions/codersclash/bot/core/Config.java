@@ -76,8 +76,9 @@ public class Config {
     }
 
     private boolean hasAnyNullValue(JSONObject objectToCheck) {
-        return objectToCheck.keySet().stream().anyMatch((key) -> // wenn der value null ist ODER der value auch ein JSONObject ist und dort irgendein value null ist
-                objectToCheck.isNull(key) || (objectToCheck.get(key) instanceof JSONObject && hasAnyNullValue((JSONObject) objectToCheck.get(key))));
+        return objectToCheck.keySet().stream().anyMatch( // wenn der value null ist ODER der value auch ein JSONObject ist und dort irgendein value null ist
+                (key) -> objectToCheck.isNull(key) || (objectToCheck.get(key) instanceof JSONObject && hasAnyNullValue((JSONObject) objectToCheck.get(key)))
+        );
     }
 
     public String getVersion() {

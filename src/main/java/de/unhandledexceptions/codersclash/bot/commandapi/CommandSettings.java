@@ -152,6 +152,7 @@ public class CommandSettings {
      * @throws CommandSetException if a non-null prefix is empty.
      */
     public void setCustomPrefix(long guildId, String prefix) {
+        // Datenbankanbindung
         if (prefix != null && !prefix.matches(VALID_PREFIX))
             throw new CommandSetException(INVALID_PREFIX_MESSAGE);
         prefixMap.put(guildId, prefix);

@@ -4,29 +4,23 @@ import de.unhandledexceptions.codersclash.bot.commandapi.CommandSettings;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.utils.SessionController;
+import net.dv8tion.jda.core.utils.SessionControllerAdapter;
 
 import javax.security.auth.login.LoginException;
-import java.util.Collection;
 
 public class Bot {
 
     private final Config config;
-    private DefaultShardManagerBuilder builder=new DefaultShardManagerBuilder();
+    private DefaultShardManagerBuilder builder;
     private SessionController sessionController;
     private ShardManager shardManager;
     private CommandSettings commandSettings;
 
     public Bot(Config config) {
         this.config = config;
-    }
-
-    public void addListener(Collection<Class> listener) {
-        builder.addEventListeners(
-                listener
-        );
-    }
-
-    public void addCommands() {
+        this.builder = new DefaultShardManagerBuilder();
+        this.sessionController = new SessionControllerAdapter();
+        this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true, true);
 
     }
 
@@ -36,7 +30,7 @@ public class Bot {
         builder.setToken(config.getToken());
         builder.setSessionController(sessionController);
         this.shardManager = builder.build();
-        this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true, true);
+        // command settings einstellen
     }
 
     public SessionController getSessionController() {
