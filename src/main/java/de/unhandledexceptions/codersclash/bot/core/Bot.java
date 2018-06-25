@@ -19,7 +19,6 @@ public class Bot {
     public Bot(Config config) {
         this.config = config;
         this.builder = new DefaultShardManagerBuilder();
-        this.sessionController = new SessionControllerAdapter(); // An diese stelle kommt eine eigene implementation
     }
 
     public void start() throws LoginException {
