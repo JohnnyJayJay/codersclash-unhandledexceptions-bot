@@ -1,6 +1,17 @@
 {
-	"TOKEN":"",
-	"BOTOWNERS":"",
-	"PREFIX":"",
-	"TEST-KEY":""
+  "BOTINFO":
+  {
+    "OWNER":[226011931935375360,261083609148948488,234343108773412864,138607604506165248],
+    "VERSION":"Dev. Build",
+    "NAME":"try-catch"
+  },
+  "TOKEN":null,
+  "DEFAULT_PREFIX":";",
+  "MAX_SHARDS":10,
+  "DATABASE":
+  {
+    "URL":null,
+    "USERNAME":null,
+    "PASSWORD":null
+  }
 }

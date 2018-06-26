@@ -1,4 +1,4 @@
-package de.unhandledexceptions.codersclash.bot.commands.commandapi;
+package de.unhandledexceptions.codersclash.bot.commandapi;
 
 import java.util.Arrays;
 
