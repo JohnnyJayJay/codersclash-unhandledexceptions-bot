@@ -70,6 +70,7 @@ public class Config {
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
                 .key("URL").value(null)
+                .key("NAME").value(null)
                 .key("USERNAME").value(null)
                 .key("PASSWORD").value(null).endObject()
                 .endObject().toString();
@@ -106,6 +107,10 @@ public class Config {
 
     public String getDBUrl() {
         return config.getJSONObject("DATABASE").getString("URL");
+    }
+
+    public String getDBName(){
+        return config.getJSONObject("DATABASE").getString("NAME");
     }
 
     public String getDBUsername() {
