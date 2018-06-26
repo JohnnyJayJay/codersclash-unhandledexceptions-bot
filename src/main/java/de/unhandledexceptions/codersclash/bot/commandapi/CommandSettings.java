@@ -1,5 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.commandapi;
 
+import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.JDA;
 
 import javax.annotation.Nonnull;
@@ -31,7 +32,7 @@ public class CommandSettings {
 
     private Map<String, ICommand> commands; // String: command label, ICommand: command class
 
-    private JDA jda;
+    private ShardManager jda;
     private CommandListener listener;
 
     private boolean activated; // ...is this instance activated?
@@ -50,7 +51,7 @@ public class CommandSettings {
      * @param useCustomPrefixes Set this to true, if you want to have the possibility to add custom prefixes for each guild. If you didn't set a prefix for a guild, it will look
      *                         for the default prefix.
      */
-    public CommandSettings(@Nonnull String defaultPrefix, @Nonnull JDA jda, boolean useHelpCommand, boolean useCustomPrefixes) {
+    public CommandSettings(@Nonnull String defaultPrefix, @Nonnull ShardManager jda, boolean useHelpCommand, boolean useCustomPrefixes) {
         this.commands = new HashMap<>();
         this.listener = new CommandListener(this);
         this.activated = false;
@@ -151,6 +152,7 @@ public class CommandSettings {
      * @throws CommandSetException if a non-null prefix is empty.
      */
     public void setCustomPrefix(long guildId, String prefix) {
+        // Datenbankanbindung
         if (prefix != null && !prefix.matches(VALID_PREFIX))
             throw new CommandSetException(INVALID_PREFIX_MESSAGE);
         prefixMap.put(guildId, prefix);
