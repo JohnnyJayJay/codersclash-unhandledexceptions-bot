@@ -11,13 +11,20 @@ import javax.security.auth.login.LoginException;
 public class Bot {
 
     private final Config config;
+
+    private final Database database;
     private DefaultShardManagerBuilder builder;
     private SessionController sessionController;
     private ShardManager shardManager;
     private CommandSettings commandSettings;
 
-    public Bot(Config config) {
+    public Bot(Config config, Database database) {
         this.config = config;
+        this.database = database;
+    }
+
+    public void start() throws LoginException {
+        // Sharding einstellen, Commands und Listener hinzufügen...
         this.builder = new DefaultShardManagerBuilder();
     }
 
