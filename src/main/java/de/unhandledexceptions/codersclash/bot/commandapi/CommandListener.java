@@ -23,6 +23,7 @@ class CommandListener extends ListenerAdapter {
         if (raw.startsWith(prefix) && !event.getAuthor().isBot()) {
             Command cmd = new Command(raw, prefix, settings);
             if (cmd.getExecutor() != null) {
+                // Überprüfen, ob der Bot die nötigen Permissions hat
                 cmd.getExecutor().onCommand(new CommandEvent(event.getJDA(), event.getResponseNumber(), event.getMessage(), cmd),
                         event.getMember(), event.getChannel(), cmd.getArgs());
             } else if (settings.useHelpCommand() && settings.getHelpLabels().contains(cmd.getLabel())) {
