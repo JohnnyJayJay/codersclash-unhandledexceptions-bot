@@ -36,7 +36,7 @@ public class Database {
             {
                 e.printStackTrace();
             }
-            cpds.setJdbcUrl(url + "/" + dbname);
+            cpds.setJdbcUrl("jdbc:mysql://" + url + "/" + dbname);
                 cpds.setUser(username);
                 cpds.setPassword(password);
 
