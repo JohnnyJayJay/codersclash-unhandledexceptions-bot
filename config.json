@@ -5,13 +5,14 @@
     "VERSION":"Dev. Build",
     "NAME":"try-catch"
   },
-  "TOKEN":null,
+  "TOKEN":"abc",
   "DEFAULT_PREFIX":";",
   "MAX_SHARDS":10,
   "DATABASE":
   {
-    "URL":null,
-    "USERNAME":null,
-    "PASSWORD":null
+    "URL":"185.230.161.112",
+    "DB_NAME":"CodersClash",
+    "USERNAME":"CodersClash",
+    "PASSWORD":"kEMXbiMlLyquYRzm"
   }
 }

@@ -5,9 +5,8 @@ import javax.security.auth.login.LoginException;
 public class Main {
 
     public static void main(String[] args) {
+
         final var config = new Config("./config.json");
-        final var database = new Database(config.getDBUrl(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
-        database.connect();
 
         if (!config.fileExists()) {
             config.create();
@@ -19,6 +18,26 @@ public class Main {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
             return;
         }
+
+        System.out.println("0");
+
+        final var database = new Database(config.getDBUrl(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
+        database.connect();
+
+        System.out.println("1");
+
+        database.executeSQL("CREATE TABLE comments (\n" +
+                "        id INT NOT NULL AUTO_INCREMENT,\n" +
+                "        MYUSER VARCHAR(30) NOT NULL,\n" +
+                "        EMAIL VARCHAR(30),\n" +
+                "        WEBPAGE VARCHAR(100) NOT NULL,\n" +
+                "        DATUM DATE NOT NULL,\n" +
+                "        SUMMARY VARCHAR(40) NOT NULL,\n" +
+                "        COMMENTS VARCHAR(400) NOT NULL,\n" +
+                "        PRIMARY KEY (ID)\n" +
+                "    );");
+
+        System.out.println("2");
 
         try {
                 new Bot(config, database).start();

@@ -11,6 +11,8 @@ public class Database {
     private ComboPooledDataSource cpds;
     private Connection connection;
     private Statement statement;
+    private PreparedStatement preparedStatement;
+    private ResultSet resultSet;
 
     private String url, username, password, dbname;
 
@@ -21,17 +23,13 @@ public class Database {
         this.dbname = dbname;
     }
 
-    public void setup() {
-
-    }
-
     public void connect()
     {
         if (!connected) {
                 cpds = new ComboPooledDataSource();
             try
             {
-                cpds.setDriverClass("com.mysql.jdbc.Driver");
+                cpds.setDriverClass("com.mysql.cj.jdbc.Driver");
             } catch (PropertyVetoException e)
             {
                 e.printStackTrace();
@@ -39,6 +37,7 @@ public class Database {
             cpds.setJdbcUrl("jdbc:mysql://" + url + "/" + dbname);
                 cpds.setUser(username);
                 cpds.setPassword(password);
+
 
             try
             {
@@ -59,6 +58,24 @@ public class Database {
         }
     }
 
+    public void executeSQL(String sql)
+    {
+
+        try
+        {
+            statement = connection.createStatement();
+
+            statement.executeQuery(sql);
+
+            System.out.println("Created Table");
+
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
     public Connection getConnection()
     {
         try
@@ -75,5 +92,25 @@ public class Database {
     public boolean isConnected()
     {
         return connected;
+    }
+
+    private String writeResultSet(ResultSet resultSet) throws SQLException {
+
+        var stringBuilder = new StringBuilder();
+
+        while (resultSet.next()) {
+            String user = resultSet.getString("myuser");
+            String website = resultSet.getString("webpage");
+            String summary = resultSet.getString("summary");
+            Date date = resultSet.getDate("datum");
+            String comment = resultSet.getString("comments");
+            stringBuilder.append("User: ").append(user);
+            stringBuilder.append("Website: ").append(website);
+            stringBuilder.append("summary: ").append(summary);
+            stringBuilder.append("Date: ").append(date);
+            stringBuilder.append("Comment: ").append(comment);
+        }
+
+        return stringBuilder.toString();
     }
 }
