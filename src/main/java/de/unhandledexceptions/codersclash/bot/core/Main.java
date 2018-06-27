@@ -21,7 +21,7 @@ public class Main {
 
         System.out.println("0");
 
-        final var database = new Database(config.getDBUrl(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
+        final var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
         database.connect();
 
         System.out.println("1");

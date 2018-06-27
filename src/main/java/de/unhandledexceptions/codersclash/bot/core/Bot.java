@@ -11,8 +11,8 @@ import javax.security.auth.login.LoginException;
 public class Bot {
 
     private final Config config;
-
     private final Database database;
+
     private DefaultShardManagerBuilder builder;
     private SessionController sessionController;
     private ShardManager shardManager;
@@ -23,7 +23,7 @@ public class Bot {
         this.database = database;
     }
 
-    public void start() throws LoginException {
+    void start() throws LoginException {
         builder.setAutoReconnect(true);
         builder.setShardsTotal(config.getMaxShards());
         builder.setToken(config.getToken());
