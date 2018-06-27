@@ -28,23 +28,19 @@ public class Database {
     public void connect()
     {
         if (!connected) {
-                cpds = new ComboPooledDataSource();
-            try
-            {
+            cpds = new ComboPooledDataSource();
+            try {
                 cpds.setDriverClass("com.mysql.jdbc.Driver");
-            } catch (PropertyVetoException e)
-            {
+            } catch (PropertyVetoException e) {
                 e.printStackTrace();
             }
             cpds.setJdbcUrl("jdbc:mysql://" + url + "/" + dbname);
-                cpds.setUser(username);
-                cpds.setPassword(password);
+            cpds.setUser(username);
+            cpds.setPassword(password);
 
-            try
-            {
+            try {
                 this.connection = cpds.getConnection();
-            } catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 System.err.println("[ERROR] Connection could not be established due to an SQLException. Please check if the connection information is correct.");
                 e.printStackTrace();
             }
@@ -54,18 +50,16 @@ public class Database {
 
     public void disconnect() {
         if (connected) {
-                cpds.close();
-                connected = false;
+            cpds.close();
+            connected = false;
         }
     }
 
     public Connection getConnection()
     {
-        try
-        {
+        try {
             return cpds.getConnection();
-        } catch (SQLException e)
-        {
+        } catch (SQLException e) {
             System.err.println("[ERROR] Database connection could not be closed due to an SQLException.");
             e.printStackTrace();
         }
