@@ -6,8 +6,6 @@ public class Main {
 
     public static void main(String[] args) {
         final var config = new Config("./config.json");
-        final var database = new Database(config.getDBUrl(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
-        database.connect();
 
         if (!config.fileExists()) {
             config.create();
@@ -19,13 +17,15 @@ public class Main {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
             return;
         }
+        final var database = new Database(config.getDBUrl(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
+        database.connect();
 
         try {
-                new Bot(config, database).start();
+            new Bot(config, database).start();
 
-            } catch (LoginException e) {
-                System.err.println("[ERROR] Login failed, reloading...");
-                main(null);
-            }
+        } catch (LoginException e) {
+            System.err.println("[ERROR] Login failed, reloading...");
+            main(null);
         }
+    }
     }

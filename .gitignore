@@ -6,3 +6,4 @@ config.yml
 config.json
 config.json
 *.json
+*.properties
