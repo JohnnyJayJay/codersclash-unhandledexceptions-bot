@@ -67,7 +67,7 @@ public class Database {
 
             statement.executeQuery(sql);
 
-            System.out.println("Created Table");
+            System.out.println("executed");
 
         } catch (SQLException e)
         {
@@ -87,23 +87,4 @@ public class Database {
         return connected;
     }
 
-    private String writeResultSet(ResultSet resultSet) throws SQLException {
-
-        var stringBuilder = new StringBuilder();
-
-        while (resultSet.next()) {
-            String user = resultSet.getString("myuser");
-            String website = resultSet.getString("webpage");
-            String summary = resultSet.getString("summary");
-            Date date = resultSet.getDate("datum");
-            String comment = resultSet.getString("comments");
-            stringBuilder.append("User: ").append(user);
-            stringBuilder.append("Website: ").append(website);
-            stringBuilder.append("summary: ").append(summary);
-            stringBuilder.append("Date: ").append(date);
-            stringBuilder.append("Comment: ").append(comment);
-        }
-
-        return stringBuilder.toString();
-    }
 }
