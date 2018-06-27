@@ -24,11 +24,6 @@ public class Bot {
     }
 
     public void start() throws LoginException {
-        // Sharding einstellen, Commands und Listener hinzufügen...
-        this.builder = new DefaultShardManagerBuilder();
-    }
-
-    public void start() throws LoginException {
         builder.setAutoReconnect(true);
         builder.setShardsTotal(config.getMaxShards());
         builder.setToken(config.getToken());
