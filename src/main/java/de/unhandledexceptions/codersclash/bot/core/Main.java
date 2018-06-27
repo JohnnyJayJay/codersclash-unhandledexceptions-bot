@@ -5,6 +5,7 @@ import javax.security.auth.login.LoginException;
 public class Main {
 
     public static void main(String[] args) {
+
         final var config = new Config("./config.json");
 
         if (!config.fileExists()) {
@@ -18,6 +19,11 @@ public class Main {
             database.connect();
 
             try {
+
+        final var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
+        database.connect();
+
+        try {
                 new Bot(config, database).start();
             } catch (LoginException e) {
                 System.err.println("[ERROR] Login failed, reloading...");
