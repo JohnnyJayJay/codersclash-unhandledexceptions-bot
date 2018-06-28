@@ -8,7 +8,7 @@ import java.sql.*;
 
 public class Database {
 
-    private boolean connected;
+    boolean connected;
     private Connection connection;
     private Statement statement;
     private PreparedStatement preparedStatement;
@@ -30,7 +30,7 @@ public class Database {
 
     public void connect()
     {
-        System.out.println(connected);
+        System.out.println("0 " + connected);
         if (!connected)
         {
 
@@ -50,6 +50,7 @@ public class Database {
                 dataSource = new HikariDataSource(config);
                 connection = dataSource.getConnection();
                 connected = true;
+                System.out.println("1 " + connected);
                 System.out.println("[INFO] Database connection successfully opened.");
             } catch (HikariPool.PoolInitializationException | SQLException e)
             {
