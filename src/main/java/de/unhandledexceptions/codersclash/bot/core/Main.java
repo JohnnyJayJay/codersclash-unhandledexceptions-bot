@@ -16,11 +16,11 @@ public class Main {
         } else if (!config.load())
         {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
+        } else 
+        {
+            var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
+            database.connect();
+            new Bot(config, database).start();
         }
-
-        final var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
-        database.connect();
-
-        new Bot(config, database).start();
     }
 }
