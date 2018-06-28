@@ -1,47 +1,50 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
-import java.beans.PropertyVetoException;
 import java.sql.*;
 
 public class Database {
 
     private boolean connected;
-    private ComboPooledDataSource cpds;
     private Connection connection;
     private Statement statement;
+    private PreparedStatement preparedStatement;
+    private ResultSet resultSet;
 
-    private String url, username, password, dbname;
+    private HikariConfig config;
+    private HikariDataSource dataSource;
 
-    public Database(String url, String dbname, String username, String password) {
+    private String url, username, password, dbname, port;
+
+    public Database(String url, String port, String dbname, String username, String password) {
         this.url = url;
+        this.port = port;
         this.username = username;
         this.password = password;
         this.dbname = dbname;
     }
 
-    public void setup() {
-
-    }
-
     public void connect()
     {
         if (!connected) {
-            cpds = new ComboPooledDataSource();
-            try {
-                cpds.setDriverClass("com.mysql.jdbc.Driver");
-            } catch (PropertyVetoException e) {
-                e.printStackTrace();
-            }
-            cpds.setJdbcUrl("jdbc:mysql://" + url + "/" + dbname);
-            cpds.setUser(username);
-            cpds.setPassword(password);
 
-            try {
-                this.connection = cpds.getConnection();
-            } catch (SQLException e) {
-                System.err.println("[ERROR] Connection could not be established due to an SQLException. Please check if the connection information is correct.");
+            config = new HikariConfig();
+
+            config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", url, port, dbname));
+            config.setUsername(username);
+            config.setPassword(password);
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            dataSource = new HikariDataSource(config);
+
+            try
+            {
+                connection = dataSource.getConnection();
+            } catch (SQLException e)
+            {
                 e.printStackTrace();
             }
             connected = true;
@@ -50,24 +53,45 @@ public class Database {
 
     public void disconnect() {
         if (connected) {
-            cpds.close();
-            connected = false;
+                dataSource.close();
+                connected = false;
         }
+    }
+
+    private void setupConfig()
+    {
+
+
+
+    }
+
+    public void executeSQL(String sql)
+    {
+
+        try
+        {
+            statement = connection.createStatement();
+
+            statement.executeQuery(sql);
+
+            System.out.println("executed");
+
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     public Connection getConnection()
     {
-        try {
-            return cpds.getConnection();
-        } catch (SQLException e) {
-            System.err.println("[ERROR] Database connection could not be closed due to an SQLException.");
-            e.printStackTrace();
-        }
-        return null;
+
+        return connection;
     }
 
     public boolean isConnected()
     {
         return connected;
     }
+
 }
