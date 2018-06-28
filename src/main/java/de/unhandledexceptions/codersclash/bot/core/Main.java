@@ -14,11 +14,7 @@ public class Main {
                     "afterwards.");
         } else if (!config.load()) {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
-        } else {
-            final var database = new Database(config.getDBUrl(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
-            database.connect();
-
-            try {
+        }
 
         final var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
         database.connect();
@@ -30,5 +26,4 @@ public class Main {
                 main(null);
             }
         }
-    }
 }
