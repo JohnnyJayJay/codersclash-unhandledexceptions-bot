@@ -19,7 +19,8 @@ public class Database {
 
     private String url, username, password, dbname, port;
 
-    public Database(String url, String port, String dbname, String username, String password) {
+    public Database(String url, String port, String dbname, String username, String password)
+    {
         this.url = url;
         this.port = port;
         this.username = username;
@@ -29,7 +30,9 @@ public class Database {
 
     public void connect()
     {
-        if (!connected) {
+        System.out.println("0 " + connected);
+        if (!connected)
+        {
 
             config = new HikariConfig();
 
@@ -45,28 +48,21 @@ public class Database {
             try
             {
                 dataSource = new HikariDataSource(config);
-            }catch (HikariPool.PoolInitializationException e)
+                connection = dataSource.getConnection();
+                connected = true;
+                System.out.println("1 " + connected);
+                System.out.println("[INFO] Database connection successfully opened.");
+            } catch (HikariPool.PoolInitializationException | SQLException e)
             {
                 System.err.println("[ERROR] Error while connecting to database. Check your config.");
                 System.exit(1);
-            }finally
-            {
-                try
-                {
-                    connection = dataSource.getConnection();
-                    connected = true;
-                    System.out.println("[INFO] Database connection successfully opened.");
-
-                } catch (SQLException e)
-                {
-                    System.err.println("[ERROR] Error while connecting to database. Check your config.");
-                    System.exit(1);
-                }
             }
         }
     }
 
-    public void disconnect() {
+
+    public void disconnect()
+    {
         if (connected) {
                 dataSource.close();
                 connected = false;
