@@ -1,6 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
-import de.unhandledexceptions.codersclash.bot.commandapi.CommandSettings;
+import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
@@ -27,7 +27,7 @@ public class Bot {
                 .setToken(config.getToken());
 
         this.shardManager = builder.build();
-        this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true, true);
+        this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         // command settings einstellen
     }
 

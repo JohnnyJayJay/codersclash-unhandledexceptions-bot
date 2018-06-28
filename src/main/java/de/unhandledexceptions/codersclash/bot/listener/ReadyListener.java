@@ -7,6 +7,8 @@ import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import java.util.stream.Collectors;
+
 /**
  * @author TheRealYann
  * @version 1.0
