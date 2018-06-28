@@ -2,8 +2,6 @@
 *.class
 bot-master.iml
 config.yml
-*.json
-config.json
 config.json
 *.json
 *.properties
