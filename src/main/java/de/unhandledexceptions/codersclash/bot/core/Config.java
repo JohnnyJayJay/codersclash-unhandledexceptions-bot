@@ -34,8 +34,8 @@ public class Config {
         boolean success = true;
         try {
             config = new JSONObject(new String(Files.readAllBytes(file))); // config file auslesen und das in ein JSONObject packen
-            if (hasAnyNullValue(config)) // Wenn ein Key irgendwo in der config keinen Wert hat
-                success = false; // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
+             // Wenn ein Key irgendwo in der config keinen Wert hat
+            success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
             System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();

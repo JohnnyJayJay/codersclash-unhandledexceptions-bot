@@ -25,7 +25,6 @@ public class Bot {
         builder.setAutoReconnect(true)
                 .setShardsTotal(config.getMaxShards())
                 .setToken(config.getToken());
-
         try
         {
             this.shardManager = builder.build();
@@ -34,6 +33,7 @@ public class Bot {
             System.err.println("[ERROR] Login failed, reloading... (Check your token in config.json)");
             start();
         }
+
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         // command settings einstellen
     }

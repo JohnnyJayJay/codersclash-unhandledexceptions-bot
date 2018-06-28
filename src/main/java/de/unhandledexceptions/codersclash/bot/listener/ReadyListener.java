@@ -7,6 +7,8 @@ import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import java.util.stream.Collectors;
+
 /**
  * @author TheRealYann
  * @version 1.0
@@ -15,7 +17,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 public class ReadyListener extends ListenerAdapter {
 
 
-    @Override   // Event wenn der Bot online geht
+    @Override   // Event wenn der Bot online geht (besser gesagt eine JDA)
     public void onReady(ReadyEvent event) {
 
         String out = "\nBot is running on following servers: \n"; // Hier werden die Server ausgegeben auf den der Bot läuft
