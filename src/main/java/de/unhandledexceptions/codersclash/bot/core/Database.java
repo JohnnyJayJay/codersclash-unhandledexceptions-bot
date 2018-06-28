@@ -29,6 +29,7 @@ public class Database {
 
     public void connect()
     {
+        System.out.println(connected);
         if (!connected) {
 
             config = new HikariConfig();
@@ -49,22 +50,22 @@ public class Database {
             {
                 System.err.println("[ERROR] Error while connecting to database. Check your config.");
                 System.exit(1);
-            }finally
+            }
+            try
             {
-                try
-                {
-                    connection = dataSource.getConnection();
-                    connected = true;
-                    System.out.println("[INFO] Database connection successfully opened.");
+                connection = dataSource.getConnection();
+                connected = true;
+                System.out.println("1 " + connected);
+                System.out.println("[INFO] Database connection successfully opened.");
 
-                } catch (SQLException e)
-                {
-                    System.err.println("[ERROR] Error while connecting to database. Check your config.");
-                    System.exit(1);
-                }
+            } catch (SQLException e)
+            {
+                System.err.println("[ERROR] Error while connecting to database. Check your config.");
+                System.exit(1);
             }
         }
     }
+
 
     public void disconnect() {
         if (connected) {
