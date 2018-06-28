@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 
 import java.sql.*;
 
@@ -24,24 +25,44 @@ public class Database {
         this.username = username;
         this.password = password;
         this.dbname = dbname;
-
     }
 
     public void connect()
     {
         if (!connected) {
 
-            config = new HikariConfig("db.properties");
-            dataSource = new HikariDataSource(config);
+            config = new HikariConfig();
+
+            System.out.println("[INFO] Connecting to " + url);
+
+            config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", url, port, dbname));
+            config.setUsername(username);
+            config.setPassword(password);
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
             try
             {
-                connection = dataSource.getConnection();
-            } catch (SQLException e)
+                dataSource = new HikariDataSource(config);
+            }catch (HikariPool.PoolInitializationException e)
             {
-                e.printStackTrace();
+                System.err.println("[ERROR] Error while connecting to database. Check your config.");
+                System.exit(1);
+            }finally
+            {
+                try
+                {
+                    connection = dataSource.getConnection();
+                    connected = true;
+                    System.out.println("[INFO] Database connection successfully opened.");
+
+                } catch (SQLException e)
+                {
+                    System.err.println("[ERROR] Error while connecting to database. Check your config.");
+                    System.exit(1);
+                }
             }
-            connected = true;
         }
     }
 
@@ -52,34 +73,14 @@ public class Database {
         }
     }
 
-    private void setupConfig()
-    {
-
-
-    }
-
-    public void executeSQL(String sql)
-    {
-
-        try
-        {
-            statement = connection.createStatement();
-
-            statement.executeQuery(sql);
-
-            System.out.println("executed");
-
-        } catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-
-    }
-
     public Connection getConnection()
     {
-
         return connection;
+    }
+
+    public HikariConfig getConfig()
+    {
+        return config;
     }
 
     public boolean isConnected()
