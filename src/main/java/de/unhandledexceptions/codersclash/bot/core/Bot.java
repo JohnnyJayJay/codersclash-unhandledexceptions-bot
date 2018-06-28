@@ -21,12 +21,19 @@ public class Bot {
         this.builder = new DefaultShardManagerBuilder();
     }
 
-    public void start() throws LoginException {
+    public void start() {
         builder.setAutoReconnect(true)
                 .setShardsTotal(config.getMaxShards())
                 .setToken(config.getToken());
 
-        this.shardManager = builder.build();
+        try
+        {
+            this.shardManager = builder.build();
+        } catch (LoginException e)
+        {
+            System.err.println("[ERROR] Login failed, reloading... (Check your token in config.json)");
+            start();
+        }
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         // command settings einstellen
     }
