@@ -5,6 +5,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
@@ -38,18 +39,18 @@ public class Permissions implements ICommand {
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);
             int level = Integer.parseInt(args[2]);
-            // FIXME Datenbankanbindung schreiben: Werte werden aktualisiert
+            // TODO Datenbankanbindung schreiben: Werte werden aktualisiert
             sendMessage(channel, Type.SUCCESS, String.format("Permission level of `%s` successfully set to %s.", target.getEffectiveName(), args[2])).queue();
         }
     }
 
     @Override
-    public String info() {
+    public String info(Guild guild) {
         return String.format("Is used to manage try-catch permissions and configure the different permission levels.\nUsage: `%spermission [set] <member> <level>`\nTo execute " +
-                "this command, the member needs to have a role named \"try-catch\".", settings.getPrefix()/*Prefix für den guild (wird durch nächste version der CommandAPI ermöglicht)*/);
+                "this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(guild.getIdLong()));
     }
 
-    // FIXME Datenbankanbindung hinzufügen: Werte werden hier ausgelesen
+    // TODO Datenbankanbindung hinzufügen: Werte werden hier ausgelesen
     public static int getPermissionLevel(Member member) {
         return 0;
     }
