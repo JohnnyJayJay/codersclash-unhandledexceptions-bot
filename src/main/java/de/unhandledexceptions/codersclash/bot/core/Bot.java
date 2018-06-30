@@ -1,6 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
+import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
@@ -48,6 +49,9 @@ public class Bot {
 
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         // command settings einstellen
+        commandSettings.setHelpLabels("help", "helpme", "commands")
+                .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
+                .activate();
     }
 
     public ShardManager getShardManager() {
