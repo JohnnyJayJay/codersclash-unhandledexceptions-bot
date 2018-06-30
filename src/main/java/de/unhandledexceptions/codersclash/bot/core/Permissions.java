@@ -32,7 +32,7 @@ public class Permissions implements ICommand {
                             "try-catch-bot.").queue(), (throwable) -> sendMessage(channel, Type.WARNING, "Something went wrong while creating the role\n"
                             + throwable.getMessage()).queue());
         } else if (!member.getRoles().contains(guild.getRolesByName("try-catch", false).get(0))) {
-            sendMessage(channel, Type.ERROR, "You have no permission to manage try-catch-permissions, " + member.getAsMention()).queue();
+            sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions, " + member.getAsMention()).queue();
         } else if (!String.join(" ", args).matches("set <@\\d+> \\d$") || event.getMessage().getMentionedMembers().isEmpty()) {
             sendMessage(channel, Type.INFO, String.format("Correct usage: `%spermission set <@member> <level>`", settings.getPrefix() /*Auch hier: custom prefixes beachten*/)).queue();
         } else {
