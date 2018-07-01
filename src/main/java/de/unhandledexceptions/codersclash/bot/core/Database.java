@@ -37,6 +37,7 @@ public class Database {
                 String sql = "CREATE DATABASE IF NOT EXISTS " + dbname + ";";
                 var preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.execute();
+                // TODO Logger
                 System.out.println("[INFO] Database created (or it already existed).");
                 preparedStatement.close();
             } catch (SQLException e) {
@@ -61,6 +62,7 @@ public class Database {
                 System.out.println("[INFO] Database connection successfully opened.");
             } catch (HikariPool.PoolInitializationException e)
             {
+                // TODO Logger
                 e.printStackTrace();
                 System.err.println("[ERROR] Error while connecting to database. Check your config.");
                 System.exit(1);
@@ -72,6 +74,7 @@ public class Database {
     {
         if (connected) {
             dataSource.close();
+            // TODO Logger
             connected = false;
         }
     }
@@ -79,11 +82,13 @@ public class Database {
     public void createTablesIfNotExist(String[] creationStatements) {
         try (var connection = dataSource.getConnection()) {
             for (String statement : creationStatements) {
+                // TODO  Logger
                 var preparedStatement = connection.prepareStatement(statement);
                 preparedStatement.execute();
                 preparedStatement.close();
             }
         } catch (SQLException e) {
+            // TODO Logger
             e.printStackTrace();
         }
     }
@@ -104,6 +109,7 @@ public class Database {
             else
                 return null;
         } catch (SQLException e) {
+            // TODO Logger
             e.printStackTrace();
             return null;
         }
@@ -120,6 +126,7 @@ public class Database {
             }
             return resultSets;
         } catch (SQLException e) {
+            // TODO Logger
             e.printStackTrace();
             return null;
         }
@@ -134,6 +141,7 @@ public class Database {
             ps.execute();
             ps.close();
         } catch (SQLException e) {
+            // TODO Logger
             e.printStackTrace();
         }
     }
@@ -144,6 +152,7 @@ public class Database {
             ps.execute();
             ps.close();
         } catch (SQLException e) {
+            // TODO Logger
             e.printStackTrace();
         }
     }
@@ -156,6 +165,7 @@ public class Database {
             // TODO Logger
             ps.close();
         } catch (SQLException e) {
+            // TODO Logger
             e.printStackTrace();
         }
     }

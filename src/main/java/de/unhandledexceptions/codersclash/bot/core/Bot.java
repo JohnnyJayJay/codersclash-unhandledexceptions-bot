@@ -31,10 +31,12 @@ public class Bot {
                 .setToken(config.getToken());
         try
         {
+            // TODO Logger
             this.shardManager = builder.build();
         } catch (LoginException e)
         {
             if (++failCount < 3) {
+                // TODO Logger
                 System.err.println("[ERROR] Login failed, reloading... (Check your token in config.json)");
                 try {
                     Thread.sleep(3000);
@@ -48,6 +50,7 @@ public class Bot {
         }
 
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
+        // TODO Logger
         // command settings einstellen
         commandSettings.setHelpLabels("help", "helpme", "commands")
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
