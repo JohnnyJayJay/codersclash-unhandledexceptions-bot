@@ -20,6 +20,7 @@ public class Main {
         {
             var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
             database.connect();
+            database.createTablesIfNotExist();
             new Bot(config, database).start();
         }
     }

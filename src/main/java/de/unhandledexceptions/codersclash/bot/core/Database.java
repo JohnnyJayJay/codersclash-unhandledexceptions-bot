@@ -8,7 +8,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO Verbindung mit der DB loggen
 public class Database {
 
     private boolean connected;
@@ -32,10 +31,8 @@ public class Database {
 
     public void connect()
     {
-        System.out.println("0 " + connected);
         if (!connected)
         {
-
             config = new HikariConfig();
 
             System.out.println("[INFO] Connecting to " + url);
@@ -51,7 +48,7 @@ public class Database {
             {
                 dataSource = new HikariDataSource(config);
                 connected = true;
-                System.out.println("1 " + connected);
+                // TODO Logger
                 System.out.println("[INFO] Database connection successfully opened.");
             } catch (HikariPool.PoolInitializationException e)
             {
@@ -75,6 +72,7 @@ public class Database {
         try (var connection = dataSource.getConnection()) {
             var preparedStatement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + dbname + ";");
             preparedStatement.execute();
+            // TODO Logger
             preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -84,8 +82,35 @@ public class Database {
     public void createTablesIfNotExist() {
         try (var connection = dataSource.getConnection()) {
             // TODO tables erstellen
-            String sql = "CREATE TABLE IF NOT EXISTS";
+            String sql = "CREATE TABLE IF NOT EXISTS discord_guild (\n" +
+                    "  prefix VARCHAR(30),\n" +
+                    "  guild_id BIGINT NOT NULL,\n" +
+                    "  mail_channel BIGINT,\n" +
+                    "  PRIMARY KEY (guild_id)\n" +
+                    ");\n" +
+                    "\n" +
+                    "CREATE TABLE IF NOT EXISTS discord_user (\n" +
+                    "  user_id BIGINT NOT NULL,\n" +
+                    "  user_xp BIGINT,\n" +
+                    "  PRIMARY KEY (user_id)\n" +
+                    ");\n" +
+                    "\n" +
+                    "CREATE TABLE IF NOT EXISTS discord_member (\n" +
+                    "  guild_id BIGINT NOT NULL REFERENCES guild(guild_id) ON DELETE CASCADE,\n" +
+                    "  user_id BIGINT NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,\n" +
+                    "  member_id BIGINT,\n" +
+                    "  reports TEXT,\n" +
+                    "  member_xp BIGINT,\n" +
+                    "  permission_lvl SMALLINT,\n" +
+                    "  INDEX (member_id),\n" +
+                    "  PRIMARY KEY (member_id),\n" +
+                    "  FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id),\n" +
+                    "  FOREIGN KEY (user_id) REFERENCES discord_user (user_id)\n" +
+                    ");";
             var preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+            // TODO Logger
+            preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -161,6 +186,7 @@ public class Database {
             PreparedStatement ps = connection.prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
             ps.setString(1, wherevalue);
             ps.execute();
+            // TODO Logger
             ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
