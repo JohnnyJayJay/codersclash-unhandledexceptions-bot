@@ -16,7 +16,7 @@ public class Main {
         } else if (!config.load())
         {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
-        } else 
+        } else
         {
             var database = new Database(config.getDBIp(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
             database.connect();
@@ -28,11 +28,10 @@ public class Main {
             database.createTablesIfNotExist(creationStatements);
             new Bot(config, database).start();
         }
-        
-      // Nur zum Test bzw als Beispiel gedacht
+
+        // Nur zum Test bzw als Beispiel gedacht
         generalLogger.info("info");
         commandLogger.error("error");
         configLogger.debug("debug");
     }
 }
-

@@ -6,20 +6,22 @@ import com.zaxxer.hikari.pool.HikariPool;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Database {
 
     private boolean connected;
+    private Statement statement;
+    private PreparedStatement preparedStatement;
+    private ResultSet resultSet;
 
     private HikariConfig config;
     private HikariDataSource dataSource;
 
-    private String ip, username, password, dbname, port;
+    private String url, username, password, dbname, port;
 
-    public Database(String ip, String port, String dbname, String username, String password)
+    public Database(String url, String port, String dbname, String username, String password)
     {
-        this.ip = ip;
+        this.url = url;
         this.port = port;
         this.username = username;
         this.password = password;
@@ -28,25 +30,15 @@ public class Database {
 
     public void connect()
     {
+        System.out.println("0 " + connected);
         if (!connected)
         {
-            try (var connection = DriverManager.getConnection(
-                    String.format("jdbc:mysql://%s:%s/?serverTimezone=UTC", ip, port),
-                    username, password)) {
-                System.out.println("[INFO] Creating database (if not exists)...");
-                String sql = "CREATE DATABASE IF NOT EXISTS " + dbname + ";";
-                var preparedStatement = connection.prepareStatement(sql);
-                preparedStatement.execute();
-                System.out.println("[INFO] Database created (or it already existed).");
-                preparedStatement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+
             config = new HikariConfig();
 
-            System.out.printf("[INFO] Connecting to %s...\n", ip);
+            System.out.println("[INFO] Connecting to " + url);
 
-            config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", ip, port, dbname));
+            config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", url, port, dbname));
             config.setUsername(username);
             config.setPassword(password);
             config.addDataSourceProperty("cachePrepStmts", "true");
@@ -57,7 +49,7 @@ public class Database {
             {
                 dataSource = new HikariDataSource(config);
                 connected = true;
-                // TODO Logger
+                System.out.println("1 " + connected);
                 System.out.println("[INFO] Database connection successfully opened.");
             } catch (HikariPool.PoolInitializationException e)
             {
@@ -68,6 +60,7 @@ public class Database {
         }
     }
 
+
     public void disconnect()
     {
         if (connected) {
@@ -77,15 +70,17 @@ public class Database {
     }
 
     public void createTablesIfNotExist(String[] creationStatements) {
-        try (var connection = dataSource.getConnection()) {
-            for (String statement : creationStatements) {
-                var preparedStatement = connection.prepareStatement(statement);
-                preparedStatement.execute();
-                preparedStatement.close();
-            }
+        try {
+            // TODO tables erstellen
+            var preparedStatement = dataSource.getConnection().prepareStatement("");
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public HikariConfig getConfig()
+    {
+        return config;
     }
 
     public boolean isConnected()
@@ -94,27 +89,25 @@ public class Database {
     }
 
     public ResultSet get(String table, String where, String wherevalue) {
-        try (var connection = dataSource.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
+        try {
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
             ps.setString(1, wherevalue);
             ResultSet rs = ps.executeQuery();
-            ps.close();
-            if (rs.next())
+
+            if (rs.next()) {
                 return rs;
-            else
-                return null;
+            } else return null;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public List<ResultSet> getAll(String table) {
-        try (var connection = dataSource.getConnection()) {
-            List<ResultSet> resultSets = new ArrayList<>();
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `"+table+"`");
+    public ArrayList<ResultSet> getAll(String table) {
+        try {
+            ArrayList<ResultSet> resultSets = new ArrayList<>();
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `"+table+"`");
             ResultSet rs = ps.executeQuery();
-            ps.close();
             while (rs.next()) {
                 resultSets.add(rs);
             }
@@ -127,34 +120,30 @@ public class Database {
     }
 
     public void update(String table, String what, String whatvalue, String where, String wherevalue) {
-        try (var connection = dataSource.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
+        try {
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
             ps.setString(1, whatvalue);
             ps.setString(2, wherevalue);
             ps.execute();
-            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void insert(String table, String what, String whatvalue) {
-        try (var connection = dataSource.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
+        try {
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
             ps.execute();
-            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void delete(String table, String where, String wherevalue) {
-        try (var connection = dataSource.getConnection()) {
-            PreparedStatement ps = connection.prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
+        try {
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
             ps.setString(1, wherevalue);
             ps.execute();
-            // TODO Logger
-            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

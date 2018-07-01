@@ -34,10 +34,9 @@ public class Config {
         boolean success = true;
         try {
             config = new JSONObject(new String(Files.readAllBytes(file))); // config file auslesen und das in ein JSONObject packen
-             // Wenn ein Key irgendwo in der config keinen Wert hat
+            // Wenn ein Key irgendwo in der config keinen Wert hat
             success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
-            // TODO Logger
             System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
             success = false;
@@ -54,7 +53,6 @@ public class Config {
                 file = Files.createFile(file);
             Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
         } catch (IOException e) {
-            // TODO Logger
             System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
@@ -71,7 +69,7 @@ public class Config {
                 .key("DEFAULT_PREFIX").value(null)
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
-                .key("IP").value(null)
+                .key("URL").value(null)
                 .key("PORT").value(null)
                 .key("DB_NAME").value(null)
                 .key("USERNAME").value(null)
@@ -109,8 +107,8 @@ public class Config {
         return config.getString("DEFAULT_PREFIX");
     }
 
-    public String getDBIp() {
-        return config.getJSONObject("DATABASE").getString("IP");
+    public String getDBUrl() {
+        return config.getJSONObject("DATABASE").getString("URL");
     }
 
     public String getDBPort(){
@@ -129,4 +127,9 @@ public class Config {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
 
+    public String getDBIp() { return config.getJSONObject("DATABASE").getString("IP");}
+
+    public String getName() {
+        return file.getFileName().toString();
+    }
 }
