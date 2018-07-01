@@ -6,12 +6,10 @@ import com.zaxxer.hikari.pool.HikariPool;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Database {
 
     private boolean connected;
-    private Connection connection;
     private Statement statement;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
@@ -50,12 +48,12 @@ public class Database {
             try
             {
                 dataSource = new HikariDataSource(config);
-                connection = dataSource.getConnection();
                 connected = true;
                 System.out.println("1 " + connected);
                 System.out.println("[INFO] Database connection successfully opened.");
-            } catch (HikariPool.PoolInitializationException | SQLException e)
+            } catch (HikariPool.PoolInitializationException e)
             {
+                e.printStackTrace();
                 System.err.println("[ERROR] Error while connecting to database. Check your config.");
                 System.exit(1);
             }
@@ -66,14 +64,18 @@ public class Database {
     public void disconnect()
     {
         if (connected) {
-                dataSource.close();
-                connected = false;
+            dataSource.close();
+            connected = false;
         }
     }
 
-    public Connection getConnection()
-    {
-        return connection;
+    public void createTablesIfNotExist() {
+        try {
+            // TODO tables erstellen
+            var preparedStatement = dataSource.getConnection().prepareStatement("");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public HikariConfig getConfig()
@@ -88,7 +90,7 @@ public class Database {
 
     public ResultSet get(String table, String where, String wherevalue) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
             ps.setString(1, wherevalue);
             ResultSet rs = ps.executeQuery();
 
@@ -104,7 +106,7 @@ public class Database {
     public ArrayList<ResultSet> getAll(String table) {
         try {
             ArrayList<ResultSet> resultSets = new ArrayList<>();
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `"+table+"`");
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `"+table+"`");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 resultSets.add(rs);
@@ -119,7 +121,7 @@ public class Database {
 
     public void update(String table, String what, String whatvalue, String where, String wherevalue) {
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
             ps.setString(1, whatvalue);
             ps.setString(2, wherevalue);
             ps.execute();
@@ -130,7 +132,7 @@ public class Database {
 
     public void insert(String table, String what, String whatvalue) {
         try {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
             ps.execute();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -139,7 +141,7 @@ public class Database {
 
     public void delete(String table, String where, String wherevalue) {
         try {
-            PreparedStatement ps = connection.prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
+            PreparedStatement ps = dataSource.getConnection().prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
             ps.setString(1, wherevalue);
             ps.execute();
         } catch (SQLException e) {

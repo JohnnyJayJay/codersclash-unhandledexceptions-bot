@@ -1,13 +1,10 @@
 package de.unhandledexceptions.codersclash.bot.listener;
 
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.DisconnectEvent;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-
-import java.util.stream.Collectors;
 
 /**
  * @author TheRealYann
