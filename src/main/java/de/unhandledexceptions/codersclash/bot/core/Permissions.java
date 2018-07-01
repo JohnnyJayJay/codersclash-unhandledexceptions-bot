@@ -16,9 +16,11 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 public class Permissions implements ICommand {
 
     private CommandSettings settings;
+    private Database database;
 
-    public Permissions(CommandSettings settings) {
+    public Permissions(CommandSettings settings, Database database) {
         this.settings = settings;
+        this.database = database;
     }
 
     @Override
@@ -35,7 +37,7 @@ public class Permissions implements ICommand {
         } else if (!member.getRoles().contains(guild.getRolesByName("try-catch", false).get(0))) {
             sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions, " + member.getAsMention()).queue();
         } else if (!String.join(" ", args).matches("set <@\\d+> \\d$") || event.getMessage().getMentionedMembers().isEmpty()) {
-            sendMessage(channel, Type.INFO, String.format("Correct usage: `%spermission set <@member> <level>`", settings.getPrefix() /*Auch hier: custom prefixes beachten*/)).queue();
+            sendMessage(channel, Type.INFO, String.format("Correct usage: `%spermission set <@member> <level>`", settings.getPrefix(event.getGuild().getIdLong()))).queue();
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);
             int level = Integer.parseInt(args[2]);
@@ -46,8 +48,8 @@ public class Permissions implements ICommand {
 
     @Override
     public String info(Guild guild) {
-        return String.format("Is used to manage try-catch permissions and configure the different permission levels.\nUsage: `%spermission [set] <member> <level>`\nTo execute " +
-                "this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(guild.getIdLong()));
+        return String.format("Is used to manage try-catch permissions and configure the different permission levels.\n\nUsage: `%s[permission|perms|perm] [set] <member> " +
+                "<level>`\n\nTo execute this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(guild.getIdLong()));
     }
 
     // TODO Datenbankanbindung hinzufügen: Werte werden hier ausgelesen

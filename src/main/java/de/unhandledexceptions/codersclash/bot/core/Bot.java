@@ -51,6 +51,7 @@ public class Bot {
         // command settings einstellen
         commandSettings.setHelpLabels("help", "helpme", "commands")
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
+                .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .activate();
     }
 
