@@ -31,6 +31,7 @@ public class Main {
 
         // Nur zum Test bzw als Beispiel gedacht
         generalLogger.info("info");
+        generalLogger.warn("warn");
         commandLogger.error("error");
         configLogger.debug("debug");
     }

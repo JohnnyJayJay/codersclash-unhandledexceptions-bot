@@ -11,7 +11,7 @@
         <file> ./logs/log-${myTimestamp}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- täglich neue Datei -->
-            <fileNamePattern>. /logs/log-${myTimestamp}.%d{HH-mm-ss}.log</fileNamePattern>
+            <fileNamePattern> ./logs/log-%d{dd-MM-yyyy}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
