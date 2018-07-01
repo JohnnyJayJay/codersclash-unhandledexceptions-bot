@@ -12,7 +12,7 @@ public class Logging {
 
     // Logger unterscheiden sich nur im Namen, alle werden hier eingetragen
 
-    public static final Logger generalLogger =  LoggerFactory.getLogger("Bot");
+    public static final Logger generalLogger =  LoggerFactory.getLogger("General");
 
     public static final Logger commandLogger = LoggerFactory.getLogger("Command");
 

@@ -52,5 +52,4 @@ public class Messages {
             this.color = color;
         }
     }
-
 }

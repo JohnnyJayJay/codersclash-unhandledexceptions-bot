@@ -28,6 +28,11 @@ public class Main {
             database.createTablesIfNotExist(creationStatements);
             new Bot(config, database).start();
         }
-
+        
+      // Nur zum Test bzw als Beispiel gedacht
+        generalLogger.info("info");
+        commandLogger.error("error");
+        configLogger.debug("debug");
     }
 }
+
