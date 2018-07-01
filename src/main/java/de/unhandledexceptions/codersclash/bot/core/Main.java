@@ -1,10 +1,10 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
+import static de.unhandledexceptions.codersclash.bot.core.Logging.*;
 
 public class Main {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
 
         final var config = new Config("./config.json");
 
@@ -20,8 +20,13 @@ public class Main {
         {
             var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
             database.connect();
-            database.createTablesIfNotExist();
             new Bot(config, database).start();
         }
+
+        // Nur zum Test bzw als Beispiel gedacht
+        generalLogger.error("testing");
+        commandLogger.info("success");
+        configLogger.info("failed");
+
     }
 }
