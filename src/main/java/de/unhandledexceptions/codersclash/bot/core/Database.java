@@ -6,6 +6,7 @@ import com.zaxxer.hikari.pool.HikariPool;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
 
@@ -30,10 +31,8 @@ public class Database {
 
     public void connect()
     {
-        System.out.println("0 " + connected);
         if (!connected)
         {
-
             config = new HikariConfig();
 
             System.out.println("[INFO] Connecting to " + url);
@@ -49,7 +48,7 @@ public class Database {
             {
                 dataSource = new HikariDataSource(config);
                 connected = true;
-                System.out.println("1 " + connected);
+                // TODO Logger
                 System.out.println("[INFO] Database connection successfully opened.");
             } catch (HikariPool.PoolInitializationException e)
             {
@@ -69,10 +68,49 @@ public class Database {
         }
     }
 
+    public void createDataBaseIfNotExists(String dbname) {
+        try (var connection = dataSource.getConnection()) {
+            var preparedStatement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + dbname + ";");
+            preparedStatement.execute();
+            // TODO Logger
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createTablesIfNotExist() {
-        try {
+        try (var connection = dataSource.getConnection()) {
             // TODO tables erstellen
-            var preparedStatement = dataSource.getConnection().prepareStatement("");
+            String sql = "CREATE TABLE IF NOT EXISTS discord_guild (\n" +
+                    "  prefix VARCHAR(30),\n" +
+                    "  guild_id BIGINT NOT NULL,\n" +
+                    "  mail_channel BIGINT,\n" +
+                    "  PRIMARY KEY (guild_id)\n" +
+                    ");\n" +
+                    "\n" +
+                    "CREATE TABLE IF NOT EXISTS discord_user (\n" +
+                    "  user_id BIGINT NOT NULL,\n" +
+                    "  user_xp BIGINT,\n" +
+                    "  PRIMARY KEY (user_id)\n" +
+                    ");\n" +
+                    "\n" +
+                    "CREATE TABLE IF NOT EXISTS discord_member (\n" +
+                    "  guild_id BIGINT NOT NULL REFERENCES guild(guild_id) ON DELETE CASCADE,\n" +
+                    "  user_id BIGINT NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,\n" +
+                    "  member_id BIGINT,\n" +
+                    "  reports TEXT,\n" +
+                    "  member_xp BIGINT,\n" +
+                    "  permission_lvl SMALLINT,\n" +
+                    "  INDEX (member_id),\n" +
+                    "  PRIMARY KEY (member_id),\n" +
+                    "  FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id),\n" +
+                    "  FOREIGN KEY (user_id) REFERENCES discord_user (user_id)\n" +
+                    ");";
+            var preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.execute();
+            // TODO Logger
+            preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -89,25 +127,27 @@ public class Database {
     }
 
     public ResultSet get(String table, String where, String wherevalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
             ps.setString(1, wherevalue);
             ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
+            ps.close();
+            if (rs.next())
                 return rs;
-            } else return null;
+            else
+                return null;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public ArrayList<ResultSet> getAll(String table) {
-        try {
-            ArrayList<ResultSet> resultSets = new ArrayList<>();
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `"+table+"`");
+    public List<ResultSet> getAll(String table) {
+        try (var connection = dataSource.getConnection()) {
+            List<ResultSet> resultSets = new ArrayList<>();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `"+table+"`");
             ResultSet rs = ps.executeQuery();
+            ps.close();
             while (rs.next()) {
                 resultSets.add(rs);
             }
@@ -120,30 +160,34 @@ public class Database {
     }
 
     public void update(String table, String what, String whatvalue, String where, String wherevalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
             ps.setString(1, whatvalue);
             ps.setString(2, wherevalue);
             ps.execute();
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void insert(String table, String what, String whatvalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
             ps.execute();
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void delete(String table, String where, String wherevalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
             ps.setString(1, wherevalue);
             ps.execute();
+            // TODO Logger
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
