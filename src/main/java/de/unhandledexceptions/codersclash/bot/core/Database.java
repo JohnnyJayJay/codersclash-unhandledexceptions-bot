@@ -5,6 +5,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
 
@@ -82,6 +84,67 @@ public class Database {
     public boolean isConnected()
     {
         return connected;
+    }
+
+    public ResultSet get(String table, String where, String wherevalue) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
+            ps.setString(1, wherevalue);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs;
+            } else return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<ResultSet> getAll(String table) {
+        try {
+            ArrayList<ResultSet> resultSets = new ArrayList<>();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `"+table+"`");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                resultSets.add(rs);
+            }
+            return resultSets;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public void update(String table, String what, String whatvalue, String where, String wherevalue) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
+            ps.setString(1, whatvalue);
+            ps.setString(2, wherevalue);
+            ps.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insert(String table, String what, String whatvalue) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
+            ps.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void delete(String table, String where, String wherevalue) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
+            ps.setString(1, wherevalue);
+            ps.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }
