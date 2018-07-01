@@ -129,6 +129,4 @@ public class Config {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
 
-    public String getDBIp() { return config.getJSONObject("DATABASE").getString("IP");}
-
 }

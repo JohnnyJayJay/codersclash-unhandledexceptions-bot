@@ -1,7 +1,8 @@
 .idea/*
-*.class
+target/*
 bot-master.iml
 config.yml
 config.json
+logs/*
 *.json
 *.properties
