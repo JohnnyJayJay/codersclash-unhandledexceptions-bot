@@ -12,15 +12,20 @@ public class Main {
         {
             config.create();
             System.out.println("[INFO] config.json has been created. Please enter database connection info, the bot token and the default command prefix. Restart the bot " +
-                    "afterwards.");
+                    "afterwards. Every value that is currenty NULL has to be a String!");
         } else if (!config.load())
         {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
         } else 
         {
-            var database = new Database(config.getDBUrl(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
+            var database = new Database(config.getDBIp(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
             database.connect();
-            database.createTablesIfNotExist();
+            String[] creationStatements = {
+                    "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
+                    "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT,PRIMARY KEY (user_id));",
+                    "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL,user_id BIGINT NOT NULL,member_id BIGINT NOT NULL,reports TEXT,member_xp BIGINT,permission_lvl SMALLINT,INDEX (member_id),PRIMARY KEY (member_id),FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id) ON DELETE CASCADE,FOREIGN KEY (user_id) REFERENCES discord_user (user_id) ON DELETE CASCADE);"
+            };
+            database.createTablesIfNotExist(creationStatements);
             new Bot(config, database).start();
         }
     }

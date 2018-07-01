@@ -69,7 +69,7 @@ public class Config {
                 .key("DEFAULT_PREFIX").value(null)
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
-                .key("URL").value(null)
+                .key("IP").value(null)
                 .key("PORT").value(null)
                 .key("DB_NAME").value(null)
                 .key("USERNAME").value(null)
@@ -107,8 +107,8 @@ public class Config {
         return config.getString("DEFAULT_PREFIX");
     }
 
-    public String getDBUrl() {
-        return config.getJSONObject("DATABASE").getString("URL");
+    public String getDBIp() {
+        return config.getJSONObject("DATABASE").getString("IP");
     }
 
     public String getDBPort(){
