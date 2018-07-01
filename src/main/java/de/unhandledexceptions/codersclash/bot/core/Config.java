@@ -13,7 +13,7 @@ import java.util.List;
 public class Config {
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
-    private final int DEFAULT_MAX_SHARDS = 10;
+    private final int DEFAULT_MAX_SHARDS = 3;
     private final long[] BOT_OWNERS = {226011931935375360L, 261083609148948488L, 234343108773412864L, 138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
@@ -34,8 +34,8 @@ public class Config {
         boolean success = true;
         try {
             config = new JSONObject(new String(Files.readAllBytes(file))); // config file auslesen und das in ein JSONObject packen
-            if (hasAnyNullValue(config)) // Wenn ein Key irgendwo in der config keinen Wert hat
-                success = false; // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
+             // Wenn ein Key irgendwo in der config keinen Wert hat
+            success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
             System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
@@ -70,6 +70,7 @@ public class Config {
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
                 .key("URL").value(null)
+                .key("PORT").value(null)
                 .key("DB_NAME").value(null)
                 .key("USERNAME").value(null)
                 .key("PASSWORD").value(null).endObject()
@@ -77,8 +78,9 @@ public class Config {
     }
 
     private boolean hasAnyNullValue(JSONObject objectToCheck) {
-        return objectToCheck.keySet().stream().anyMatch((key) -> // wenn der value null ist ODER der value auch ein JSONObject ist und dort irgendein value null ist
-                objectToCheck.isNull(key) || (objectToCheck.get(key) instanceof JSONObject && hasAnyNullValue((JSONObject) objectToCheck.get(key))));
+        return objectToCheck.keySet().stream().anyMatch( // wenn der value null ist ODER der value auch ein JSONObject ist und dort irgendein value null ist
+                (key) -> objectToCheck.isNull(key) || (objectToCheck.get(key) instanceof JSONObject && hasAnyNullValue((JSONObject) objectToCheck.get(key)))
+        );
     }
 
     public String getVersion() {
@@ -107,6 +109,10 @@ public class Config {
 
     public String getDBUrl() {
         return config.getJSONObject("DATABASE").getString("URL");
+    }
+
+    public String getDBPort(){
+        return config.getJSONObject("DATABASE").getString("PORT");
     }
 
     public String getDBName(){
