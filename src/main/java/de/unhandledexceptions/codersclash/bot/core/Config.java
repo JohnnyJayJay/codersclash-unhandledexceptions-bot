@@ -42,6 +42,7 @@ public class Config {
             e.printStackTrace();
             success = false;
         }
+        // TODO Logger
         return success; // war das laden der Config erfolgreich?
     }
 
@@ -49,10 +50,10 @@ public class Config {
         try {
             Path dir = file.getParent(); // Ordner, in dem die config ist
             if (dir != null && Files.notExists(dir)) // Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
-                Files.createDirectories(dir);
+                Files.createDirectories(dir); // TODO Logger
             if (Files.notExists(file)) // wenn die datei selbst noch nicht existiert
-                file = Files.createFile(file);
-            Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
+                file = Files.createFile(file); // TODO Logger
+            Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben // TODO Logger
         } catch (IOException e) {
             // TODO Logger
             System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
