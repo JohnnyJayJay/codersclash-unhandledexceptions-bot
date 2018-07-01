@@ -6,7 +6,9 @@ import com.zaxxer.hikari.pool.HikariPool;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
+// TODO Verbindung mit der DB loggen
 public class Database {
 
     private boolean connected;
@@ -69,10 +71,21 @@ public class Database {
         }
     }
 
+    public void createDataBaseIfNotExists(String dbname) {
+        try (var connection = dataSource.getConnection()) {
+            var preparedStatement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + dbname + ";");
+            preparedStatement.execute();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void createTablesIfNotExist() {
-        try {
+        try (var connection = dataSource.getConnection()) {
             // TODO tables erstellen
-            var preparedStatement = dataSource.getConnection().prepareStatement("");
+            String sql = "CREATE TABLE IF NOT EXISTS";
+            var preparedStatement = connection.prepareStatement(sql);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -89,25 +102,27 @@ public class Database {
     }
 
     public ResultSet get(String table, String where, String wherevalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `" + table + "` WHERE `" + where + "`=?");
             ps.setString(1, wherevalue);
             ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
+            ps.close();
+            if (rs.next())
                 return rs;
-            } else return null;
+            else
+                return null;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public ArrayList<ResultSet> getAll(String table) {
-        try {
-            ArrayList<ResultSet> resultSets = new ArrayList<>();
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("SELECT * FROM `"+table+"`");
+    public List<ResultSet> getAll(String table) {
+        try (var connection = dataSource.getConnection()) {
+            List<ResultSet> resultSets = new ArrayList<>();
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM `"+table+"`");
             ResultSet rs = ps.executeQuery();
+            ps.close();
             while (rs.next()) {
                 resultSets.add(rs);
             }
@@ -120,30 +135,33 @@ public class Database {
     }
 
     public void update(String table, String what, String whatvalue, String where, String wherevalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("UPDATE `"+table+"` SET `"+what+"`=? WHERE `"+where+"`=?");
             ps.setString(1, whatvalue);
             ps.setString(2, wherevalue);
             ps.execute();
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void insert(String table, String what, String whatvalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO `"+table+"`(`"+what+"`) VALUES ('"+whatvalue+"')");
             ps.execute();
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void delete(String table, String where, String wherevalue) {
-        try {
-            PreparedStatement ps = dataSource.getConnection().prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM `"+table+"` WHERE `"+where+"`=?");
             ps.setString(1, wherevalue);
             ps.execute();
+            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
