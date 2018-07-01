@@ -11,18 +11,15 @@ import java.util.List;
 public class Database {
 
     private boolean connected;
-    private Statement statement;
-    private PreparedStatement preparedStatement;
-    private ResultSet resultSet;
 
     private HikariConfig config;
     private HikariDataSource dataSource;
 
-    private String url, username, password, dbname, port;
+    private String ip, username, password, dbname, port;
 
-    public Database(String url, String port, String dbname, String username, String password)
+    public Database(String ip, String port, String dbname, String username, String password)
     {
-        this.url = url;
+        this.ip = ip;
         this.port = port;
         this.username = username;
         this.password = password;
@@ -33,11 +30,23 @@ public class Database {
     {
         if (!connected)
         {
+            try (var connection = DriverManager.getConnection(
+                    String.format("jdbc:mysql://%s:%s/?serverTimezone=UTC", ip, port),
+                    username, password)) {
+                System.out.println("[INFO] Creating database (if not exists)...");
+                String sql = "CREATE DATABASE IF NOT EXISTS " + dbname + ";";
+                var preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.execute();
+                System.out.println("[INFO] Database created (or it already existed).");
+                preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             config = new HikariConfig();
 
-            System.out.println("[INFO] Connecting to " + url);
+            System.out.printf("[INFO] Connecting to %s...\n", ip);
 
-            config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", url, port, dbname));
+            config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", ip, port, dbname));
             config.setUsername(username);
             config.setPassword(password);
             config.addDataSourceProperty("cachePrepStmts", "true");
@@ -59,7 +68,6 @@ public class Database {
         }
     }
 
-
     public void disconnect()
     {
         if (connected) {
@@ -68,57 +76,16 @@ public class Database {
         }
     }
 
-    public void createDataBaseIfNotExists(String dbname) {
+    public void createTablesIfNotExist(String[] creationStatements) {
         try (var connection = dataSource.getConnection()) {
-            var preparedStatement = connection.prepareStatement("CREATE DATABASE IF NOT EXISTS " + dbname + ";");
-            preparedStatement.execute();
-            // TODO Logger
-            preparedStatement.close();
+            for (String statement : creationStatements) {
+                var preparedStatement = connection.prepareStatement(statement);
+                preparedStatement.execute();
+                preparedStatement.close();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public void createTablesIfNotExist() {
-        try (var connection = dataSource.getConnection()) {
-            // TODO tables erstellen
-            String sql = "CREATE TABLE IF NOT EXISTS discord_guild (\n" +
-                    "  prefix VARCHAR(30),\n" +
-                    "  guild_id BIGINT NOT NULL,\n" +
-                    "  mail_channel BIGINT,\n" +
-                    "  PRIMARY KEY (guild_id)\n" +
-                    ");\n" +
-                    "\n" +
-                    "CREATE TABLE IF NOT EXISTS discord_user (\n" +
-                    "  user_id BIGINT NOT NULL,\n" +
-                    "  user_xp BIGINT,\n" +
-                    "  PRIMARY KEY (user_id)\n" +
-                    ");\n" +
-                    "\n" +
-                    "CREATE TABLE IF NOT EXISTS discord_member (\n" +
-                    "  guild_id BIGINT NOT NULL REFERENCES guild(guild_id) ON DELETE CASCADE,\n" +
-                    "  user_id BIGINT NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,\n" +
-                    "  member_id BIGINT,\n" +
-                    "  reports TEXT,\n" +
-                    "  member_xp BIGINT,\n" +
-                    "  permission_lvl SMALLINT,\n" +
-                    "  INDEX (member_id),\n" +
-                    "  PRIMARY KEY (member_id),\n" +
-                    "  FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id),\n" +
-                    "  FOREIGN KEY (user_id) REFERENCES discord_user (user_id)\n" +
-                    ");";
-            var preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.execute();
-            // TODO Logger
-            preparedStatement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public HikariConfig getConfig()
-    {
-        return config;
     }
 
     public boolean isConnected()
