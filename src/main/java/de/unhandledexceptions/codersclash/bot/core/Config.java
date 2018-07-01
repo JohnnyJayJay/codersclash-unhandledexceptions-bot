@@ -37,6 +37,7 @@ public class Config {
              // Wenn ein Key irgendwo in der config keinen Wert hat
             success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
+            // TODO Logger
             System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
             success = false;
@@ -53,6 +54,7 @@ public class Config {
                 file = Files.createFile(file);
             Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
         } catch (IOException e) {
+            // TODO Logger
             System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
@@ -127,7 +129,4 @@ public class Config {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
 
-    public String getName() {
-        return file.getFileName().toString();
-    }
 }

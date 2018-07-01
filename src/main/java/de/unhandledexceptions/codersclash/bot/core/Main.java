@@ -12,7 +12,7 @@ public class Main {
         {
             config.create();
             System.out.println("[INFO] config.json has been created. Please enter database connection info, the bot token and the default command prefix. Restart the bot " +
-                    "afterwards. Every value that is currenty NULL has to be a String!");
+                    "afterwards. Every value that is currently NULL has to be a String!");
         } else if (!config.load())
         {
             System.err.println("[ERROR] config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
@@ -28,11 +28,6 @@ public class Main {
             database.createTablesIfNotExist(creationStatements);
             new Bot(config, database).start();
         }
-
-        // Nur zum Test bzw als Beispiel gedacht
-        generalLogger.error("testing");
-        commandLogger.info("success");
-        configLogger.info("failed");
 
     }
 }

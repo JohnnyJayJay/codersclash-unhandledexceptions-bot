@@ -31,7 +31,7 @@ public class Database {
         if (!connected)
         {
             try (var connection = DriverManager.getConnection(
-                    String.format("jdbc:mysql://%s:%s/?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", ip, port),
+                    String.format("jdbc:mysql://%s:%s/?serverTimezone=UTC", ip, port),
                     username, password)) {
                 System.out.println("[INFO] Creating database (if not exists)...");
                 String sql = "CREATE DATABASE IF NOT EXISTS " + dbname + ";";
