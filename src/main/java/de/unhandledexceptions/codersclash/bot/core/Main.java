@@ -1,6 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
-import static de.unhandledexceptions.codersclash.bot.core.Logging.mainLogger;
+import static de.unhandledexceptions.codersclash.bot.util.Logging.mainLogger;
 
 public class Main {
 

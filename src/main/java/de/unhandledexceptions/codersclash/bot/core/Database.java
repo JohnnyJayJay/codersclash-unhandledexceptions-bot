@@ -10,7 +10,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import static java.lang.String.format;
-import static de.unhandledexceptions.codersclash.bot.core.Logging.databaseLogger;
+import static de.unhandledexceptions.codersclash.bot.util.Logging.databaseLogger;
 
 public class Database {
 
