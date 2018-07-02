@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import static java.lang.String.format;
+import static de.unhandledexceptions.codersclash.bot.core.Logging.databaseLogger;
 
 public class Database {
 
@@ -40,17 +41,15 @@ public class Database {
             String sql = "CREATE DATABASE IF NOT EXISTS " + dbname + ";";
             try (var connection = DriverManager.getConnection(format("jdbc:mysql://%s:%s/?serverTimezone=UTC", ip, port), username, password);
                  var preparedStatement = connection.prepareStatement(sql)) {
-                System.out.println("[INFO] Creating database (if not exists)...");
+                databaseLogger.info("Creating database (if not exists)...");
                 preparedStatement.executeUpdate();
-                // TODO Logger
-                System.out.println("[INFO] Database created (or it already existed).");
+                databaseLogger.info("Database created (or it already existed).");
             } catch (SQLException e) {
-                // TODO Logger
-                e.printStackTrace();
+                databaseLogger.warn("Exception caught while connecting", e);
             }
             config = new HikariConfig();
 
-            System.out.printf("[INFO] Connecting to %s...\n", ip);
+            databaseLogger.info("Connecting to " + ip + "...");
 
             config.setJdbcUrl(format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", ip, port, dbname));
             config.setUsername(username);
@@ -62,12 +61,9 @@ public class Database {
             try {
                 dataSource = new HikariDataSource(config);
                 connected = true;
-                // TODO Logger
-                System.out.println("[INFO] Database connection successfully opened.");
+                databaseLogger.info("Database connection successfully opened.");
             } catch (HikariPool.PoolInitializationException e) {
-                // TODO Logger
-                e.printStackTrace();
-                System.err.println("[ERROR] Error while connecting to database. Check your config.");
+                databaseLogger.error(" Error while connecting to database. Check your config.", e);
                 System.exit(1);
             }
         }
@@ -76,7 +72,7 @@ public class Database {
     public void disconnect() {
         if (connected) {
             dataSource.close();
-            // TODO Logger
+            databaseLogger.warn("Database disconnected!");
             connected = false;
         }
     }
@@ -84,14 +80,13 @@ public class Database {
     public void createTablesIfNotExist() {
         try (var connection = dataSource.getConnection()) {
             for (String statement : this.creationStatements) {
-                // TODO  Logger
+                databaseLogger.warn("Tables have been created.");
                 try (var preparedStatement = connection.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
         } catch (SQLException e) {
-            // TODO Logger
-            e.printStackTrace();
+            databaseLogger.warn("Exception caught while creating Tables", e);
         }
     }
 
@@ -173,8 +168,7 @@ public class Database {
             var resultSet = preparedStatement.executeQuery();
             return resultSet.getInt(column);
         } catch (SQLException e) {
-            // TODO Logger
-            e.printStackTrace();
+            databaseLogger.warn("Exception caught while getting Int", e);
         }
         return 0;
     }
@@ -184,8 +178,7 @@ public class Database {
             var resultSet = preparedStatement.executeQuery();
             return resultSet.getLong(column);
         } catch (SQLException e) {
-            // TODO Logger
-            e.printStackTrace();
+            databaseLogger.warn("Exception caught while getting Long", e);
         }
         return 0;
     }
@@ -194,8 +187,7 @@ public class Database {
         try (var connection = dataSource.getConnection(); var preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            // TODO Logger
-            e.printStackTrace();
+            databaseLogger.warn("Exception caught while executing Statement", e);
         }
     }
 }

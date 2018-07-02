@@ -15,7 +15,7 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <Pattern>%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n</Pattern>
+            <Pattern>%d{HH:mm:ss} [%t] %level %logger - %msg%n</Pattern>
         </encoder>
     </appender>
 

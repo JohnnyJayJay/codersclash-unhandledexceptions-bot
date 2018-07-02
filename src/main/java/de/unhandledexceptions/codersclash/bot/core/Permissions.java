@@ -12,6 +12,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import java.awt.Color;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.core.Logging.permissionsLogger;
 
 public class Permissions implements ICommand {
 

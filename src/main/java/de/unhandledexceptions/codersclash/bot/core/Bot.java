@@ -7,6 +7,8 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 
 import javax.security.auth.login.LoginException;
 
+import static de.unhandledexceptions.codersclash.bot.core.Logging.botLogger;
+
 public class Bot {
 
     private int failCount;
@@ -31,26 +33,25 @@ public class Bot {
                 .setToken(config.getToken());
         try
         {
-            // TODO Logger
+            botLogger.info("ShardManager has been built.");
             this.shardManager = builder.build();
         } catch (LoginException e)
         {
             if (++failCount < 3) {
-                // TODO Logger
-                System.err.println("[ERROR] Login failed, reloading... (Check your token in config.json)");
+                botLogger.error("Login failed, reloading... (Check your token in config.json)");
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {}
                 start();
             } else {
-                System.err.println("[ERROR] Login failed after 3 times. Exiting the program");
+                botLogger.error("Login failed after 3 times. Exiting the program");
                 System.exit(1);
             }
 
         }
 
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
-        // TODO Logger
+        botLogger.info("CommandSettings are getting configured");
         // command settings einstellen
         commandSettings.setHelpLabels("help", "helpme", "commands")
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")

@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static de.unhandledexceptions.codersclash.bot.core.Logging.configLogger;
+
 public class Config {
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
@@ -37,12 +39,11 @@ public class Config {
             // Wenn ein Key irgendwo in der config keinen Wert hat
             success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
-            // TODO Logger
-            System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
+            configLogger.error("Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
             success = false;
         }
-        // TODO Logger
+        configLogger.info("Config successfully loaded!");
         return success; // war das laden der Config erfolgreich?
     }
 
@@ -50,13 +51,15 @@ public class Config {
         try {
             Path dir = file.getParent(); // Ordner, in dem die config ist
             if (dir != null && Files.notExists(dir)) // Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
-                Files.createDirectories(dir); // TODO Logger
+                Files.createDirectories(dir);
+                configLogger.warn("Config Folder is getting created");
             if (Files.notExists(file)) // wenn die datei selbst noch nicht existiert
-                file = Files.createFile(file); // TODO Logger
-            Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben // TODO Logger
+                file = Files.createFile(file);
+                configLogger.warn("Config File is getting created");
+            Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
+                configLogger.warn("Default config.json content created");
         } catch (IOException e) {
-            // TODO Logger
-            System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
+            configLogger.error("Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
     }
