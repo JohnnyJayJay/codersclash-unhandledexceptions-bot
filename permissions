@@ -1,8 +1,10 @@
 Permissions system:
 
+Level 0:
+- Help Command
+
 Level 1:
 - User Info command
-- Help Command
 
 Level 2:
 - Block Command
