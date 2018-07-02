@@ -7,7 +7,7 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 
 import javax.security.auth.login.LoginException;
 
-import static de.unhandledexceptions.codersclash.bot.core.Logging.botLogger;
+import static de.unhandledexceptions.codersclash.bot.util.Logging.botLogger;
 
 public class Bot {
 

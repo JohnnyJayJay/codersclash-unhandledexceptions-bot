@@ -6,7 +6,7 @@ import net.dv8tion.jda.core.events.ReconnectedEvent;
 import net.dv8tion.jda.core.events.ResumedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import static de.unhandledexceptions.codersclash.bot.core.Logging.readyListenerLogger;
+import static de.unhandledexceptions.codersclash.bot.util.Logging.readyListenerLogger;
 
 /**
  * @author TheRealYann
