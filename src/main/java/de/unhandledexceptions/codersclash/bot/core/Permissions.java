@@ -16,7 +16,7 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 public class Permissions implements ICommand {
 
     private CommandSettings settings;
-    private Database database;
+    private static Database database;
 
     public Permissions(CommandSettings settings, Database database) {
         this.settings = settings;
@@ -36,24 +36,25 @@ public class Permissions implements ICommand {
                             + throwable.getMessage()).queue());
         } else if (!member.getRoles().contains(guild.getRolesByName("try-catch", false).get(0))) {
             sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions, " + member.getAsMention()).queue();
-        } else if (!String.join(" ", args).matches("set <@\\d+> \\d$") || event.getMessage().getMentionedMembers().isEmpty()) {
-            sendMessage(channel, Type.INFO, String.format("Correct usage: `%spermission set <@member> <level>`", settings.getPrefix(event.getGuild().getIdLong()))).queue();
+        } else if (!String.join(" ", args).matches("set <@\\d+> [0-5]") || event.getMessage().getMentionedMembers().isEmpty()) {
+            sendMessage(channel, Type.INFO, String.format("Correct usage: `%spermission set <@member> <level>` (levels: 0-5)",
+                    settings.getPrefix(event.getGuild().getIdLong()))).queue();
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);
-            int level = Integer.parseInt(args[2]);
-            // TODO Datenbankanbindung schreiben: Werte werden aktualisiert
+            short level = Short.parseShort(args[2]);
+            database.changePermissionLevel(target, level);
             sendMessage(channel, Type.SUCCESS, String.format("Permission level of `%s` successfully set to %s.", target.getEffectiveName(), args[2])).queue();
         }
     }
 
     @Override
     public String info(Guild guild) {
-        return String.format("Is used to manage try-catch permissions and configure the different permission levels.\n\nUsage: `%s[permission|perms|perm] [set] <member> " +
+        return String.format("Is used to manage try-catch permissions and configure the different permission levels.\n\nLevel 0: %shelp\nLevel 2: %suserinfo\nLevel 3: " +
+                "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote and %smail\nLevel 5: %ssettings\n\nUsage: `%s[permission|perms|perm] [set] <member> " +
                 "<level>`\n\nTo execute this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(guild.getIdLong()));
     }
 
-    // TODO Datenbankanbindung hinzufügen: Werte werden hier ausgelesen
     public static int getPermissionLevel(Member member) {
-        return 0;
+        return database.getPermissionLevel(member);
     }
 }
