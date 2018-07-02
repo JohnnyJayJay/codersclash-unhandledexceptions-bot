@@ -61,7 +61,7 @@ public class Database {
             try {
                 dataSource = new HikariDataSource(config);
                 connected = true;
-                databaseLogger.info("Database connection successfully opened.");
+                databaseLogger.info("Database connection pool successfully opened.");
             } catch (HikariPool.PoolInitializationException e) {
                 databaseLogger.error(" Error while connecting to database. Check your config.", e);
                 System.exit(1);
@@ -80,13 +80,13 @@ public class Database {
     public void createTablesIfNotExist() {
         try (var connection = dataSource.getConnection()) {
             for (String statement : this.creationStatements) {
-                databaseLogger.warn("Tables have been created.");
                 try (var preparedStatement = connection.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
+            databaseLogger.info("Tables have been created (or they existed already).");
         } catch (SQLException e) {
-            databaseLogger.warn("Exception caught while creating Tables", e);
+            databaseLogger.warn("Exception caught while creating tables", e);
         }
     }
 

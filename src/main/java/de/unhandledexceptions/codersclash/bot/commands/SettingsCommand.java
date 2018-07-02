@@ -2,7 +2,6 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
@@ -18,7 +17,7 @@ public class SettingsCommand implements ICommand {
     }
 
     @Override
-    public String info(Guild guild) {
+    public String info(Member member) {
         return null;
     }
 }

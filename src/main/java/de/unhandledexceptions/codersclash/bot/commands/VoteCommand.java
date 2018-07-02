@@ -26,7 +26,7 @@ public class VoteCommand implements ICommand {
     }
 
     @Override
-    public String info(Guild guild) {
+    public String info(Member member) {
         return null;
     }
 }

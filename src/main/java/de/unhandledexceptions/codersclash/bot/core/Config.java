@@ -19,6 +19,7 @@ public class Config {
     private final long[] BOT_OWNERS = {226011931935375360L, 261083609148948488L, 234343108773412864L, 138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
+    private final long COMMAND_COOLDOWN = 0;
 
     private Path file; // config.json Datei
     private JSONObject config; // Inhalt von config.json
@@ -50,14 +51,16 @@ public class Config {
     public void create() {
         try {
             Path dir = file.getParent(); // Ordner, in dem die config ist
-            if (dir != null && Files.notExists(dir)) // Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
+            if (dir != null && Files.notExists(dir)) {// Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
                 Files.createDirectories(dir);
                 configLogger.warn("Config Folder is getting created");
-            if (Files.notExists(file)) // wenn die datei selbst noch nicht existiert
+            }
+            if (Files.notExists(file)) { // wenn die datei selbst noch nicht existiert
                 file = Files.createFile(file);
                 configLogger.warn("Config File is getting created");
+            }
             Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
-                configLogger.warn("Default config.json content created");
+            configLogger.info("Default config.json content created");
         } catch (IOException e) {
             configLogger.error("Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
@@ -73,6 +76,7 @@ public class Config {
                 .key("NAME").value(BOT_NAME).endObject()
                 .key("TOKEN").value(null)
                 .key("DEFAULT_PREFIX").value(null)
+                .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
                 .key("IP").value(null)
