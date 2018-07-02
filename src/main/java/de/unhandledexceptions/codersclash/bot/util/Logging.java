@@ -15,6 +15,10 @@ import org.slf4j.LoggerFactory;
 
 public class Logging {
 
+    public static Logger getLogger() {
+        return LoggerFactory.getLogger(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass());
+    }
+
     public static final Logger clearCommandLogger = LoggerFactory.getLogger(ClearCommand.class);
 
     public static final Logger settingsCommandLogger = LoggerFactory.getLogger(SettingsCommand.class);

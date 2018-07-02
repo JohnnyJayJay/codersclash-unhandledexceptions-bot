@@ -31,18 +31,16 @@ public class Bot {
         builder.setAutoReconnect(true)
                 .setShardsTotal(config.getMaxShards())
                 .setToken(config.getToken());
-        try
-        {
-            botLogger.info("ShardManager has been built.");
+        try {
             this.shardManager = builder.build();
-        } catch (LoginException e)
-        {
+            botLogger.info("ShardManager has been built.");
+        } catch (LoginException e) {
             if (++failCount < 3) {
                 botLogger.error("Login failed, reloading... (Check your token in config.json)");
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {}
-                start();
+                this.start();
             } else {
                 botLogger.error("Login failed after 3 times. Exiting the program");
                 System.exit(1);
@@ -51,7 +49,7 @@ public class Bot {
         }
 
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
-        botLogger.info("CommandSettings are getting configured");
+        botLogger.info("CommandSettings are being configured");
         // command settings einstellen
         commandSettings.setHelpLabels("help", "helpme", "commands")
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")

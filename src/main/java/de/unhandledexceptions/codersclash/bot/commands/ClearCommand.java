@@ -6,7 +6,6 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -91,9 +90,9 @@ public class ClearCommand implements ICommand {
     }
 
     @Override
-    public String info(Guild guild) {
+    public String info(Member member) {
         return String.format("**Description**: clears up to 100 messages at a time.\n\n**Usage**: `%s[clear|clean|delete] <amount>`\n\n**Permission level**: `3`",
-                settings.getPrefix(guild.getIdLong()));
+                settings.getPrefix(member.getGuild().getIdLong()));
     }
 }
 
