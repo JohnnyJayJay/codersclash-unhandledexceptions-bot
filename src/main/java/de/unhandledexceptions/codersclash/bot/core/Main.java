@@ -24,6 +24,6 @@ public class Main {
             database.createTablesIfNotExist();
             new Bot(config, database).start();
             mainLogger.info("Bot has been started!");
-//        }
+        }
     }
 }
