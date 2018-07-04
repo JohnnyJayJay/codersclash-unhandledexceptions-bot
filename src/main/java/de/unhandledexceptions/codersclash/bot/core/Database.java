@@ -24,7 +24,7 @@ public class Database {
             "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
             "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT, PRIMARY KEY (user_id));",
             "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE,reports TEXT," +
-                    "member_xp BIGINT,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
+                    "member_xp BIGINT,permission_lvl SMALLINT,PRIMARY KEY(user_id, guild_id));"
     };
 
     private String ip, username, password, dbname, port;
@@ -99,10 +99,10 @@ public class Database {
 
     public int getPermissionLevel(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        return this.<Integer>get("permission_lvl", "discord_member", Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.<Integer>getFirst("permission_lvl", "discord_member", Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
-    public void setCustomPrefix(long guildId, String prefix) {
+    public void setPrefix(long guildId, String prefix) {
         this.createGuildIfNotExists(guildId);
         this.executeStatement(format("UPDATE discord_guild SET prefix = %s WHERE guild_id = %d;", prefix, guildId));
     }
@@ -125,17 +125,17 @@ public class Database {
 
     public String getPrefix(Guild guild) {
         this.createGuildIfNotExists(guild.getIdLong());
-        return this.get("prefix", "discord_guild", String.class, guild.getIdLong());
+        return this.getFirst("prefix", "discord_guild", String.class, guild.getIdLong());
     }
 
     public long getXp(User user) {
         this.createUserIfNotExists(user.getIdLong());
-        return this.<Long>get("user_xp", "discord_user", Long.TYPE, user.getIdLong());
+        return this.<Long>getFirst("user_xp", "discord_user", Long.TYPE, user.getIdLong());
     }
 
     public long getXp(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        return this.<Long>get("member_xp", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.<Long>getFirst("member_xp", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
 
@@ -148,7 +148,7 @@ public class Database {
     }
 
     private void createMemberIfNotExists(long guildId, long userId) {
-        if (this.get("COUNT(guild_id, user_id)", "discord_member", Long.TYPE, guildId, userId) == 0) {
+        if (this.getFirst("COUNT(user_id)", "discord_member", Long.class, guildId, userId) == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
             this.executeStatement(format("INSERT INTO discord_member(guild_id, user_id, member_xp) VALUES(%d, %d, 0);", guildId, userId));
@@ -156,30 +156,30 @@ public class Database {
     }
 
     private void createGuildIfNotExists(long guildId) {
-        if (this.get("COUNT(guild_id)", "discord_guild", Long.TYPE, guildId) == 0) {
+        if (this.getFirst("COUNT(guild_id)", "discord_guild", Long.class, guildId) == 0) {
             this.executeStatement(format("INSERT INTO discord_guild(guild_id) VALUES(%d);", guildId));
         }
     }
 
     private void createUserIfNotExists(long userId) {
-        if (this.get("COUNT(user_id)", "discord_user", Long.TYPE, userId) == 0) {
+        if (this.getFirst("COUNT(user_id)", "discord_user", Long.class, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
     }
 
-    // FIXME Das mit setString hinbekommen (Problem: er nimmt alles als String, auch die id usw.
-    private <T> T get(String select, String table, Class<T> type, long... ids) {
+    // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guil-, als
+    // zweite id die user_id angeben.
+    private <T> T getFirst(String select, String table, Class<T> type, long... ids) {
         String where = ids.length == 2
                 ? "guild_id = " + ids[0] + " AND user_id = " + ids[1]
-                : (table.contains("discord_guild") ? "guild_id = " : "user_id = ") + ids[0];
+                : (table.equals("discord_guild") ? "guild_id = " : "user_id = ") + ids[0];
         T ret = null;
         try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement("SELECT ? AS entries FROM ? WHERE ?;")) {
-            preparedStatement.setString(1, select);
-            preparedStatement.setString(2, table);
-            preparedStatement.setString(3, where);
+             var preparedStatement = connection.prepareStatement(format("SELECT %s AS entries FROM %s WHERE %s;", select, table, where))) {
             var resultSet = preparedStatement.executeQuery();
-            ret = resultSet.<T>getObject("entries", type);
+            if (resultSet.next()) {
+                ret = resultSet.getObject("entries", type);
+            }
         } catch (SQLException e) {
             databaseLogger.warn("SQLException caught while parsing ResultSet", e);
         }
