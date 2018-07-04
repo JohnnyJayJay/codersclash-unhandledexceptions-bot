@@ -99,7 +99,7 @@ public class Database {
 
     public int getPermissionLevel(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        return this.<Integer>get("permission_lvl", "discord_member", member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.<Integer>get("permission_lvl", "discord_member", Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
     public void setCustomPrefix(long guildId, String prefix) {
@@ -125,17 +125,17 @@ public class Database {
 
     public String getPrefix(Guild guild) {
         this.createGuildIfNotExists(guild.getIdLong());
-        return this.<String>get("prefix", "discord_guild", guild.getIdLong());
+        return this.get("prefix", "discord_guild", String.class, guild.getIdLong());
     }
 
     public long getXp(User user) {
         this.createUserIfNotExists(user.getIdLong());
-        return this.<Long>get("user_xp", "discord_user", user.getIdLong());
+        return this.<Long>get("user_xp", "discord_user", Long.TYPE, user.getIdLong());
     }
 
     public long getXp(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        return this.<Long>get("member_xp", "discord_member", member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.<Long>get("member_xp", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
 
@@ -148,7 +148,7 @@ public class Database {
     }
 
     private void createMemberIfNotExists(long guildId, long userId) {
-        if (this.<Long>get("COUNT(guild_id, user_id)", "discord_member", guildId, userId) == 0) {
+        if (this.get("COUNT(guild_id, user_id)", "discord_member", Long.TYPE, guildId, userId) == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
             this.executeStatement(format("INSERT INTO discord_member(guild_id, user_id, member_xp) VALUES(%d, %d, 0);", guildId, userId));
@@ -156,22 +156,22 @@ public class Database {
     }
 
     private void createGuildIfNotExists(long guildId) {
-        if (this.<Long>get("COUNT(guild_id)", "discord_guild", guildId) == 0) {
+        if (this.get("COUNT(guild_id)", "discord_guild", Long.TYPE, guildId) == 0) {
             this.executeStatement(format("INSERT INTO discord_guild(guild_id) VALUES(%d);", guildId));
         }
     }
 
     private void createUserIfNotExists(long userId) {
-        if (this.<Long>get("COUNT(user_id)", "discord_user", userId) == 0) {
+        if (this.get("COUNT(user_id)", "discord_user", Long.TYPE, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
     }
 
-    // FIXME An Klasse von T kommen und als zweiten Parameter von getObject angeben
-    private <T> T get(String select, String table, long... ids) {
+    // FIXME Das mit setString hinbekommen (Problem: er nimmt alles als String, auch die id usw.
+    private <T> T get(String select, String table, Class<T> type, long... ids) {
         String where = ids.length == 2
                 ? "guild_id = " + ids[0] + " AND user_id = " + ids[1]
-                : (table.equals("discord_guild") ? "guild_id = " : "user_id = ") + ids[0];
+                : (table.contains("discord_guild") ? "guild_id = " : "user_id = ") + ids[0];
         T ret = null;
         try (var connection = dataSource.getConnection();
              var preparedStatement = connection.prepareStatement("SELECT ? AS entries FROM ? WHERE ?;")) {
@@ -179,7 +179,7 @@ public class Database {
             preparedStatement.setString(2, table);
             preparedStatement.setString(3, where);
             var resultSet = preparedStatement.executeQuery();
-            ret = (T) resultSet.getObject("entries");
+            ret = resultSet.<T>getObject("entries", type);
         } catch (SQLException e) {
             databaseLogger.warn("SQLException caught while parsing ResultSet", e);
         }
