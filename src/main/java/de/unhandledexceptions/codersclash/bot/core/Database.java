@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
@@ -122,6 +123,11 @@ public class Database {
                 xp, member.getGuild().getIdLong(), member.getUser().getIdLong()));
     }
 
+    public String getPrefix(Guild guild) {
+        this.createGuildIfNotExists(guild.getIdLong());
+        return this.<String>get("prefix", "discord_guild", guild.getIdLong());
+    }
+
     public long getXp(User user) {
         this.createUserIfNotExists(user.getIdLong());
         return this.<Long>get("user_xp", "discord_user", user.getIdLong());
@@ -161,6 +167,7 @@ public class Database {
         }
     }
 
+    // FIXME An Klasse von T kommen und als zweiten Parameter von getObject angeben
     private <T> T get(String select, String table, long... ids) {
         String where = ids.length == 2
                 ? "guild_id = " + ids[0] + " AND user_id = " + ids[1]

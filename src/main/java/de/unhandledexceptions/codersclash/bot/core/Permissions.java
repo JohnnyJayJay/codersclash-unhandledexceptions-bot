@@ -47,11 +47,12 @@ public class Permissions implements ICommand {
         }
     }
 
+    // FIXME Format Exception - why?
     @Override
-    public String info(Guild guild) {
+    public String info(Member member) {
         return String.format("Is used to manage try-catch permissions and configure the different permission levels.\n\nLevel 0: %shelp\nLevel 2: %suserinfo\nLevel 3: " +
                 "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote and %smail\nLevel 5: %ssettings\n\nUsage: `%s[permission|perms|perm] [set] <member> " +
-                "<level>`\n\nTo execute this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(guild.getIdLong()));
+                "<level>`\n\nTo execute this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(member.getGuild().getIdLong()));
     }
 
     public static int getPermissionLevel(Member member) {
