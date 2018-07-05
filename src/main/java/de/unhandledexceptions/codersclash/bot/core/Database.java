@@ -197,7 +197,7 @@ public class Database {
         return connected;
     }
 
-    private void createMemberIfNotExists(long guildId, long userId) {
+    public void createMemberIfNotExists(long guildId, long userId) {
         if (this.getFirst("COUNT(user_id)", "discord_member", Long.class, guildId, userId) == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
@@ -205,13 +205,13 @@ public class Database {
         }
     }
 
-    private void createGuildIfNotExists(long guildId) {
+    public void createGuildIfNotExists(long guildId) {
         if (this.getFirst("COUNT(guild_id)", "discord_guild", Long.class, guildId) == 0) {
             this.executeStatement(format("INSERT INTO discord_guild(guild_id) VALUES(%d);", guildId));
         }
     }
 
-    private void createUserIfNotExists(long userId) {
+    public void createUserIfNotExists(long userId) {
         if (this.getFirst("COUNT(user_id)", "discord_user", Long.class, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
