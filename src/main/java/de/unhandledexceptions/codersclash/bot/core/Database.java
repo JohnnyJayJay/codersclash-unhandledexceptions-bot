@@ -22,9 +22,9 @@ public class Database {
 
     private final String[] creationStatements = {
             "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
-            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT, PRIMARY KEY (user_id));",
+            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT,user_lvl BIGINT, PRIMARY KEY (user_id));",
             "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE,reports TEXT," +
-                    "member_xp BIGINT,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
+                    "member_xp BIGINT,member_lvl BIGINT,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
     };
 
     private String ip, username, password, dbname, port;
@@ -112,15 +112,56 @@ public class Database {
         this.executeStatement(format("UPDATE discord_guild SET mail_channel = %d WHERE guild_id = %d;", channelId, guildId));
     }
 
-    public void setXp(User user, long xp) {
+    public void setUserXp(User user, long xp) {
         this.createUserIfNotExists(user.getIdLong());
         this.executeStatement(format("UPDATE discord_user SET user_xp = %d WHERE user_id = %d;", xp, user.getIdLong()));
     }
 
-    public void setXp(Member member, long xp) {
+    public void setGuildXp(Member member, long xp) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         this.executeStatement(format("UPDATE discord_member SET member_xp = %d WHERE guild_id = %d AND user_id = %d;",
                 xp, member.getGuild().getIdLong(), member.getUser().getIdLong()));
+    }
+
+    public void setUserLvl(User user, long lvl) {
+        this.createUserIfNotExists(user.getIdLong());
+        this.executeStatement(format("UPDATE discord_user SET user_lvl = %d WHERE user_id = %d;", lvl, user.getIdLong()));
+    }
+
+    public void setGuildLvl(Member member, long lvl) {
+        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
+        this.executeStatement(format("UPDATE discord_member SET member_lvl = %d WHERE guild_id = %d AND user_id = %d;",
+                lvl, member.getGuild().getIdLong(), member.getUser().getIdLong()));
+    }
+
+    public void addUserLvl(User user) {
+        this.setUserXp(user, 0);
+        this.setUserLvl(user, this.getUserLvl(user));
+    }
+
+    public void addGuildLvl(Member member) {
+        this.setGuildXp(member, 0);
+        this.setGuildLvl(member, this.getGuildLvl(member));
+    }
+
+    public void addXp(Member member, long xp) {
+        this.setGuildXp(member, this.getGuildXp(member)+xp);
+        this.setUserXp(member.getUser(), this.getUserXp(member.getUser())+xp);
+    }
+
+    public void removeXp(Member member, long xp) {
+        if (this.getGuildXp(member)>=xp) {
+            this.setGuildXp(member, this.getGuildXp(member) - xp);
+        } else {
+            this.setGuildXp(member, (this.getGuildLvl(member)-1)*4-xp);
+            this.setGuildLvl(member, this.getGuildLvl(member)-1);
+        }
+        if (this.getUserXp(member.getUser())>=xp) {
+            this.setUserXp(member.getUser(), this.getUserXp(member.getUser()) - xp);
+        } else {
+            this.setUserXp(member.getUser(), (this.getUserLvl(member.getUser())-1)*4-xp);
+            this.setUserLvl(member.getUser(), this.getUserLvl(member.getUser())-1);
+        }
     }
 
     public String getPrefix(Guild guild) {
@@ -128,16 +169,25 @@ public class Database {
         return this.get("prefix", "discord_guild", String.class, guild.getIdLong());
     }
 
-    public long getXp(User user) {
+    public long getUserXp(User user) {
         this.createUserIfNotExists(user.getIdLong());
         return this.<Long>get("user_xp", "discord_user", Long.TYPE, user.getIdLong());
     }
 
-    public long getXp(Member member) {
+    public long getGuildXp(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return this.<Long>get("member_xp", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
+    public long getUserLvl(User user) {
+        this.createUserIfNotExists(user.getIdLong());
+        return this.<Long>get("user_lvl", "discord_user", Long.TYPE, user.getIdLong());
+    }
+
+    public long getGuildLvl(Member member) {
+        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.<Long>get("member_lvl", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
+    }
 
     public void deleteGuild(long guildId) {
         this.executeStatement(format("DELETE FROM discord_guild WHERE guild_id = %d;", guildId));
@@ -147,7 +197,7 @@ public class Database {
         return connected;
     }
 
-    private void createMemberIfNotExists(long guildId, long userId) {
+    public void createMemberIfNotExists(long guildId, long userId) {
         if (this.get("COUNT(guild_id, user_id)", "discord_member", Long.TYPE, guildId, userId) == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
@@ -161,7 +211,7 @@ public class Database {
         }
     }
 
-    private void createUserIfNotExists(long userId) {
+    public void createUserIfNotExists(long userId) {
         if (this.get("COUNT(user_id)", "discord_user", Long.TYPE, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
@@ -174,10 +224,8 @@ public class Database {
                 : (table.contains("discord_guild") ? "guild_id = " : "user_id = ") + ids[0];
         T ret = null;
         try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement("SELECT ? AS entries FROM ? WHERE ?;")) {
+             var preparedStatement = connection.prepareStatement("SELECT ? AS entries FROM `"+table+"` WHERE "+where+";")) {
             preparedStatement.setString(1, select);
-            preparedStatement.setString(2, table);
-            preparedStatement.setString(3, where);
             var resultSet = preparedStatement.executeQuery();
             ret = resultSet.<T>getObject("entries", type);
         } catch (SQLException e) {
