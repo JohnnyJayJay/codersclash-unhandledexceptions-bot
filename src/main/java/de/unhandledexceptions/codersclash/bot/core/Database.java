@@ -92,23 +92,19 @@ public class Database {
     }
 
     public void changePermissionLevel(Member member, int lvl) {
-        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         this.executeStatement(format("UPDATE discord_member SET permission_lvl = %d WHERE guild_id = %d AND user_id = %d;",
                 lvl, member.getGuild().getIdLong(), member.getUser().getIdLong()));
     }
 
     public int getPermissionLevel(Member member) {
-        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return this.<Integer>getFirst("permission_lvl", "discord_member", Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
     public void setPrefix(long guildId, String prefix) {
-        this.createGuildIfNotExists(guildId);
         this.executeStatement(format("UPDATE discord_guild SET prefix = %s WHERE guild_id = %d;", prefix, guildId));
     }
 
     public void setMailChannel(long guildId, long channelId) {
-        this.createGuildIfNotExists(guildId);
         this.executeStatement(format("UPDATE discord_guild SET mail_channel = %d WHERE guild_id = %d;", channelId, guildId));
     }
 
@@ -165,7 +161,6 @@ public class Database {
     }
 
     public String getPrefix(Guild guild) {
-        this.createGuildIfNotExists(guild.getIdLong());
         return this.getFirst("prefix", "discord_guild", String.class, guild.getIdLong());
     }
 

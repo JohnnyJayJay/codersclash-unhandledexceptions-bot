@@ -42,6 +42,7 @@ public class Permissions implements ICommand {
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);
             short level = Short.parseShort(args[2]);
+            database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
             database.changePermissionLevel(target, level);
             sendMessage(channel, Type.SUCCESS, String.format("Permission level of `%s` successfully set to %s.", target.getEffectiveName(), args[2])).queue();
         }
@@ -56,6 +57,7 @@ public class Permissions implements ICommand {
     }
 
     public static int getPermissionLevel(Member member) {
+        database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return database.getPermissionLevel(member);
     }
 }
