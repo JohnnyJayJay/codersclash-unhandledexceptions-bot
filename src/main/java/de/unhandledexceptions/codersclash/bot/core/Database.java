@@ -193,7 +193,7 @@ public class Database {
     }
 
     public void createMemberIfNotExists(long guildId, long userId) {
-        if (this.getFirst("COUNT(user_id)", "discord_member", Long.class, guildId, userId) == 0) {
+        if (this.getFirst("COUNT(user_id)", "discord_member", Integer.TYPE, guildId, userId) == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
             this.executeStatement(format("INSERT INTO discord_member(guild_id, user_id, member_xp) VALUES(%d, %d, 0);", guildId, userId));
@@ -201,18 +201,18 @@ public class Database {
     }
 
     public void createGuildIfNotExists(long guildId) {
-        if (this.getFirst("COUNT(guild_id)", "discord_guild", Long.class, guildId) == 0) {
+        if (this.getFirst("COUNT(guild_id)", "discord_guild", Integer.TYPE, guildId) == 0) {
             this.executeStatement(format("INSERT INTO discord_guild(guild_id) VALUES(%d);", guildId));
         }
     }
 
     public void createUserIfNotExists(long userId) {
-        if (this.getFirst("COUNT(user_id)", "discord_user", Long.class, userId) == 0) {
+        if (this.getFirst("COUNT(user_id)", "discord_user", Integer.TYPE, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
     }
 
-    // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guil-, als
+    // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guild-, als
     // zweite id die user_id angeben.
     private <T> T getFirst(String select, String table, Class<T> type, long... ids) {
         String where = ids.length == 2

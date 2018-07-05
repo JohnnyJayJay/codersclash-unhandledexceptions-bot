@@ -26,7 +26,7 @@ public class Permissions implements ICommand {
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         var guild = event.getGuild();
-        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES))
+        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES, Permission.MESSAGE_WRITE))
             return;
 
         if (guild.getRolesByName("try-catch", false).isEmpty()) {
