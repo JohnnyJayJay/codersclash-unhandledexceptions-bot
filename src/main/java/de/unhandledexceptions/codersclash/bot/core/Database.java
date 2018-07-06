@@ -3,14 +3,12 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static java.lang.String.*;
 import static java.lang.String.format;
 import static de.unhandledexceptions.codersclash.bot.util.Logging.databaseLogger;
 
@@ -22,10 +20,10 @@ public class Database {
     private HikariDataSource dataSource;
 
     private final String[] creationStatements = {
-            "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, CONSTRAINT PRIMARY KEY (guild_id));",
-            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT, CONSTRAINT PRIMARY KEY (user_id));",
+            "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, INDEX (guild_id), PRIMARY KEY (guild_id));",
+            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT, INDEX (user_id), PRIMARY KEY (user_id));",
             "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE,reports TEXT," +
-                    "member_xp BIGINT,permission_lvl SMALLINT,INDEX (user_id, guild_id));"
+                    "member_xp BIGINT,permission_lvl SMALLINT,INDEX (user_id, guild_id),PRIMARY KEY (user_id, guild_id));"
     };
 
     private String ip, username, password, dbname, port;
@@ -68,8 +66,6 @@ public class Database {
                 databaseLogger.error(" Error while connecting to database. Check your config.", e);
                 System.exit(1);
             }
-        } else {
-            databaseLogger.warn("Tried to connect to database although it already was connected.");
         }
     }
 
@@ -78,8 +74,6 @@ public class Database {
             dataSource.close();
             databaseLogger.warn("Database disconnected!");
             connected = false;
-        } else {
-            databaseLogger.warn("Tried to disconnect from database although it wasn't connected.");
         }
     }
 
@@ -98,51 +92,51 @@ public class Database {
 
     public void changePermissionLevel(Member member, int lvl) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        this.updateMember(member.getGuild().getIdLong(), member.getUser().getIdLong(), "permission_lvl = " + lvl);
+        this.executeStatement(format("UPDATE discord_member SET permission_lvl = %d WHERE guild_id = %d AND user_id = %d;",
+                lvl, member.getGuild().getIdLong(), member.getUser().getIdLong()));
     }
 
     public int getPermissionLevel(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        return (int)this.get("permission_lvl", "discord_member", DataType.INT, member.getGuild().getIdLong(), member.getUser().getIdLong());
-    }
-
-    public String getPrefix(long guildId) {
-        this.createGuildIfNotExists(guildId);
-        return (String) this.get("prefix", "discord_guild", DataType.VARCHAR, guildId);
-    }
-
-    public long getXp(User user) {
-        this.createUserIfNotExists(user.getIdLong());
-        return (long) this.get("user_xp", "discord_user", DataType.BIGINT, user.getIdLong());
-    }
-
-    public long getXp(Member member) {
-        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        return (long) this.get("member_xp", "discord_member", DataType.BIGINT, member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.getInt(format("SELECT permission_lvl FROM discord_member WHERE guild_id = %d AND user_id = %d;",
+                member.getGuild().getIdLong(), member.getUser().getIdLong()), "permission_lvl");
     }
 
     public void setCustomPrefix(long guildId, String prefix) {
         this.createGuildIfNotExists(guildId);
-        this.update(true, guildId, "prefix = '" + prefix + "'");
+        this.executeStatement(format("UPDATE discord_guild SET prefix = %s WHERE guild_id = %d;", prefix, guildId));
     }
 
     public void setMailChannel(long guildId, long channelId) {
         this.createGuildIfNotExists(guildId);
-        this.update(true, guildId, "mail_channel = " + channelId);
+        this.executeStatement(format("UPDATE discord_guild SET mail_channel = %d WHERE guild_id = %d;", channelId, guildId));
     }
 
     public void setXp(User user, long xp) {
         this.createUserIfNotExists(user.getIdLong());
-        this.update(false, user.getIdLong(), "user_xp = " + xp);
+        this.executeStatement(format("UPDATE discord_user SET user_xp = %d WHERE user_id = %d;", xp, user.getIdLong()));
     }
 
     public void setXp(Member member, long xp) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
-        this.updateMember(member.getGuild().getIdLong(), member.getUser().getIdLong(), "member_xp = " + xp);
+        this.executeStatement(format("UPDATE discord_member SET member_xp = %d WHERE guild_id = %d AND user_id = %d;",
+                xp, member.getGuild().getIdLong(), member.getUser().getIdLong()));
     }
 
+    public long getXp(User user) {
+        this.createUserIfNotExists(user.getIdLong());
+        return this.getLong(format("SELECT user_xp FROM discord_user WHERE user_id = %d;", user.getIdLong()), "user_xp");
+    }
+
+    public long getXp(Member member) {
+        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
+        return this.getLong(format("SELECT member_xp FROM discord_member WHERE guild_id = %d AND user_id = %d;",
+                member.getGuild().getIdLong(), member.getUser().getIdLong()), "member_xp");
+    }
+
+
     public void deleteGuild(long guildId) {
-        this.delete("discord_guild", guildId);
+        this.executeStatement(format("DELETE FROM discord_guild WHERE guild_id = %d;", guildId));
     }
 
     public boolean isConnected() {
@@ -150,104 +144,50 @@ public class Database {
     }
 
     private void createMemberIfNotExists(long guildId, long userId) {
-        if ((long) this.get("COUNT(guild_id, member_id)", "discord_member", DataType.BIGINT, guildId, userId) == 0) {
+        if (this.getLong(format("SELECT COUNT(guild_id,user_id) AS entries FROM discord_member WHERE guild_id = %d AND user_id = %d;", guildId, userId), "entries") == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
-            this.insert("discord_member(guild_id, user_id, member_xp)", valueOf(guildId), valueOf(userId), "0");
+            this.executeStatement(format("INSERT INTO discord_member(guild_id, user_id, member_xp) VALUES(%d, %d, 0);", guildId, userId));
         }
     }
 
     private void createGuildIfNotExists(long guildId) {
-        if ((long) this.get("COUNT(guild_id)", "discord_guild", DataType.BIGINT, guildId) == 0) {
-            this.insert("discord_guild(guild_id)", valueOf(guildId));
+        if (this.getLong(format("SELECT COUNT(guild_id) AS entries FROM discord_guild WHERE guild_id = %d;", guildId), "entries") == 0) {
+            this.executeStatement(format("INSERT INTO discord_guild(guild_id) VALUES(%d);", guildId));
         }
     }
 
     private void createUserIfNotExists(long userId) {
-        if ((long) this.get("COUNT(discord_id)", "discord_user", DataType.BIGINT, userId) == 0) {
-            this.insert("discord_user(user_id, user_xp)", valueOf(userId), "0");
+        if (this.getLong(format("SELECT COUNT(user_id) AS entries FROM discord_user WHERE user_id = %d;", userId), "entries") == 0) {
+            this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
     }
 
-    private Object get(String select, String table, DataType type, long... ids) {
-        String where = ids.length == 2
-                ? "guild_id = " + ids[0] + " AND user_id = " + ids[1]
-                : (table.equals("discord_guild") ? "guild_id = " : "user_id = ") + ids[0];
-        Object ret = null;
-        try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement("SELECT ? AS entries FROM ? WHERE ?;")) {
-            preparedStatement.setString(1, select);
-            preparedStatement.setString(2, table);
-            preparedStatement.setString(3, where);
+    private int getInt(String sql, String column) {
+        try (var connection = dataSource.getConnection(); var preparedStatement = connection.prepareStatement(sql)) {
             var resultSet = preparedStatement.executeQuery();
-            switch (type) {
-                case INT:
-                    ret = resultSet.getInt("entries");
-                    break;
-                case BIGINT:
-                    ret = resultSet.getLong("entries");
-                    break;
-                case VARCHAR:
-                    ret = resultSet.getString("entries");
-                    break;
-            }
+            return resultSet.getInt(column);
         } catch (SQLException e) {
-            databaseLogger.warn("SQLException caught while parsing ResultSet", e);
+            databaseLogger.warn("Exception caught while getting Int", e);
         }
-        return ret;
+        return 0;
     }
 
-    private void insert(String table, String... values) {
-        try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement("INSERT INTO ? VALUES(?);")) {
-            preparedStatement.setString(1, table);
-            preparedStatement.setString(2, join(", ", values));
+    private long getLong(String sql, String column) {
+        try (var connection = dataSource.getConnection(); var preparedStatement = connection.prepareStatement(sql)) {
+            var resultSet = preparedStatement.executeQuery();
+            return resultSet.getLong(column);
+        } catch (SQLException e) {
+            databaseLogger.warn("Exception caught while getting Long", e);
+        }
+        return 0;
+    }
+
+    private void executeStatement(String sql) {
+        try (var connection = dataSource.getConnection(); var preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             databaseLogger.warn("Exception caught while executing Statement", e);
         }
-    }
-
-    private void delete(String table, long id) {
-        try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement("DELETE FROM ? WHERE ?_id = ?;")) {
-            preparedStatement.setString(1, table);
-            preparedStatement.setString(2, table.substring(8));
-            preparedStatement.setLong(3, id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            databaseLogger.warn("Exception caught while executing Statement", e);
-        }
-    }
-
-    private void updateMember(long guildId, long userId, String... toSet) {
-        try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement("UPDATE discord_member SET ? WHERE user_id = ? AND guild_id = ?;")) {
-            preparedStatement.setString(1, join(", ", toSet));
-            preparedStatement.setLong(2, userId);
-            preparedStatement.setLong(3, guildId);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            databaseLogger.warn("Exception caught while updating discord_member", e);
-        }
-    }
-
-    private void update(boolean guild, long id, String... toSet) {
-        String table = guild ? "guild" : "user";
-        String sql = "UPDATE discord_" + table + "SET ? WHERE " + table + "_id = ?;";
-        try (var connection = dataSource.getConnection();
-             var preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, join(", ", toSet));
-            preparedStatement.setLong(2, id);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            databaseLogger.warn("Exception caught while updating discord_guild", e);
-        }
-    }
-
-    private enum DataType {
-        BIGINT,
-        VARCHAR,
-        INT;
     }
 }
