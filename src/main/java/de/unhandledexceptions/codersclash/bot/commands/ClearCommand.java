@@ -33,7 +33,7 @@ public class ClearCommand implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY, Permission.MESSAGE_WRITE))
             return;
 
-        if (Permissions.getPermissionLevel(member) >= 0) { // Benötigtes Permission level überprüfen
+        if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
             if (args.length == 1 && args[0].matches("[1-9]{1,5}")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), (throwable) -> this.failure(throwable, channel));

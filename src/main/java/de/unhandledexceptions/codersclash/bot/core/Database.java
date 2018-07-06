@@ -22,9 +22,9 @@ public class Database {
 
     private final String[] creationStatements = {
             "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
-            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT,user_lvl BIGINT, PRIMARY KEY (user_id));",
+            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT,user_lvl INT, PRIMARY KEY (user_id));",
             "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE,reports TEXT," +
-                    "member_xp BIGINT,member_lvl BIGINT,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
+                    "member_xp INT,member_lvl INT,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
     };
 
     private String ip, username, password, dbname, port;
@@ -164,6 +164,7 @@ public class Database {
         return this.getFirst("prefix", "discord_guild", String.class, guild.getIdLong());
     }
 
+    // TODO Automatisches erstellen von user usw. entfernen (soll von außerhalb geschehen)
     public long getUserXp(User user) {
         this.createUserIfNotExists(user.getIdLong());
         return this.<Long>getFirst("user_xp", "discord_user", Long.TYPE, user.getIdLong());
