@@ -26,7 +26,7 @@ public class Permissions implements ICommand {
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         var guild = event.getGuild();
-        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES))
+        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES, Permission.MESSAGE_WRITE))
             return;
 
         if (guild.getRolesByName("try-catch", false).isEmpty()) {
@@ -42,19 +42,22 @@ public class Permissions implements ICommand {
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);
             short level = Short.parseShort(args[2]);
+            database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
             database.changePermissionLevel(target, level);
             sendMessage(channel, Type.SUCCESS, String.format("Permission level of `%s` successfully set to %s.", target.getEffectiveName(), args[2])).queue();
         }
     }
 
+    // FIXME Format Exception - why?
     @Override
-    public String info(Guild guild) {
+    public String info(Member member) {
         return String.format("Is used to manage try-catch permissions and configure the different permission levels.\n\nLevel 0: %shelp\nLevel 2: %suserinfo\nLevel 3: " +
                 "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote and %smail\nLevel 5: %ssettings\n\nUsage: `%s[permission|perms|perm] [set] <member> " +
-                "<level>`\n\nTo execute this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(guild.getIdLong()));
+                "<level>`\n\nTo execute this command, the member needs to have a role named \"try-catch\".", settings.getPrefix(member.getGuild().getIdLong()));
     }
 
     public static int getPermissionLevel(Member member) {
+        database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return database.getPermissionLevel(member);
     }
 }

@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
+import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
@@ -47,13 +48,13 @@ public class Bot {
             }
 
         }
-
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         botLogger.info("CommandSettings are being configured");
         // command settings einstellen
         commandSettings.setHelpLabels("help", "helpme", "commands")
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
+                .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
                 .activate();
     }
 

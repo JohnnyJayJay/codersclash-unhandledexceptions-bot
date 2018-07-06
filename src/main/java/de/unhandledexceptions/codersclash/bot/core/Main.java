@@ -1,5 +1,9 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
+import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
+import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
+import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
+
 import static de.unhandledexceptions.codersclash.bot.util.Logging.mainLogger;
 
 public class Main {
@@ -26,7 +30,9 @@ public class Main {
             database.connect();
             mainLogger.warn("Connected to Database. Checking tables...");
             database.createTablesIfNotExist();
-            new Bot(config, database).start();
+            Bot bot = new Bot(config, database);
+            bot.start();
+            bot.getShardManager().addEventListener(new ReadyListener(), new XPCommand(bot.getCommandSettings(), database));
             mainLogger.info("Bot has been started!");
         }
     }

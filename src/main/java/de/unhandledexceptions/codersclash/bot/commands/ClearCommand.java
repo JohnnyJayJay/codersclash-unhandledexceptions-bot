@@ -33,7 +33,7 @@ public class ClearCommand implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY, Permission.MESSAGE_WRITE))
             return;
 
-        if (Permissions.getPermissionLevel(member) >= 0) { // Benötigtes Permission level überprüfen
+        if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
             if (args.length == 1 && args[0].matches("[1-9]{1,5}")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), (throwable) -> this.failure(throwable, channel));
@@ -48,7 +48,7 @@ public class ClearCommand implements ICommand {
     }
 
     private void clear(TextChannel channel, int amount) {
-        // FIXME Buffer einbauen
+        // TODO Buffer einbauen
         long twoWeeksAgo = (System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000)); // System der JDA, die Zeit zu messen
         channel.getHistory().retrievePast(amount > 100 ? 100 : amount).queue((messages) -> { // Wenn amount größer als 100 ist, retrieve 100, ansonsten amount
             // filter die messages, die man löschen kann, heraus

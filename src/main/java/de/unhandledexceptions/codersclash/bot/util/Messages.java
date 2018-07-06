@@ -10,7 +10,7 @@ import java.time.Instant;
 
 public class Messages {
 
-    private static MessageEmbed buildMessage(Type type, String content, String title, boolean timestamp) {
+    private static MessageEmbed buildMessage(Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
         return new EmbedBuilder()
                 .setDescription(content)
                 .setColor(type.color)
@@ -21,19 +21,23 @@ public class Messages {
     }
 
     public static MessageAction sendMessage(MessageChannel channel, Type type, String content) {
-        return channel.sendMessage(buildMessage(type, content, null, false));
+        return channel.sendMessage(buildMessage(type, content, null, false, new EmbedBuilder()));
     }
 
     public static MessageAction sendMessage(MessageChannel channel, Type type, String content, String title) {
-        return channel.sendMessage(buildMessage(type, content, title, false));
+        return channel.sendMessage(buildMessage(type, content, title, false, new EmbedBuilder()));
     }
 
     public static MessageAction sendMessage(MessageChannel channel, Type type, String content, boolean timestamp) {
-        return channel.sendMessage(buildMessage(type, content, null, timestamp));
+        return channel.sendMessage(buildMessage(type, content, null, timestamp, new EmbedBuilder()));
     }
 
     public static MessageAction sendMessage(MessageChannel channel, Type type, String content, String title, boolean timestamp) {
-        return channel.sendMessage(buildMessage(type, content, title, timestamp));
+        return channel.sendMessage(buildMessage(type, content, title, timestamp, new EmbedBuilder()));
+    }
+
+    public static MessageAction sendMessage(MessageChannel channel, Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
+        return channel.sendMessage(buildMessage(type, content, title, timestamp, embedBuilder));
     }
 
     public enum Type {
