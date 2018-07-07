@@ -18,6 +18,8 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
  * @author Johnny_JayJay
  * @version 0.1-SNAPSHOT
  */
+
+// FIXME ErrorResponseActions
 public class ClearCommand implements ICommand {
 
     private CommandSettings settings;
