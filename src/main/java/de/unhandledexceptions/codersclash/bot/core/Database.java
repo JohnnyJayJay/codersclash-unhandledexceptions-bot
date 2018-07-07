@@ -157,12 +157,12 @@ public class Database {
 
     public void addUserLvl(User user) {
         this.setUserXp(user, 0);
-        this.setUserLvl(user, this.getUserLvl(user));
+        this.setUserLvl(user, this.getUserLvl(user)+1);
     }
 
     public void addGuildLvl(Member member) {
         this.setGuildXp(member, 0);
-        this.setGuildLvl(member, this.getGuildLvl(member));
+        this.setGuildLvl(member, this.getGuildLvl(member)+1);
     }
 
     public void addXp(Member member, long xp) {
@@ -249,8 +249,16 @@ public class Database {
             this.executeUpdate(insertUser, userId);
         }
     }
+    
+    public ArrayList<String> orderBy(String table, String orderby) {
+        try (var connection = dataSource.getConnection();
+            var preparedstatement = connection.prepareStatement("SELECT * FROM "+table)) {
+            var resultSet = preparedstatement.executeQuery();
+            while (resultSet.next()) {}
+        }
+    }
 
-    // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guild-, als
+    // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guil-, als
     // zweite id die user_id angeben.
     private <T> T getFirst(String column, String sql, Class<T> type, long... ids) {
         T ret = null;

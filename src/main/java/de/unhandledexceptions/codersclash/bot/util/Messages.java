@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class Messages {
 
     private static MessageEmbed buildMessage(Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
-        return new EmbedBuilder()
+        return embedBuilder
                 .setDescription(content)
                 .setColor(type.color)
                 .setFooter(type.footer, type.footerUrl)
