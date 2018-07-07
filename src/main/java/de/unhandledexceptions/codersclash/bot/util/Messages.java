@@ -1,12 +1,15 @@
 package de.unhandledexceptions.codersclash.bot.util;
 
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
 
 import java.awt.Color;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class Messages {
 
@@ -38,6 +41,14 @@ public class Messages {
 
     public static MessageAction sendMessage(MessageChannel channel, Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
         return channel.sendMessage(buildMessage(type, content, title, timestamp, embedBuilder));
+    }
+
+    public static Consumer<Throwable> defaultFailure(MessageChannel channel) {
+        return (throwable) -> sendMessage(channel, Type.WARNING, String.format("Something went wrong (this may not be relevant):\n```\n%s```", throwable.getMessage())).queue();
+    }
+
+    public static void noPermissionsMessage(MessageChannel channel, Member member) {
+        sendMessage(channel, Type.ERROR, "You do not have permission to execute this command. " + member.getAsMention()).queue((msg) -> msg.delete().queueAfter(5, TimeUnit.SECONDS));
     }
 
     public enum Type {

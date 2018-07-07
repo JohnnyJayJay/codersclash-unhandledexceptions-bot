@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static java.lang.String.format;
@@ -19,6 +20,9 @@ public class Database {
 
     private HikariConfig config;
     private HikariDataSource dataSource;
+
+    // TODO Precompiled statements machen
+    private PreparedStatement selectFromGuild, selectFromMember, selectFromUser;
 
     private final String[] creationStatements = {
             "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
@@ -183,6 +187,10 @@ public class Database {
     public long getGuildLvl(Member member) {
         this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return this.<Long>getFirst("member_lvl", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
+    }
+
+    public long getMailChannel(Guild guild) {
+        return this.<Long>getFirst("mail_channel", "discord_guild", Long.TYPE, guild.getIdLong());
     }
 
     public void deleteGuild(long guildId) {

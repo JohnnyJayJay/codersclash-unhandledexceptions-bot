@@ -6,7 +6,8 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public abstract class Game {

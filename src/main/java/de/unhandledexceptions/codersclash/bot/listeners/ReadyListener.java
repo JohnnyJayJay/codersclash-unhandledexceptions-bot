@@ -1,5 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.listeners;
 
+import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
+import de.unhandledexceptions.codersclash.bot.core.Database;
 import net.dv8tion.jda.core.events.DisconnectEvent;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
@@ -15,17 +17,18 @@ import static de.unhandledexceptions.codersclash.bot.util.Logging.readyListenerL
 
 public class ReadyListener extends ListenerAdapter {
 
+    private CommandSettings settings;
+    private Database database;
+
+    public ReadyListener(CommandSettings settings, Database database) {
+        this.settings = settings;
+        this.database = database;
+    }
 
     @Override   // Event wenn der Bot online geht (besser gesagt eine JDA)
     public void onReady(ReadyEvent event) {
 
         readyListenerLogger.info("Bot ready to operate!");
-
-        String out = "\nBot is running on following servers: \n"; // Hier werden die Server ausgegeben auf den der Bot läuft
-
-        for (var g : event.getJDA().getGuilds() ) {
-            out += g.getName() + " (" + g.getId() + ") \n";
-        }
 
     }
 
