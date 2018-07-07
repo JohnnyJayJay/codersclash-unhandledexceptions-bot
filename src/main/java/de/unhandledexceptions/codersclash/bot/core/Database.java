@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -20,6 +21,9 @@ public class Database {
 
     private HikariConfig config;
     private HikariDataSource dataSource;
+
+    // TODO Precompiled statements machen
+    private PreparedStatement selectFromGuild, selectFromMember, selectFromUser;
 
     private final String[] creationStatements = {
             "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
@@ -93,23 +97,19 @@ public class Database {
     }
 
     public void changePermissionLevel(Member member, int lvl) {
-        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         this.executeStatement(format("UPDATE discord_member SET permission_lvl = %d WHERE guild_id = %d AND user_id = %d;",
                 lvl, member.getGuild().getIdLong(), member.getUser().getIdLong()));
     }
 
     public int getPermissionLevel(Member member) {
-        this.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return this.<Integer>getFirst("permission_lvl", "discord_member", Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
     public void setPrefix(long guildId, String prefix) {
-        this.createGuildIfNotExists(guildId);
         this.executeStatement(format("UPDATE discord_guild SET prefix = %s WHERE guild_id = %d;", prefix, guildId));
     }
 
     public void setMailChannel(long guildId, long channelId) {
-        this.createGuildIfNotExists(guildId);
         this.executeStatement(format("UPDATE discord_guild SET mail_channel = %d WHERE guild_id = %d;", channelId, guildId));
     }
 
@@ -166,10 +166,10 @@ public class Database {
     }
 
     public String getPrefix(Guild guild) {
-        this.createGuildIfNotExists(guild.getIdLong());
         return this.getFirst("prefix", "discord_guild", String.class, guild.getIdLong());
     }
 
+    // TODO Automatisches erstellen von user usw. entfernen (soll von außerhalb geschehen)
     public long getUserXp(User user) {
         this.createUserIfNotExists(user.getIdLong());
         return this.<Long>getFirst("user_xp", "discord_user", Long.TYPE, user.getIdLong());
@@ -190,6 +190,10 @@ public class Database {
         return this.<Long>getFirst("member_lvl", "discord_member", Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
+    public long getMailChannel(Guild guild) {
+        return this.<Long>getFirst("mail_channel", "discord_guild", Long.TYPE, guild.getIdLong());
+    }
+
     public void deleteGuild(long guildId) {
         this.executeStatement(format("DELETE FROM discord_guild WHERE guild_id = %d;", guildId));
     }
@@ -199,7 +203,7 @@ public class Database {
     }
 
     public void createMemberIfNotExists(long guildId, long userId) {
-        if (this.getFirst("COUNT(user_id)", "discord_member", Long.class, guildId, userId) == 0) {
+        if (this.getFirst("COUNT(user_id)", "discord_member", Integer.TYPE, guildId, userId) == 0) {
             this.createUserIfNotExists(userId);
             this.createGuildIfNotExists(guildId);
             this.executeStatement(format("INSERT INTO discord_member(guild_id, user_id, member_xp) VALUES(%d, %d, 0);", guildId, userId));
@@ -207,17 +211,17 @@ public class Database {
     }
 
     public void createGuildIfNotExists(long guildId) {
-        if (this.getFirst("COUNT(guild_id)", "discord_guild", Long.class, guildId) == 0) {
+        if (this.getFirst("COUNT(guild_id)", "discord_guild", Integer.TYPE, guildId) == 0) {
             this.executeStatement(format("INSERT INTO discord_guild(guild_id) VALUES(%d);", guildId));
         }
     }
 
     public void createUserIfNotExists(long userId) {
-        if (this.getFirst("COUNT(user_id)", "discord_user", Long.class, userId) == 0) {
+        if (this.getFirst("COUNT(user_id)", "discord_user", Integer.TYPE, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
         }
     }
-
+    
     public ArrayList<String> orderBy(String table, String orderby) {
         try (var connection = dataSource.getConnection();
             var preparedstatement = connection.prepareStatement("SELECT * FROM "+table)) {

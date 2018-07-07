@@ -9,16 +9,11 @@ import net.dv8tion.jda.core.entities.TextChannel;
  * @author Johnny_JayJay
  * @version 0.1-SNAPSHOT
  */
-public class SettingsCommand implements ICommand {
+public class ReportCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
 
     }
 
-    // TODO
-    @Override
-    public String info(Member member) {
-        return null;
-    }
 }

@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
+import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
@@ -56,10 +57,11 @@ public class Bot {
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
                 .activate();
-    }
 
-    public ShardManager getShardManager() {
-        return shardManager;
+        for (var guild : shardManager.getGuilds()) {
+            commandSettings.setCustomPrefix(guild.getIdLong(), database.getPrefix(guild));
+        }
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database));
     }
 
     public CommandSettings getCommandSettings() {
