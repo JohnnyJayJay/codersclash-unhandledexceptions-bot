@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.entities.User;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import static java.lang.String.format;
 import static de.unhandledexceptions.codersclash.bot.util.Logging.databaseLogger;
@@ -22,9 +23,9 @@ public class Database {
 
     private final String[] creationStatements = {
             "CREATE TABLE IF NOT EXISTS discord_guild (prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
-            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT,user_lvl BIGINT, PRIMARY KEY (user_id));",
+            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp BIGINT,user_lvl BIGINT DEFAULT 1, PRIMARY KEY (user_id));",
             "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE,reports TEXT," +
-                    "member_xp BIGINT,member_lvl BIGINT,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
+                    "member_xp BIGINT,member_lvl BIGINT DEFAULT 1,permission_lvl SMALLINT,PRIMARY KEY (user_id, guild_id));"
     };
 
     private String ip, username, password, dbname, port;
@@ -136,12 +137,12 @@ public class Database {
 
     public void addUserLvl(User user) {
         this.setUserXp(user, 0);
-        this.setUserLvl(user, this.getUserLvl(user));
+        this.setUserLvl(user, this.getUserLvl(user)+1);
     }
 
     public void addGuildLvl(Member member) {
         this.setGuildXp(member, 0);
-        this.setGuildLvl(member, this.getGuildLvl(member));
+        this.setGuildLvl(member, this.getGuildLvl(member)+1);
     }
 
     public void addXp(Member member, long xp) {
@@ -214,6 +215,14 @@ public class Database {
     public void createUserIfNotExists(long userId) {
         if (this.getFirst("COUNT(user_id)", "discord_user", Long.class, userId) == 0) {
             this.executeStatement(format("INSERT INTO discord_user(user_id, user_xp) VALUES(%d, 0);", userId));
+        }
+    }
+
+    public ArrayList<String> orderBy(String table, String orderby) {
+        try (var connection = dataSource.getConnection();
+            var preparedstatement = connection.prepareStatement("SELECT * FROM "+table)) {
+            var resultSet = preparedstatement.executeQuery();
+            while (resultSet.next()) {}
         }
     }
 

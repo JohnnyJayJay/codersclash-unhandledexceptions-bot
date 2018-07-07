@@ -43,48 +43,16 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         long xp = database.getGuildXp(member);
         long maxxp = database.getGuildLvl(member)*4;
-        Emote[] emotes = new Emote[8];
-        emotes[0] = member.getGuild().getEmotesByName("empty1", true).get(0);
-        emotes[1] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[2] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[3] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[4] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[5] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[6] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[7] = member.getGuild().getEmotesByName("empty3", true).get(0);
-        if (maxxp/8<=xp) {
-            emotes[0] = member.getGuild().getEmotesByName("full1", true).get(0);
-            if (maxxp/8*2>=xp) {
-                emotes[1] = member.getGuild().getEmotesByName("full2", true).get(0);
-                if (maxxp / 8 * 3 >= xp) {
-                    emotes[2] = member.getGuild().getEmotesByName("full2", true).get(0);
-                    if (maxxp / 8 * 4 >= xp) {
-                        emotes[3] = member.getGuild().getEmotesByName("full2", true).get(0);
-                        if (maxxp / 8 * 5 >= xp) {
-                            emotes[4] = member.getGuild().getEmotesByName("full2", true).get(0);
-                            if (maxxp / 8 * 6 >= xp) {
-                                emotes[5] = member.getGuild().getEmotesByName("full2", true).get(0);
-                                if (maxxp / 8 * 7 >= xp) {
-                                    emotes[6] = member.getGuild().getEmotesByName("full2", true).get(0);
-                                    if (maxxp == xp) {
-                                        emotes[7] = member.getGuild().getEmotesByName("full3", true).get(0);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Emote emote:emotes) {
-            stringBuilder.append(emote.getAsMention());
-        }
         EmbedBuilder embedBuilder = new EmbedBuilder()
-                .addField("Guildlevel", String.valueOf(database.getGuildLvl(member))+
-                        "\n"+stringBuilder.toString()
-                        ,true);
-        Messages.sendMessage(textChannel, Messages.Type.DEFAULT, "Here are your informations", "Level informations", true, embedBuilder);
+                .addField("Guild", "Level: "+database.getGuildLvl(member)+
+                        "\nXp: "+database.getGuildXp(member)+"/"+database.getGuildLvl(member)*4+
+                        "\n"+getProgressBar(database.getGuildXp(member), database.getGuildLvl(member), member)
+                        ,true)
+                .addField("User", "Level: "+database.getUserLvl(member.getUser())+
+                "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
+                "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()), member)
+                        , true);
+        Messages.sendMessage(textChannel, Messages.Type.DEFAULT, "Here are your informations", "Level informations", true, embedBuilder).queue();
     }
 
     @Override
@@ -108,44 +76,89 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             );
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
-            if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-                ArrayList<String> names = new ArrayList<>() {{
-                    add("full1");
-                    add("full2");
-                    add("full3");
-                    add("empty1");
-                    add("empty2");
-                    add("empty3");
-                }};
-                HashMap<String, String> urls = new HashMap<>() {{
-                    put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
-                    put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
-                    put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
-                    put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
-                    put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
-                    put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
-                }};
-                try {
-                    for (String name : names) {
-                        if (event.getMember().getGuild().getEmotesByName(name, true).size() == 0) {
-                            event.getMember().getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
+            if (!event.getAuthor().isBot()) {
+                if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
+                    ArrayList<String> names = new ArrayList<>() {{
+                        add("full1");
+                        add("full2");
+                        add("full3");
+                        add("empty1");
+                        add("empty2");
+                        add("empty3");
+                    }};
+                    HashMap<String, String> urls = new HashMap<>() {{
+                        put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
+                        put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
+                        put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
+                        put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
+                        put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
+                        put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
+                    }};
+                    try {
+                        for (String name : names) {
+                            if (event.getMember().getGuild().getEmotesByName(name, true).size() == 0) {
+                                event.getMember().getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
+                            }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+                Random random = new Random();
+                int length = event.getMessage().getContentRaw().length();
+                int result;
+                if (length > 10) {
+                    result = random.nextInt(length - 10) + 10;
+                } else result = random.nextInt(length);
+                database.addXp(event.getMember(), result);
             }
-            Random random = new Random();
-            int length = event.getMessage().getContentRaw().length();
-            int result;
-            if (length>10) {
-                result = random.nextInt(length-10)+10;
-            } else result = random.nextInt(length);
-            database.addXp(event.getMember(), result);
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue(
                 (msg) -> this.checkLvl(msg.getMember())
         );
+    }
+
+    private String getProgressBar(long xp, long maxxp, Member member) {
+        Emote[] emotes = new Emote[8];
+        emotes[0] = member.getGuild().getEmotesByName("empty1", true).get(0);
+        emotes[1] = member.getGuild().getEmotesByName("empty2", true).get(0);
+        emotes[2] = member.getGuild().getEmotesByName("empty2", true).get(0);
+        emotes[3] = member.getGuild().getEmotesByName("empty2", true).get(0);
+        emotes[4] = member.getGuild().getEmotesByName("empty2", true).get(0);
+        emotes[5] = member.getGuild().getEmotesByName("empty2", true).get(0);
+        emotes[6] = member.getGuild().getEmotesByName("empty2", true).get(0);
+        emotes[7] = member.getGuild().getEmotesByName("empty3", true).get(0);
+        if (maxxp/8<=xp) {
+            emotes[0] = member.getGuild().getEmotesByName("full1", true).get(0);
+            if (maxxp/8*2<=xp) {
+                emotes[1] = member.getGuild().getEmotesByName("full2", true).get(0);
+                if (maxxp / 8 * 3 <= xp) {
+                    emotes[2] = member.getGuild().getEmotesByName("full2", true).get(0);
+                    if (maxxp / 8 * 4 <= xp) {
+                        emotes[3] = member.getGuild().getEmotesByName("full2", true).get(0);
+                        if (maxxp / 8 * 5 <= xp) {
+                            emotes[4] = member.getGuild().getEmotesByName("full2", true).get(0);
+                            if (maxxp / 8 * 6 <= xp) {
+                                emotes[5] = member.getGuild().getEmotesByName("full2", true).get(0);
+                                if (maxxp / 8 * 7 <= xp) {
+                                    emotes[6] = member.getGuild().getEmotesByName("full2", true).get(0);
+                                    if (maxxp == xp) {
+                                        emotes[7] = member.getGuild().getEmotesByName("full3", true).get(0);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Emote emote:emotes) {
+            stringBuilder.append(emote.getAsMention());
+        }
+        stringBuilder.append("\n\n");
+        database."SELECT * FROM Customers ORDER BY CustomerID;"
+        return stringBuilder.toString();
     }
 
     private void checkLvl(Member member) {
