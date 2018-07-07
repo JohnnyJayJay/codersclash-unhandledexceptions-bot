@@ -249,14 +249,6 @@ public class Database {
             this.executeUpdate(insertUser, userId);
         }
     }
-    
-    public ArrayList<String> orderBy(String table, String orderby) {
-        try (var connection = dataSource.getConnection();
-            var preparedstatement = connection.prepareStatement("SELECT * FROM "+table)) {
-            var resultSet = preparedstatement.executeQuery();
-            while (resultSet.next()) {}
-        }
-    }
 
     // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guil-, als
     // zweite id die user_id angeben.

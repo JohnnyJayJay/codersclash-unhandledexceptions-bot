@@ -157,7 +157,8 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             stringBuilder.append(emote.getAsMention());
         }
         stringBuilder.append("\n\n");
-        database."SELECT * FROM Customers ORDER BY CustomerID;"
+        // FIXME was ist das ? xD
+        //database."SELECT * FROM Customers ORDER BY CustomerID;"
         return stringBuilder.toString();
     }
 
