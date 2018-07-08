@@ -6,11 +6,15 @@ import com.zaxxer.hikari.pool.HikariPool;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
+import org.slf4j.LoggerFactory;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static java.lang.String.format;
 import static de.unhandledexceptions.codersclash.bot.util.Logging.databaseLogger;
@@ -22,19 +26,13 @@ public class Database {
     private HikariConfig config;
     private HikariDataSource dataSource;
 
-    // TODO Precompiled statements machen
     private String selectFromGuild, selectFromMember, selectFromUser,
             countUsers, countGuilds, countMembers,
             insertUser, insertGuild, insertMember,
-            updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl;
+            updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl, updatePrefix, updateMailChannel,
+            selectReports;
 
-    private final String[] creationStatements = {
-            "CREATE TABLE IF NOT EXISTS discord_guild (xp_system_activated BIT(1) DEFAULT 1,prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY " +
-                    "(guild_id));",
-            "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT DEFAULT 0,user_lvl INT DEFAULT 1, PRIMARY KEY (user_id));",
-            "CREATE TABLE IF NOT EXISTS discord_member (guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE,reports TEXT," +
-                    "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 0,PRIMARY KEY (user_id, guild_id));"
-    };
+    private String[] creationStatements;
 
     private String ip, username, password, dbname, port;
 
@@ -81,6 +79,15 @@ public class Database {
 
     private void createStatements() {
         databaseLogger.info("Preparing statements...");
+        this.creationStatements = new String[] {
+                "CREATE TABLE IF NOT EXISTS discord_guild (xp_system_activated BIT(1) DEFAULT 1,prefix VARCHAR(30),guild_id BIGINT NOT NULL,mail_channel BIGINT, PRIMARY KEY (guild_id));",
+                "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT DEFAULT 0,user_lvl INT DEFAULT 1, PRIMARY KEY (user_id));",
+                "CREATE TABLE IF NOT EXISTS discord_member (member_id BIGINT NOT NULL AUTO_INCREMENT, guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE," +
+                        "user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE," +
+                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 0,PRIMARY KEY (user_id, guild_id), INDEX (member_id));",
+                "CREATE TABLE IF NOT EXISTS reports (member_id BIGINT NOT NULL REFERENCES discord_member (member_id),report1 TEXT,report2 TEXT,report3 TEXT,report4 TEXT,report5 " +
+                        "TEXT,report6 TEXT,report7 TEXT,report8 TEXT,report9 TEXT,report10 TEXT,PRIMARY KEY (member_id));"
+        };
         this.selectFromGuild = "SELECT * FROM discord_guild WHERE guild_id = ?;";
         this.selectFromUser = "SELECT * FROM discord_user WHERE user_id = ?;";
         this.selectFromMember = "SELECT * FROM discord_member WHERE guild_id = ? AND user_id = ?;";
@@ -95,6 +102,9 @@ public class Database {
         this.updateUserLvl = "UPDATE discord_user SET user_lvl = ? WHERE user_id = ?;";
         this.updateUserXp = "UPDATE discord_user SET user_xp = ? WHERE user_id = ?;";
         this.updatePermissionLvl = "UPDATE discord_member SET permission_lvl = ? WHERE guild_id = ? AND user_id = ?;";
+        this.selectReports = "SELECT * FROM reports WHERE member_id = ?;";
+        this.updatePrefix = "UPDATE discord_guild SET prefix = ? WHERE guild_id = ?;";
+        this.updateMailChannel = "UPDATE discord_guild SET mail_channel = ? WHERE guild_id = ?;";
         databaseLogger.info("statement preparation successful.");
     }
 
@@ -109,13 +119,14 @@ public class Database {
     public void createTablesIfNotExist() {
         try (var connection = dataSource.getConnection()) {
             for (String statement : this.creationStatements) {
+                databaseLogger.debug(statement);
                 try (var preparedStatement = connection.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
             databaseLogger.info("Tables have been created (or they existed already).");
         } catch (SQLException e) {
-            databaseLogger.warn("Exception caught while creating tables", e);
+            databaseLogger.error("Exception caught while creating tables", e);
         }
     }
 
@@ -128,11 +139,11 @@ public class Database {
     }
 
     public void setPrefix(long guildId, String prefix) {
-        this.executeUpdate("UPDATE discord_guild SET prefix = " + prefix + " WHERE guild_id = " + guildId + ";");
+        this.executeUpdate(updatePrefix, prefix, guildId);
     }
 
     public void setMailChannel(long guildId, long channelId) {
-        this.executeUpdate("UPDATE discord_guild SET mail_channel = " + channelId + " WHERE guild_id = " + guildId + ";");
+        this.executeUpdate(updateMailChannel, channelId, guildId);
     }
 
     public void setUserXp(User user, long xp) {
@@ -250,16 +261,16 @@ public class Database {
         }
     }
 
-    // Gibt den das erste Ergebnis zurück. Funktioniert nur mit einer select-column und einer tabelle. Falls Dinge von discord_member geholt werden, als erste id die guil-, als
-    // zweite id die user_id angeben.
-    private <T> T getFirst(String column, String sql, Class<T> type, long... ids) {
+    // Gibt den das erste Ergebnis zurück. Akzeptiert vorgefertigte SELECT statements und gibt das erste ergebnis aus der angegebenen spalte zurück
+    // Für COUNT-Selects muss als Spaltenname "entries" angegeben werden
+    private <T> T getFirst(String column, String sql, Class<T> type, Object... toSet) {
         T ret = null;
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(sql)){
-            for (int i = 0; i < ids.length; i++)
-                statement.setLong((i + 1), ids[i]);
+            databaseLogger.debug("Execute query: " + sql);
+            setStatement(toSet, statement);
             var resultSet = statement.executeQuery();
-            if (resultSet.next())
+            if (resultSet != null && resultSet.next())
                 ret = resultSet.getObject(column, type);
         } catch (SQLException e) {
             databaseLogger.error("Exception caught while executing query or parsing the results", e);
@@ -267,14 +278,54 @@ public class Database {
         return ret;
     }
 
-    private void executeUpdate(String sql, long... longs) {
+    public List<String> getReports(Member member) {
+        List<String> ret = null;
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(selectReports)) {
+            databaseLogger.debug("Execute query: " + selectReports);
+            statement.setInt(1, this.getFirst("member_id", selectFromMember, Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong()));
+            var resultSet = statement.executeQuery();
+            if (resultSet == null) {
+                ret = Collections.EMPTY_LIST;
+            } else {
+                resultSet.next();
+                ret = new ArrayList<>();
+                for (int i = 1; i <= 10; i++)
+                    ret.add(resultSet.getString("report" + i));
+            }
+        } catch (SQLException e) {
+            databaseLogger.error("An Exception occurred while parsing member reports:", e);
+        }
+        return ret;
+    }
+
+    private void executeUpdate(String sql, Object... toSet) {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(sql)) {
-            for (int i = 0; i < longs.length; i++)
-                statement.setLong((i + 1), longs[i]);
+            databaseLogger.debug("Execute update: " + sql);
+            setStatement(toSet, statement);
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            databaseLogger.error("An Exception occurred while trying to execute an update:", e);
+        }
+    }
+
+    private void setStatement(Object[] toSet, PreparedStatement statement) {
+        try {
+            for (int i = 0; i < toSet.length; i++) {
+                Object current = toSet[i];
+                databaseLogger.debug("Setting value for statement: " + current);
+                if (current instanceof Integer)
+                    statement.setInt(i + 1, (int) current);
+                else if (current instanceof Long)
+                    statement.setLong(i + 1, (long) current);
+                else if (current instanceof String)
+                    statement.setString(i + 1, (String) current);
+                else if (current instanceof Boolean)
+                    statement.setBoolean(i + 1, (boolean) current);
+            }
+        } catch (SQLException e) {
+            databaseLogger.error("An exception occurred while setting values for PreparedStatement:", e);
         }
     }
 }
