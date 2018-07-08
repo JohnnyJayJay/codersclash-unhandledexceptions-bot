@@ -26,7 +26,7 @@ public class Database {
     private String selectFromGuild, selectFromMember, selectFromUser,
             countUsers, countGuilds, countMembers,
             insertUser, insertGuild, insertMember,
-            updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl, updatePrefix, updateMailChannel,
+            updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl, updatePrefix, updateMailChannel, updateMaxReports,
             selectReports;
 
     private String[] creationStatements;
@@ -103,6 +103,7 @@ public class Database {
         this.selectReports = "SELECT * FROM reports WHERE member_id = ?;";
         this.updatePrefix = "UPDATE discord_guild SET prefix = ? WHERE guild_id = ?;";
         this.updateMailChannel = "UPDATE discord_guild SET mail_channel = ? WHERE guild_id = ?;";
+        this.updateMaxReports = "UPDATE discord_guild SET reports_until_ban = ? WHERE guild_id = ?;";
         databaseLogger.info("statement preparation successful.");
     }
 
@@ -132,8 +133,8 @@ public class Database {
         this.executeUpdate(updatePermissionLvl, lvl, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
-    public short getPermissionLevel(Member member) {
-        return this.<Short>getFirst("permission_lvl", selectFromMember, Short.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
+    public int getPermissionLevel(Member member) {
+        return this.<Integer>getFirst("permission_lvl", selectFromMember, Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
     public void deleteMember(Member member) {
@@ -150,6 +151,10 @@ public class Database {
 
     public void setMailChannel(long guildId, long channelId) {
         this.executeUpdate(updateMailChannel, channelId, guildId);
+    }
+
+    public void setReportsUntilBan(long guildId, int reportsUntilBan) {
+        this.executeUpdate(updateMaxReports, reportsUntilBan, guildId);
     }
 
     public boolean addReport(Member member, String report) {
@@ -271,8 +276,8 @@ public class Database {
         return this.<Long>getFirst("member_lvl", selectFromMember, Long.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
-    public short getReportsUntilBan(Guild guild) {
-        return this.<Short>getFirst("reports_until_ban", selectFromGuild, Short.TYPE, guild.getIdLong());
+    public int getReportsUntilBan(Guild guild) {
+        return this.<Integer>getFirst("reports_until_ban", selectFromGuild, Integer.TYPE, guild.getIdLong());
     }
 
     public ArrayList<String> orderBy(String table, String orderby) {

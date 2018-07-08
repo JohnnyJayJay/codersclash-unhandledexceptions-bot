@@ -44,7 +44,7 @@ public class ReportCommand implements ICommand {
                     // TODO Überprüfen, ob er gebannt werden muss
                     if (database.addReport(target, reason)) {
                         sendMessage(channel, Type.SUCCESS, String.format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention())).queue();
-                        if (database.getReportsUntilBan(event.getGuild()) >= reportList.size()) {
+                        if (reportList.size() >= database.getReportsUntilBan(event.getGuild())) {
                             event.getGuild().getController().ban(target, 0, String.format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
                                     .queue(null, Messages.defaultFailure(channel));
                         }
