@@ -6,12 +6,11 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.Arrays;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
@@ -38,7 +37,7 @@ public class Permissions implements ICommand {
                             "try-catch-bot. Be careful, members with this role have full control about try-catch-permissions!").queue(), Messages.defaultFailure(channel));
         } else if (!member.getRoles().contains(guild.getRolesByName("try-catch", false).get(0))) {
             sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions. Request help for more. " + member.getAsMention()).queue();
-        } else if (!String.join(" ", args).matches("<@\\d+> [0-5]") || event.getMessage().getMentionedMembers().isEmpty()) {
+        } else if (!String.join(" ", args).matches("<@\\d+> [0-5]") || event.getMessage().getMentionedMembers().isEmpty()) { // TODO neue CommandAPI
             sendMessage(channel, Type.INFO, "Wrong usage. Command info: \n\n" + info(member)).queue();
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);

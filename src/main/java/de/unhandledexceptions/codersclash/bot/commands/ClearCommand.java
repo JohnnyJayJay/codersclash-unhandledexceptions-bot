@@ -35,7 +35,7 @@ public class ClearCommand implements ICommand {
             return;
 
         if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
-            if (args.length == 1 && args[0].matches("[1-9]{1,5}")) {
+            if (args.length == 1 && args[0].matches("[1-9]{1,5}")) { // TODO neue CommandAPI
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
