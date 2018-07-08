@@ -65,6 +65,15 @@ public class Bot {
         this.shardManager.addEventListener(new XPCommand(commandSettings, database));
     }
 
+    public void shutdown() {
+        botLogger.warn("Bot is shutting down...");
+        shardManager.shutdown();
+    }
+
+    public ShardManager getAPI() {
+        return shardManager;
+    }
+
     public CommandSettings getCommandSettings() {
         return commandSettings;
     }
