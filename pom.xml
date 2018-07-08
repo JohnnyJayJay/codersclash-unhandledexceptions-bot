@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.github.johnnyjayjay</groupId>
             <artifactId>CommandAPI</artifactId>
-            <version>3.0_1</version>
+            <version>3.0_3</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -35,13 +35,13 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>3.6.0_367</version>
+            <version>3.6.0_376</version>
         </dependency>
         <!-- Mysql Connector -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>LATEST</version>
+            <version>8.0.11</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -56,10 +56,19 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.12</version>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
         </dependency>
-
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.0.1</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -69,5 +78,5 @@
             <url>http://jcenter.bintray.com</url>
         </repository>
     </repositories>
-    
+
 </project>

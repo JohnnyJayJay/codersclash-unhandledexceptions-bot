@@ -1,0 +1,22 @@
+Permissions system:
+
+Level 0:
+- Help Command
+
+Level 1:
+- User Info command
+
+Level 2:
+- Block Command
+
+Level 3:
+- Mute Command
+- Report Command
+- Clear Command
+
+Level 4:
+- Vote Command
+- Mail Command
+
+Level 5:
+- Settings Command

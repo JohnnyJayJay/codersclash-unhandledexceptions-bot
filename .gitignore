@@ -1,5 +1,6 @@
 .idea/*
-*.class
+logs/*
+target/*
 bot-master.iml
 config.yml
 config.json

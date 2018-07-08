@@ -10,13 +10,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static de.unhandledexceptions.codersclash.bot.util.Logging.configLogger;
+
 public class Config {
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
-    private final int DEFAULT_MAX_SHARDS = 10;
+    private final int DEFAULT_MAX_SHARDS = 3;
     private final long[] BOT_OWNERS = {226011931935375360L, 261083609148948488L, 234343108773412864L, 138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
+    private final long COMMAND_COOLDOWN = 0;
 
     private Path file; // config.json Datei
     private JSONObject config; // Inhalt von config.json
@@ -34,26 +37,32 @@ public class Config {
         boolean success = true;
         try {
             config = new JSONObject(new String(Files.readAllBytes(file))); // config file auslesen und das in ein JSONObject packen
-             // Wenn ein Key irgendwo in der config keinen Wert hat
+            // Wenn ein Key irgendwo in der config keinen Wert hat
             success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
-            System.err.println("[ERROR] Config could not be loaded due to an IOException. Check the application's reading permissions.");
+            configLogger.error("Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
             success = false;
         }
+        configLogger.info("Config successfully loaded!");
         return success; // war das laden der Config erfolgreich?
     }
 
     public void create() {
         try {
             Path dir = file.getParent(); // Ordner, in dem die config ist
-            if (dir != null && Files.notExists(dir)) // Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
+            if (dir != null && Files.notExists(dir)) {// Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
                 Files.createDirectories(dir);
-            if (Files.notExists(file)) // wenn die datei selbst noch nicht existiert
+                configLogger.warn("Config Folder is getting created");
+            }
+            if (Files.notExists(file)) { // wenn die datei selbst noch nicht existiert
                 file = Files.createFile(file);
+                configLogger.warn("Config File is getting created");
+            }
             Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
+            configLogger.info("Default config.json content created");
         } catch (IOException e) {
-            System.err.println("[ERROR] Config couldn't be created. Please check if this application has permission to write files.");
+            configLogger.error("Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
     }
@@ -67,9 +76,10 @@ public class Config {
                 .key("NAME").value(BOT_NAME).endObject()
                 .key("TOKEN").value(null)
                 .key("DEFAULT_PREFIX").value(null)
+                .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
-                .key("URL").value(null)
+                .key("IP").value(null)
                 .key("PORT").value(null)
                 .key("DB_NAME").value(null)
                 .key("USERNAME").value(null)
@@ -107,8 +117,8 @@ public class Config {
         return config.getString("DEFAULT_PREFIX");
     }
 
-    public String getDBUrl() {
-        return config.getJSONObject("DATABASE").getString("URL");
+    public String getDBIp() {
+        return config.getJSONObject("DATABASE").getString("IP");
     }
 
     public String getDBPort(){
@@ -127,7 +137,4 @@ public class Config {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
     }
 
-    public String getName() {
-        return file.getFileName().toString();
-    }
 }
