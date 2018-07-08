@@ -3,9 +3,11 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
+import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
+import org.slf4j.Logger;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,11 +15,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.unhandledexceptions.codersclash.bot.util.Logging.databaseLogger;
 import static java.lang.String.format;
 
 public class Database {
 
+    private static Logger logger = Logging.getLogger();
     private boolean connected;
 
     private HikariConfig config;
@@ -46,14 +48,14 @@ public class Database {
             String sql = "CREATE DATABASE IF NOT EXISTS " + dbname + ";";
             try (var connection = DriverManager.getConnection(format("jdbc:mysql://%s:%s/?serverTimezone=UTC", ip, port), username, password);
                  var preparedStatement = connection.prepareStatement(sql)) {
-                databaseLogger.info("Creating database (if not exists)...");
+                logger.info("Creating database (if not exists)...");
                 preparedStatement.executeUpdate();
-                databaseLogger.info("Database created (or it already existed).");
+                logger.info("Database created (or it already existed).");
             } catch (SQLException e) {
-                databaseLogger.warn("Exception caught while connecting", e);
+                logger.warn("Exception caught while connecting", e);
             }
             config = new HikariConfig();
-            databaseLogger.info("Connecting to " + ip + "...");
+            logger.info("Connecting to " + ip + "...");
 
             config.setJdbcUrl(format("jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", ip, port, dbname));
             config.setUsername(username);
@@ -65,17 +67,17 @@ public class Database {
             try {
                 dataSource = new HikariDataSource(config);
                 connected = true;
-                databaseLogger.info("Database connection pool successfully opened.");
+                logger.info("Database connection pool successfully opened.");
                 this.createStatements();
             } catch (HikariPool.PoolInitializationException e) {
-                databaseLogger.error(" Error while connecting to database. Check your config.", e);
+                logger.error(" Error while connecting to database. Check your config.", e);
                 System.exit(1);
             }
         }
     }
 
     private void createStatements() {
-        databaseLogger.info("Preparing statements...");
+        logger.info("Preparing statements...");
         this.creationStatements = new String[] {
                 "CREATE TABLE IF NOT EXISTS discord_guild (reports_until_ban SMALLINT DEFAULT 3, xp_system_activated BIT(1) DEFAULT 1,prefix VARCHAR(30),guild_id BIGINT NOT " +
                         "NULL,mail_channel BIGINT,PRIMARY KEY (guild_id));",
@@ -104,13 +106,13 @@ public class Database {
         this.updatePrefix = "UPDATE discord_guild SET prefix = ? WHERE guild_id = ?;";
         this.updateMailChannel = "UPDATE discord_guild SET mail_channel = ? WHERE guild_id = ?;";
         this.updateMaxReports = "UPDATE discord_guild SET reports_until_ban = ? WHERE guild_id = ?;";
-        databaseLogger.info("statement preparation successful.");
+        logger.info("statement preparation successful.");
     }
 
     public void disconnect() {
         if (connected) {
             dataSource.close();
-            databaseLogger.warn("Database disconnected!");
+            logger.warn("Database disconnected!");
             connected = false;
         }
     }
@@ -118,14 +120,14 @@ public class Database {
     public void createTablesIfNotExist() {
         try (var connection = dataSource.getConnection()) {
             for (String statement : this.creationStatements) {
-                databaseLogger.debug(statement);
+                logger.debug(statement);
                 try (var preparedStatement = connection.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
-            databaseLogger.info("Tables have been created (or they existed already).");
+            logger.info("Tables have been created (or they existed already).");
         } catch (SQLException e) {
-            databaseLogger.error("Exception caught while creating tables", e);
+            logger.error("Exception caught while creating tables", e);
         }
     }
 
@@ -180,7 +182,7 @@ public class Database {
             statement.executeUpdate();
             statement2.executeUpdate();
         } catch (SQLException e) {
-            databaseLogger.error("An Exception occurred while removing reports", e);
+            logger.error("An Exception occurred while removing reports", e);
         }
     }
 
@@ -189,7 +191,7 @@ public class Database {
         int where = 0;
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(selectReports)) {
-            databaseLogger.debug("Execute query: " + selectReports);
+            logger.debug("Execute query: " + selectReports);
             statement.setInt(1, memberId);
             var resultSet = statement.executeQuery();
             resultSet.next();
@@ -205,7 +207,7 @@ public class Database {
             this.executeUpdate("UPDATE reports SET report" + where + " = NULL WHERE member_id = ?;", memberId);
 
         } catch (SQLException e) {
-            databaseLogger.error("An Exception occurred while deleting report", e);
+            logger.error("An Exception occurred while deleting report", e);
         }
 
     }
@@ -327,13 +329,13 @@ public class Database {
         T ret = null;
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(sql)){
-            databaseLogger.debug("Execute query: " + sql);
+            logger.debug("Execute query: " + sql);
             setStatement(toSet, statement);
             var resultSet = statement.executeQuery();
             if (resultSet != null && resultSet.next())
                 ret = resultSet.getObject(column, type);
         } catch (SQLException e) {
-            databaseLogger.error("Exception caught while executing query or parsing the results", e);
+            logger.error("Exception caught while executing query or parsing the results", e);
         }
         return ret;
     }
@@ -346,7 +348,7 @@ public class Database {
         List<String> ret = null;
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(selectReports)) {
-            databaseLogger.debug("Execute query: " + selectReports);
+            logger.debug("Execute query: " + selectReports);
             statement.setInt(1, this.getMemberId(member.getGuild().getIdLong(), member.getUser().getIdLong()));
             var resultSet = statement.executeQuery();
             resultSet.next();
@@ -358,7 +360,7 @@ public class Database {
                     ret.add(report);
             }
         } catch (SQLException e) {
-            databaseLogger.error("An Exception occurred while parsing member reports:", e);
+            logger.error("An Exception occurred while parsing member reports:", e);
         }
         return ret;
     }
@@ -366,11 +368,11 @@ public class Database {
     private void executeUpdate(String sql, Object... toSet) {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(sql)) {
-            databaseLogger.debug("Execute update: " + sql);
+            logger.debug("Execute update: " + sql);
             setStatement(toSet, statement);
             statement.executeUpdate();
         } catch (SQLException e) {
-            databaseLogger.error("An Exception occurred while trying to execute an update:", e);
+            logger.error("An Exception occurred while trying to execute an update:", e);
         }
     }
 
@@ -378,7 +380,7 @@ public class Database {
         try {
             for (int i = 0; i < toSet.length; i++) {
                 Object current = toSet[i];
-                databaseLogger.debug("Setting value for statement: " + current);
+                logger.debug("Setting value for statement: " + current);
                 if (current instanceof Short)
                     statement.setShort(i + 1, (short) current);
                 else if (current instanceof Integer)
@@ -391,7 +393,7 @@ public class Database {
                     statement.setBoolean(i + 1, (boolean) current);
             }
         } catch (SQLException e) {
-            databaseLogger.error("An exception occurred while setting values for PreparedStatement:", e);
+            logger.error("An exception occurred while setting values for PreparedStatement:", e);
         }
     }
 }

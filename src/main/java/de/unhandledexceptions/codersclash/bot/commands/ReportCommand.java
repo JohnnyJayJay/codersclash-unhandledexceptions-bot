@@ -22,7 +22,7 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
  */
 public class ReportCommand implements ICommand {
 
-    private Logger logger = Logging.getLogger();
+    private static Logger logger = Logging.getLogger();
     private Database database;
 
     public ReportCommand(Database database) {

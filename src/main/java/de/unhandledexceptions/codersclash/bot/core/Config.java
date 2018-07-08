@@ -1,8 +1,10 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
 
+import de.unhandledexceptions.codersclash.bot.util.Logging;
 import org.json.JSONObject;
 import org.json.JSONStringer;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,9 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static de.unhandledexceptions.codersclash.bot.util.Logging.configLogger;
-
 public class Config {
+
+    private static Logger logger = Logging.getLogger();
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
     private final int DEFAULT_MAX_SHARDS = 3;
@@ -40,11 +42,11 @@ public class Config {
             // Wenn ein Key irgendwo in der config keinen Wert hat
             success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
-            configLogger.error("Config could not be loaded due to an IOException. Check the application's reading permissions.");
+            logger.error("Config could not be loaded due to an IOException. Check the application's reading permissions.");
             e.printStackTrace();
             success = false;
         }
-        configLogger.info("Config successfully loaded!");
+        logger.info("Config successfully loaded!");
         return success; // war das laden der Config erfolgreich?
     }
 
@@ -53,16 +55,16 @@ public class Config {
             Path dir = file.getParent(); // Ordner, in dem die config ist
             if (dir != null && Files.notExists(dir)) {// Wenn die config einen ordner hat und dieser noch nicht erstellt wurde
                 Files.createDirectories(dir);
-                configLogger.warn("Config Folder is getting created");
+                logger.warn("Config Folder is getting created");
             }
             if (Files.notExists(file)) { // wenn die datei selbst noch nicht existiert
                 file = Files.createFile(file);
-                configLogger.warn("Config File is getting created");
+                logger.warn("Config File is getting created");
             }
             Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
-            configLogger.info("Default config.json content created");
+            logger.info("Default config.json content created");
         } catch (IOException e) {
-            configLogger.error("Config couldn't be created. Please check if this application has permission to write files.");
+            logger.error("Config couldn't be created. Please check if this application has permission to write files.");
             e.printStackTrace();
         }
     }
