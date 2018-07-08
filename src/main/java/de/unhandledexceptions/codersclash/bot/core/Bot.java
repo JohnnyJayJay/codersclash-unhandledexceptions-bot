@@ -4,7 +4,6 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
 import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
-import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
@@ -57,7 +56,7 @@ public class Bot {
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
-                .put(new ReportCommand(database), "getreports")
+                .put(new ReportCommand(database), "report", "rep")
                 .activate();
 
         for (var guild : shardManager.getGuilds()) {

@@ -1,17 +1,5 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
-import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
-import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
-import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import static de.unhandledexceptions.codersclash.bot.util.Logging.mainLogger;
 
 public class Main {

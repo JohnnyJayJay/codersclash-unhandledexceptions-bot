@@ -11,18 +11,14 @@ import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Icon;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -39,7 +35,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
-        database.createUserIfNotExists(member.getUser().getIdLong());
         database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         long xp = database.getGuildXp(member);
         long maxxp = database.getGuildLvl(member)*4;
@@ -65,17 +60,20 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
+            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getUser().getIdLong());
             event.getReaction().getTextChannel()
                     .getMessageById(event.getReaction().getMessageId()).queue(
                             (msg) -> database.addXp(msg.getMember(), 1)
             );
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
+            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getUser().getIdLong());
             event.getReaction().getTextChannel().getMessageById(event.getReaction().getMessageId()).queue(
                     (msg) -> database.removeXp(event.getMember(), 1)
             );
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
+            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getAuthor().getIdLong());
             if (!event.getAuthor().isBot()) {
                 if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
                     ArrayList<String> names = new ArrayList<>() {{
