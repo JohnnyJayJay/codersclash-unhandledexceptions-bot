@@ -1,11 +1,6 @@
 package de.unhandledexceptions.bot.core;
 
-import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
-import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.core.Database;
-import de.unhandledexceptions.codersclash.bot.core.Permissions;
-import net.dv8tion.jda.core.entities.impl.JDAImpl;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
