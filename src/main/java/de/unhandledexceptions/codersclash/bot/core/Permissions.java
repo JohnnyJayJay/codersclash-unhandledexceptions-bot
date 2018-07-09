@@ -65,4 +65,9 @@ public class Permissions implements ICommand {
         database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         return database.getPermissionLevel(member);
     }
+
+    public static int getVotePermissionLevel()
+    {
+        return 4;
+    }
 }
