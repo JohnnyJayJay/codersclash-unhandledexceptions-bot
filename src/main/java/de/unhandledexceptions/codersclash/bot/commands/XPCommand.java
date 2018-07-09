@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Logger;
 
 public class XPCommand extends ListenerAdapter implements ICommand {
 
@@ -106,9 +107,12 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                 database.addXp(event.getMember(), result);
             }
         }
-        origevent.getChannel().getMessageById(origevent.getMessageId()).queue(
-                (msg) -> this.checkLvl(msg.getMember())
-        );
+
+        // TODO (vorläufiger Test, ob das die NPEs verhindert
+        origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
+            database.createMemberIfNotExists(msg.getGuild().getIdLong(), msg.getAuthor().getIdLong());
+            this.checkLvl(msg.getMember());
+        });
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {

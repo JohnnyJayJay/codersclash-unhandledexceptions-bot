@@ -44,11 +44,9 @@ public class ReportCommand implements ICommand {
                     String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
                     if (database.addReport(target, reason)) {
                         sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention())).queue();
-                        if (reportList.size() >= database.getReportsUntilBan(event.getGuild())) {
-                            if (event.getGuild().getSelfMember().canInteract(target)) {
-                                event.getGuild().getController().ban(target, 0, format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
-                                        .queue(null, Messages.defaultFailure(channel));
-                            }
+                        if (reportList.size() >= database.getReportsUntilBan(event.getGuild()) && event.getGuild().getSelfMember().canInteract(target)) {
+                            event.getGuild().getController().ban(target, 0, format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
+                                    .queue(null, Messages.defaultFailure(channel));
                         }
                     } else {
                         sendMessage(channel, Type.WARNING, "This member already has 10 reports!").queue();
