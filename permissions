@@ -5,7 +5,7 @@ Level 0:
 
 Level 1:
 - User Info command
--XP Command
+- XP Command
 
 Level 2:
 - Block Command
@@ -22,3 +22,4 @@ Level 4:
 Level 5:
 - Settings Command
 - Mail Command
+- Role Command
