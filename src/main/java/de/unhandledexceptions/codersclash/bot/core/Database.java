@@ -12,8 +12,7 @@ import org.slf4j.Logger;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.String.format;
 
@@ -139,12 +138,14 @@ public class Database {
         return this.<Integer>getFirst("permission_lvl", selectFromMember, Integer.TYPE, member.getGuild().getIdLong(), member.getUser().getIdLong());
     }
 
-    public void deleteMember(Member member) {
-        // TODO
+    public void deleteMember(long guildId, long userId) {
+        // TODO Testen
+        this.executeUpdate("DELETE FROM discord_member WHERE guild_id = ? AND user_id = ?;", guildId, userId);
     }
 
-    public void deleteGuild(Guild guild) {
-        // TODO
+    public void deleteGuild(long guildId) {
+        // TODO Testen
+        this.executeUpdate("DELETE FROM discord_guild WHERE guild_id = ?;", guildId);
     }
 
     public void setPrefix(long guildId, String prefix) {
@@ -258,8 +259,19 @@ public class Database {
         }
     }
 
-    public String getPrefix(Guild guild) {
-        return this.getFirst("prefix", selectFromGuild, String.class, guild.getIdLong());
+    public Map<Long, String> getPrefixes() {
+        Map<Long, String> ret = Collections.EMPTY_MAP;
+        try (var connection = dataSource.getConnection();
+             var preparedstatement = connection.prepareStatement("SELECT guild_id, prefix FROM discord_guild;")) {
+            var resultSet = preparedstatement.executeQuery();
+            ret = new HashMap<>();
+            while (resultSet.next()) {
+                ret.put(resultSet.getLong("guild_id"), resultSet.getString("prefix"));
+            }
+        } catch (SQLException e) {
+            logger.error("An Exception occurred while getting guild prefixes from database:", e);
+        }
+        return ret;
     }
 
     public long getUserXp(User user) {
