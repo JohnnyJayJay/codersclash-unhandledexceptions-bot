@@ -85,28 +85,29 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             );
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
-            if (!event.getAuthor().isBot()) {
-                if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-                    try {
-                        for (String name : urls.keySet()) {
-                            if (event.getMember().getGuild().getEmotesByName(name, true).size() == 0) {
-                                event.getMember().getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
-                            }
+            if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
+                return;
+
+            if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
+                try {
+                    for (String name : urls.keySet()) {
+                        if (event.getMember().getGuild().getEmotesByName(name, true).size() == 0) {
+                            event.getMember().getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
                         }
-                    } catch (IOException e) {
-                        Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
                     }
+                } catch (IOException e) {
+                    Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
                 }
-                int length = event.getMessage().getContentRaw().length();
-                int result;
-                if (length > 10) {
-                    result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
-                } else result = ThreadLocalRandom.current().nextInt(length);
-                database.addXp(event.getMember(), result);
             }
+            int length = event.getMessage().getContentRaw().length();
+            int result;
+            if (length > 10) {
+                result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
+            } else result = ThreadLocalRandom.current().nextInt(length);
+            database.addXp(event.getMember(), result);
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
-            if (msg.getType() == MessageType.DEFAULT)
+            if (msg.getType() == MessageType.DEFAULT && !msg.isWebhookMessage())
                 this.checkLvl(msg.getMember());
         });
 
