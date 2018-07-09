@@ -62,7 +62,7 @@ public class Bot {
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.YELLOW)
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
-                .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute")
+                .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
