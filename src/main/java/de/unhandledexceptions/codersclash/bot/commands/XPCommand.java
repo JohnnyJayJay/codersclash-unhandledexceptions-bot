@@ -13,6 +13,7 @@ import net.dv8tion.jda.core.entities.Icon;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
@@ -70,6 +71,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     @Override
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
+        // FIXME Exceptions bei pinned messages und webhooks
+        if (origevent instanceof GuildMessageDeleteEvent)
+            return;
+
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
             event.getReaction().getTextChannel()
@@ -103,11 +108,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                 database.addXp(event.getMember(), result);
             }
         }
-
-        // TODO (vorläufiger Test, ob das die NPEs verhindert
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
             this.checkLvl(msg.getMember());
         });
+
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {

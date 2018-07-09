@@ -35,7 +35,7 @@ public class ClearCommand implements ICommand {
             return;
 
         if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
-            if (args.length == 1 && args[0].matches("[1-9]{1,5}")) {
+            if (args.length == 1 && args[0].matches("\\d{1,5}") && !args[0].equals("0")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
@@ -71,16 +71,14 @@ public class ClearCommand implements ICommand {
                     channel.deleteMessages(deletableMsgs).queue(
                             (v) -> this.success(channel), defaultFailure(channel));
                 }
-                // In allen Fällen: Warnung, dass manche messages evtl. nicht gelöscht wurden
-                sendMessage(channel, Type.WARNING, "Note that some messages might not have been deleted because they are older than two weeks.").queue(
-                        (msg) -> msg.delete().queueAfter(6, TimeUnit.SECONDS), defaultFailure(channel));
             }
         });
     }
 
     // Standard success callback
     private void success(TextChannel channel) {
-        sendMessage(channel, Type.SUCCESS, "Successfully deleted message(s).").queue((msg) -> msg.delete().queueAfter(5, TimeUnit.SECONDS));
+        sendMessage(channel, Type.SUCCESS, "Successfully deleted message(s)! Note that some messages might not have been deleted because they are older than two weeks.")
+                .queue((msg) -> msg.delete().queueAfter(8, TimeUnit.SECONDS));
     }
 
     @Override

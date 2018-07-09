@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
+import de.unhandledexceptions.codersclash.bot.commands.GuildMuteCommand;
 import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
@@ -57,15 +58,16 @@ public class Bot {
         logger.info("CommandSettings are being configured");
         // command settings einstellen
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
+        var xpCommand = new XPCommand(commandSettings, database);
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.YELLOW)
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
+                .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
-                .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
+                .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
                 .activate();
-
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), new DatabaseListener(database));
+        this.shardManager.addEventListener(xpCommand, new DatabaseListener(database, shardManager));
     }
 
     public void shutdown() {
