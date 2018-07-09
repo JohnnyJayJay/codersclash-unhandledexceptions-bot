@@ -10,6 +10,7 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
+import java.awt.*;
 
 public class Bot {
 
@@ -20,7 +21,7 @@ public class Bot {
 
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
-    private CommandSettings commandSettings;
+    private static CommandSettings commandSettings;
 
     private static Logger logger = Logging.getLogger();
 
@@ -55,6 +56,7 @@ public class Bot {
         logger.info("CommandSettings are being configured");
         // command settings einstellen
         commandSettings.addHelpLabels("help", "helpme", "commands")
+                .setHelpCommandColor(Color.YELLOW)
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
@@ -78,5 +80,9 @@ public class Bot {
 
     public CommandSettings getCommandSettings() {
         return commandSettings;
+    }
+
+    public static String getPrefix(long guildId) {
+        return commandSettings.getPrefix(guildId);
     }
 }
