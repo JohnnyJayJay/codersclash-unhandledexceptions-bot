@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
 import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
+import de.unhandledexceptions.codersclash.bot.commands.VoteCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
 import de.unhandledexceptions.codersclash.bot.listeners.DeleteListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -55,6 +56,9 @@ public class Bot {
         }
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         logger.info("CommandSettings are being configured");
+
+        VoteCommand voteCommand = new VoteCommand(database);
+
         // command settings einstellen
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
         commandSettings.addHelpLabels("help", "helpme", "commands")
@@ -63,9 +67,10 @@ public class Bot {
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
+                .put(voteCommand, "vote")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), new DeleteListener(database));
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), new DeleteListener(database), voteCommand);
     }
 
     public void shutdown() {
@@ -79,6 +84,10 @@ public class Bot {
 
     public CommandSettings getCommandSettings() {
         return commandSettings;
+    }
+
+    public static String getPrefix(long guildId) {
+        return commandSettings.getPrefix(guildId);
     }
 
 }
