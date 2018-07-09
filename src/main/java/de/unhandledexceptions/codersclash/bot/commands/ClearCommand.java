@@ -35,7 +35,7 @@ public class ClearCommand implements ICommand {
             return;
 
         if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
-            if (args.length == 1 && args[0].matches("[1-9]{1,5}")) { // TODO neue CommandAPI
+            if (args.length == 1 && args[0].matches("[1-9]{1,5}")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
@@ -85,6 +85,7 @@ public class ClearCommand implements ICommand {
 
     @Override
     public String info(Member member) {
+        // TODO
         return String.format("**Description**: clears up to 100 messages at a time.\n\n**Usage**: `%s[clear|clean|delete] <amount>`\n\n**Permission level**: `3`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }
