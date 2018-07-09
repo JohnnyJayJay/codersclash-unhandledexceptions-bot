@@ -2,9 +2,12 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+<<<<<<< HEAD
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import net.dv8tion.jda.core.entities.Guild;
+=======
+>>>>>>> de67e4f073d9b30f3edcaafad808c46b858d5e7a
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;

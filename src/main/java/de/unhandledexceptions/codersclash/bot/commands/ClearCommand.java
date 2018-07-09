@@ -85,6 +85,7 @@ public class ClearCommand implements ICommand {
 
     @Override
     public String info(Member member) {
+        // TODO
         return String.format("**Description**: clears up to 100 messages at a time.\n\n**Usage**: `%s[clear|clean|delete] <amount>`\n\n**Permission level**: `3`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }

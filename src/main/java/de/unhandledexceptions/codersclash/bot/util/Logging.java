@@ -19,23 +19,4 @@ public class Logging {
         return LoggerFactory.getLogger(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass());
     }
 
-    public static final Logger clearCommandLogger = LoggerFactory.getLogger(ClearCommand.class);
-
-    public static final Logger settingsCommandLogger = LoggerFactory.getLogger(SettingsCommand.class);
-
-    public static final Logger voteCommandLogger = LoggerFactory.getLogger(VoteCommand.class);
-
-    public static final Logger botLogger = LoggerFactory.getLogger(Bot.class);
-
-    public static final Logger configLogger = LoggerFactory.getLogger(Config.class);
-
-    public static final Logger databaseLogger = LoggerFactory.getLogger(Database.class);
-
-    public static final Logger mainLogger = LoggerFactory.getLogger(Main.class);
-
-    public static final Logger permissionsLogger = LoggerFactory.getLogger(Permissions.class);
-
-    public static final Logger readyListenerLogger = LoggerFactory.getLogger(ReadyListener.class);
-
-
 }
