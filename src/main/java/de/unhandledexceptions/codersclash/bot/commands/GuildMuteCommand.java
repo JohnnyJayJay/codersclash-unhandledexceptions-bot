@@ -90,6 +90,12 @@ public class GuildMuteCommand implements ICommand {
         });
     }
 
+    @Override
+    public String info(Member member) {
+        // TODO
+        return " ";
+    }
+
     private class ReactionListener extends ListenerAdapter {
 
         private final long messageId;

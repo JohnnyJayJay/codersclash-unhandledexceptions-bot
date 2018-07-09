@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
@@ -35,7 +36,7 @@ public class ClearCommand implements ICommand {
             return;
 
         if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
-            if (args.length == 1 && args[0].matches("\\d{1,5}") && !args[0].equals("0")) {
+            if (args.length == 1 && args[0].matches("\\d{1,4}") && !args[0].equals("0")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
@@ -83,7 +84,12 @@ public class ClearCommand implements ICommand {
 
     @Override
     public String info(Member member) {
-        // TODO
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 3 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Clears up to 9999 messages at a time. Though it is recommended to use it carefully. Deleting might take a while.\n\n" +
+                        "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t\t`%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
+                        "level**: `3`");
         return String.format("**Description**: clears up to 100 messages at a time.\n\n**Usage**: `%s[clear|clean|delete] <amount>`\n\n**Permission level**: `3`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }
