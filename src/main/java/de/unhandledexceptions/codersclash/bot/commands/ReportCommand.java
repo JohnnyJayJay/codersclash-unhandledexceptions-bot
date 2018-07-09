@@ -39,11 +39,11 @@ public class ReportCommand implements ICommand {
             if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(<@\\d+> .+)|((get|remove) <@\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 var reportList = database.getReports(target);
-                database.createMemberIfNotExists(target.getGuild().getIdLong(), target.getUser().getIdLong());
                 if (args[0].matches("<@\\d+>")) {
                     String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
                     if (database.addReport(target, reason)) {
-                        sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention())).queue();
+                        sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention()))
+                                .queue(null, Messages.defaultFailure(channel));
                         if (reportList.size() >= database.getReportsUntilBan(event.getGuild()) && event.getGuild().getSelfMember().canInteract(target)) {
                             event.getGuild().getController().ban(target, 0, format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
                                     .queue(null, Messages.defaultFailure(channel));
@@ -57,7 +57,7 @@ public class ReportCommand implements ICommand {
                         index = Short.parseShort(args[2]);
                     if (args[0].equalsIgnoreCase("get")) {
                         if (index != 0) {
-                            if (index < reportList.size()) {
+                            if (index <= reportList.size()) {
                                 sendMessage(channel, Type.INFO, format("Report `%d` of Member `%#s`:\n```\n%s```", index, target.getUser(), reportList.get(index - 1)))
                                         .queue(null, Messages.defaultFailure(channel));
                             } else {
@@ -75,7 +75,7 @@ public class ReportCommand implements ICommand {
                         }
                     } else if (args[0].equalsIgnoreCase("remove")) {
                         if (index != 0) {
-                            if (index < reportList.size()) {
+                            if (index <= reportList.size()) {
                                 database.removeReport(target, index);
                                 sendMessage(channel, Type.SUCCESS, format("Successfully removed report `%d` from `%#s`.", index, target.getUser())).queue();
                             } else {

@@ -13,6 +13,7 @@ import net.dv8tion.jda.core.entities.Icon;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
@@ -47,7 +48,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
         // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
-        database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
         long xp = database.getGuildXp(member);
         long maxxp = database.getGuildLvl(member)*4;
         EmbedBuilder embedBuilder = new EmbedBuilder()
@@ -71,22 +71,23 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     @Override
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
+        // FIXME Exceptions bei pinned messages und webhooks
+        if (origevent instanceof GuildMessageDeleteEvent)
+            return;
+
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
-            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getUser().getIdLong());
             event.getReaction().getTextChannel()
                     .getMessageById(event.getReaction().getMessageId()).queue(
                             (msg) -> database.addXp(msg.getMember(), 1)
             );
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
-            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getUser().getIdLong());
             event.getReaction().getTextChannel().getMessageById(event.getReaction().getMessageId()).queue(
                     (msg) -> database.removeXp(event.getMember(), 1)
             );
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
-            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getAuthor().getIdLong());
             if (!event.getAuthor().isBot()) {
                 if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
                     try {
@@ -107,12 +108,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                 database.addXp(event.getMember(), result);
             }
         }
-
-        // TODO (vorläufiger Test, ob das die NPEs verhindert
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
-            database.createMemberIfNotExists(msg.getGuild().getIdLong(), msg.getAuthor().getIdLong());
             this.checkLvl(msg.getMember());
         });
+
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
@@ -154,8 +153,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             stringBuilder.append(emote.getAsMention());
         }
         stringBuilder.append("\n\n");
-        // FIXME was ist das ? xD
-        //database."SELECT * FROM Customers ORDER BY CustomerID;"
         return stringBuilder.toString();
     }
 
