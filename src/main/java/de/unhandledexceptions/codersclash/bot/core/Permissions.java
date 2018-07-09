@@ -37,7 +37,7 @@ public class Permissions implements ICommand {
                             "try-catch-bot. Be careful, members with this role have full control about try-catch-permissions!").queue(), Messages.defaultFailure(channel));
         } else if (!member.getRoles().contains(guild.getRolesByName("try-catch", false).get(0))) {
             sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions. Request help for more. " + member.getAsMention()).queue();
-        } else if (!String.join(" ", args).matches("<@\\d+> [0-5]") || event.getMessage().getMentionedMembers().isEmpty()) { // TODO neue CommandAPI
+        } else if (!event.getCommand().getJoinedArgs().matches("<@\\d+> [0-5]") || event.getMessage().getMentionedMembers().isEmpty()) {
             sendMessage(channel, Type.INFO, "Wrong usage. Command info: \n\n" + info(member)).queue();
         } else {
             var target = event.getMessage().getMentionedMembers().get(0);
@@ -50,12 +50,13 @@ public class Permissions implements ICommand {
     
     @Override
     public String info(Member member) {
-        String[] prefix = new String[9];
-        Arrays.fill(prefix, settings.getPrefix(member.getGuild().getIdLong()));
+        String prefix = settings.getPrefix(member.getGuild().getIdLong());
+        String[] prefixArr = new String[9];
+        Arrays.fill(prefixArr, prefix);
         String ret = member.getRoles().stream().map(Role::getName).anyMatch((role) -> role.equals("try-catch"))
                 ? String.format("Manage try-catch permissions and configure the different permission levels.\n```\nLevel 0: %shelp\nLevel 1: %suserinfo\nLevel 2: " +
                 "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote and %smail\nLevel 5: %ssettings```\n\nUsage: `%s[permission|perms|perm] <member> " +
-                "<level>` (level may be 0-5)\n\nTo execute this command, the member needs to have a role named \"try-catch\".", prefix)
+                "<level>` (level may be 0-5)\n\nTo execute this command, the member needs to have a role named \"try-catch\".", prefixArr)
                 : "This command is not available for you.\n **Permissions needed**: `try-catch` role.";
         return ret;
     }

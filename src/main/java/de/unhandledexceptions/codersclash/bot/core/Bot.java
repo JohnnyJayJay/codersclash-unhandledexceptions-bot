@@ -22,7 +22,7 @@ public class Bot {
 
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
-    private CommandSettings commandSettings;
+    private static CommandSettings commandSettings;
 
     private static Logger logger = Logging.getLogger();
 
@@ -79,5 +79,9 @@ public class Bot {
 
     public CommandSettings getCommandSettings() {
         return commandSettings;
+    }
+
+    public static String getPrefix(long guildId) {
+        return commandSettings.getPrefix(guildId);
     }
 }
