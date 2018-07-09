@@ -52,7 +52,7 @@ public class Bot {
         this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         botLogger.info("CommandSettings are being configured");
         // command settings einstellen
-        commandSettings.setHelpLabels("help", "helpme", "commands")
+        commandSettings.addHelpLabels("help", "helpme", "commands")
                 .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
