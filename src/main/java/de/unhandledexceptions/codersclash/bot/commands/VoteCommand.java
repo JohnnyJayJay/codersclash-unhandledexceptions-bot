@@ -2,7 +2,6 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
