@@ -8,6 +8,7 @@ import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -36,10 +37,10 @@ public class ReportCommand implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
             return;
         if (Permissions.getPermissionLevel(member) >= 3) {
-            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(<@\\d+> .+)|((get|remove) <@\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
+            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(<@!?\\d+> .+)|((get|remove) <@!?\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 var reportList = database.getReports(target);
-                if (args[0].matches("<@\\d+>")) {
+                if (args[0].matches(Regex.MEMBER_MENTION)) {
                     String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
                     if (database.addReport(target, reason)) {
                         sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention()))

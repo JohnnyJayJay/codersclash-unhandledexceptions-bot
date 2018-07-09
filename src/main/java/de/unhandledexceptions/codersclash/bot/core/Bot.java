@@ -57,8 +57,8 @@ public class Bot {
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
         var xpCommand = new XPCommand(commandSettings, database);
         commandSettings.addHelpLabels("help", "helpme", "commands")
-                .setHelpCommandColor(Color.YELLOW)
-                .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
+                .setHelpCommandColor(Color.CYAN)
+                .put(new ClearCommand(), "clear", "clean", "delete")
                 .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")

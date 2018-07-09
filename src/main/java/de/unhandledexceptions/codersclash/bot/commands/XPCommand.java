@@ -8,10 +8,7 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.Icon;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -64,7 +61,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
     @Override
     public String info(Member member) {
-        return String.format("**Description**: Gives you information about your Level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
+        return String.format("**Description**: Gives you information about your level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }
 
@@ -84,7 +81,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
             event.getReaction().getTextChannel().getMessageById(event.getReaction().getMessageId()).queue(
-                    (msg) -> database.removeXp(event.getMember(), 1)
+                    (msg) -> database.removeXp(msg.getMember(), 1)
             );
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
@@ -109,7 +106,8 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             }
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
-            this.checkLvl(msg.getMember());
+            if (msg.getType() == MessageType.DEFAULT)
+                this.checkLvl(msg.getMember());
         });
 
     }

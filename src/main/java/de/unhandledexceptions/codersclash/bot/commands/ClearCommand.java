@@ -1,10 +1,12 @@
 package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
-import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import de.unhandledexceptions.codersclash.bot.util.Regex;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -23,26 +25,20 @@ import static java.lang.String.format;
 // FIXME ErrorResponseActions
 public class ClearCommand implements ICommand {
 
-    private CommandSettings settings;
-
-    public ClearCommand(CommandSettings settings) {
-        this.settings = settings;
-    }
-
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         // Wenn eine Permission fehlt
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY, Permission.MESSAGE_WRITE))
             return;
 
-        if (Permissions.getPermissionLevel(member) >= 3) { // Benötigtes Permission level überprüfen
-            if (args.length == 1 && args[0].matches("\\d{1,4}") && !args[0].equals("0")) {
+        if (Permissions.getPermissionLevel(member) >= 4) { // Benötigtes Permission level überprüfen
+            if (args.length == 1 && Regex.argsMatch(args, "((\\d{1,4})&[^0])")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
                 sendMessage(channel, Type.WARNING, String.format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
             } else {
-                sendMessage(channel, Type.INFO, String.format("Correct usage: `%s[clear|clean|delete] <amount>`", settings.getPrefix(event.getGuild().getIdLong()))).queue();
+                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + info(member)).queue();
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -85,13 +81,11 @@ public class ClearCommand implements ICommand {
     @Override
     public String info(Member member) {
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 3 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
-                "level: `" + permLevel + "`"
+        String ret = permLevel < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
+                "`3`\nYour permission level: `" + permLevel + "`"
                 : format("**Description**: Clears up to 9999 messages at a time. Though it is recommended to use it carefully. Deleting might take a while.\n\n" +
-                        "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t\t`%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
-                        "level**: `3`");
-        return String.format("**Description**: clears up to 100 messages at a time.\n\n**Usage**: `%s[clear|clean|delete] <amount>`\n\n**Permission level**: `3`",
-                settings.getPrefix(member.getGuild().getIdLong()));
+                "**Usage**: `%s[clear|clean|delete] <amount>` (amount must be a number between 1-9999)\n\n**Permission level**: `4`", Bot.getPrefix(member.getGuild().getIdLong()));
+        return ret;
     }
 }
 
