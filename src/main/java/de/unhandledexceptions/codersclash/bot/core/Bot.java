@@ -4,14 +4,14 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
 import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
-import de.unhandledexceptions.codersclash.bot.listeners.DeleteListener;
+import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
+import java.awt.Color;
 
 public class Bot {
 
@@ -65,7 +65,7 @@ public class Bot {
                 .put(new ReportCommand(database), "report", "rep")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), new DeleteListener(database));
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), new DatabaseListener(database));
     }
 
     public void shutdown() {

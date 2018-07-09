@@ -39,7 +39,6 @@ public class ReportCommand implements ICommand {
             if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(<@\\d+> .+)|((get|remove) <@\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 var reportList = database.getReports(target);
-                database.createMemberIfNotExists(target.getGuild().getIdLong(), target.getUser().getIdLong());
                 if (args[0].matches("<@\\d+>")) {
                     String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
                     if (database.addReport(target, reason)) {
