@@ -1,10 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
-import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
-import de.unhandledexceptions.codersclash.bot.commands.GuildMuteCommand;
-import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
-import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
+import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
@@ -66,6 +63,7 @@ public class Bot {
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
+                .put(new BlockCommand(commandSettings), "block", "deny")
                 .activate();
         this.shardManager.addEventListener(xpCommand, new DatabaseListener(database, shardManager));
     }
