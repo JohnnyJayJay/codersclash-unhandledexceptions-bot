@@ -69,4 +69,5 @@ public class Bot {
     public CommandSettings getCommandSettings() {
         return commandSettings;
     }
+
 }

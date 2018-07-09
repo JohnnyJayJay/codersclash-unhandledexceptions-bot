@@ -2,6 +2,8 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
+import de.unhandledexceptions.codersclash.bot.core.Database;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -16,6 +18,9 @@ public class VoteCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
+
+
+
     }
 
     private class VoteListener extends ListenerAdapter {
