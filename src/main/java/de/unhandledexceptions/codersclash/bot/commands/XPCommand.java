@@ -5,6 +5,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
@@ -21,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
+// TODO Fortschritt verlangsamen
 public class XPCommand extends ListenerAdapter implements ICommand {
 
     private final Map<String, String> urls = new HashMap<>() {{
@@ -49,17 +50,29 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             return;
 
         long xp = database.getGuildXp(member);
-        long maxxp = database.getGuildLvl(member)*4;
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .addField("Guild", "Level: "+database.getGuildLvl(member)+
-                        "\nXp: "+database.getGuildXp(member)+"/"+database.getGuildLvl(member)*4+
-                        "\n"+getProgressBar(database.getGuildXp(member), database.getGuildLvl(member) * 4, member)
-                        ,true)
-                .addField("User", "Level: "+database.getUserLvl(member.getUser())+
-                "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
-                "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()) * 4, member)
-                        , true);
-        sendMessage(textChannel, Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+        long maxxp = database.getGuildLvl(member) * 4;
+        if (commandEvent.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
+            try {
+                for (String name : urls.keySet()) {
+                    if (commandEvent.getJDA().getEmotesByName(name, true).size() == 0) {
+                        commandEvent.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
+                    }
+                }
+            } catch (IOException e) {
+                Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
+                return;
+            }
+            EmbedBuilder embedBuilder = new EmbedBuilder()
+                    .addField("Guild", "Level: " + database.getGuildLvl(member) +
+                                    "\nXp: " + database.getGuildXp(member) + "/" + database.getGuildLvl(member) * 4 +
+                                    "\n" + getProgressBar(database.getGuildXp(member), database.getGuildLvl(member) * 4, member)
+                            ,true)
+                    .addField("User", "Level: "+database.getUserLvl(member.getUser())+
+                                    "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
+                                    "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()) * 4, member)
+                            , true);
+            sendMessage(textChannel, Messages.Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+        }
     }
 
     @Override
@@ -75,31 +88,15 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
-            event.getReaction().getTextChannel()
-                    .getMessageById(event.getReaction().getMessageId()).queue(
-                            (msg) -> database.addXp(msg.getMember(), 1)
-            );
+            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.addXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
-            event.getReaction().getTextChannel().getMessageById(event.getReaction().getMessageId()).queue(
-                    (msg) -> database.removeXp(msg.getMember(), 1)
-            );
+            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.removeXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
             if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
                 return;
 
-            if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-                try {
-                    for (String name : urls.keySet()) {
-                        if (event.getMember().getGuild().getEmotesByName(name, true).size() == 0) {
-                            event.getMember().getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
-                        }
-                    }
-                } catch (IOException e) {
-                    Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
-                }
-            }
             int length = event.getMessage().getContentRaw().length();
             int result;
             if (length > 0) {
