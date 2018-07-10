@@ -5,7 +5,6 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
@@ -18,10 +17,12 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 // TODO Fortschritt verlangsamen
@@ -45,17 +46,21 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     }
 
     @Override
-    public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
-        if (!database.xpSystemActivated(commandEvent.getGuild().getIdLong()))
+    public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
+        if (!database.xpSystemActivated(event.getGuild().getIdLong()) || !event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
             return;
 
-        long xp = database.getGuildXp(member);
-        long maxxp = database.getGuildLvl(member) * 4;
-        if (commandEvent.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
+        long memberXp = database.getGuildXp(member);
+        long userXp = database.getUserXp(member.getUser());
+        long memberLevel = database.getGuildLvl(member);
+        long userLevel = database.getUserLvl(member.getUser());
+        long maxUserXp = userLevel * 8;
+        long maxMemberXp = memberLevel * 8;
+        if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
             try {
                 for (String name : urls.keySet()) {
-                    if (commandEvent.getJDA().getEmotesByName(name, true).size() == 0) {
-                        commandEvent.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
+                    if (event.getJDA().getEmotesByName(name, true).size() == 0) {
+                        event.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
                     }
                 }
             } catch (IOException e) {
@@ -63,15 +68,17 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                 return;
             }
             EmbedBuilder embedBuilder = new EmbedBuilder()
-                    .addField("Guild", "Level: " + database.getGuildLvl(member) +
-                                    "\nXp: " + database.getGuildXp(member) + "/" + database.getGuildLvl(member) * 4 +
-                                    "\n" + getProgressBar(database.getGuildXp(member), database.getGuildLvl(member) * 4, member)
+                    .addField("Guild", "Level: " + memberLevel +
+                                    "\nXp: " + memberXp + "/" + maxMemberXp +
+                                    "\n" + getProgressBar(memberXp, maxMemberXp, member)
                             ,true)
-                    .addField("User", "Level: "+database.getUserLvl(member.getUser())+
-                                    "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
-                                    "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()) * 4, member)
+                    .addField("User", "Level: "+userLevel +
+                                    "\nXp: " + userXp + "/"+maxUserXp +
+                                    "\n" + getProgressBar(userXp, maxUserXp, member)
                             , true);
-            sendMessage(textChannel, Messages.Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+            sendMessage(channel, Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+        } else {
+            sendMessage(channel, Type.WARNING, "The Bot needs to have permission to manage Custom emotes in order to display you xp status!").queue();
         }
     }
 
@@ -116,31 +123,32 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
+        var jda = member.getJDA();
         Emote[] emotes = new Emote[8];
-        emotes[0] = member.getGuild().getEmotesByName("empty1", true).get(0);
-        emotes[1] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[2] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[3] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[4] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[5] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[6] = member.getGuild().getEmotesByName("empty2", true).get(0);
-        emotes[7] = member.getGuild().getEmotesByName("empty3", true).get(0);
+        emotes[0] = jda.getEmotesByName("empty1", true).get(0);
+        emotes[1] = jda.getEmotesByName("empty2", true).get(0);
+        emotes[2] = jda.getEmotesByName("empty2", true).get(0);
+        emotes[3] = jda.getEmotesByName("empty2", true).get(0);
+        emotes[4] = jda.getEmotesByName("empty2", true).get(0);
+        emotes[5] = jda.getEmotesByName("empty2", true).get(0);
+        emotes[6] = jda.getEmotesByName("empty2", true).get(0);
+        emotes[7] = jda.getEmotesByName("empty3", true).get(0);
         if (maxxp/8<=xp) {
-            emotes[0] = member.getGuild().getEmotesByName("full1", true).get(0);
+            emotes[0] = jda.getEmotesByName("full1", true).get(0);
             if (maxxp/8*2<=xp) {
-                emotes[1] = member.getGuild().getEmotesByName("full2", true).get(0);
+                emotes[1] = jda.getEmotesByName("full2", true).get(0);
                 if (maxxp / 8 * 3 <= xp) {
-                    emotes[2] = member.getGuild().getEmotesByName("full2", true).get(0);
-                    if (maxxp / 8 * 4 <= xp) {
-                        emotes[3] = member.getGuild().getEmotesByName("full2", true).get(0);
+                    emotes[2] = jda.getEmotesByName("full2", true).get(0);
+                    if (maxxp / 8 * 8 <= xp) {
+                        emotes[3] = jda.getEmotesByName("full2", true).get(0);
                         if (maxxp / 8 * 5 <= xp) {
-                            emotes[4] = member.getGuild().getEmotesByName("full2", true).get(0);
+                            emotes[8] = jda.getEmotesByName("full2", true).get(0);
                             if (maxxp / 8 * 6 <= xp) {
-                                emotes[5] = member.getGuild().getEmotesByName("full2", true).get(0);
+                                emotes[5] = jda.getEmotesByName("full2", true).get(0);
                                 if (maxxp / 8 * 7 <= xp) {
-                                    emotes[6] = member.getGuild().getEmotesByName("full2", true).get(0);
+                                    emotes[6] = jda.getEmotesByName("full2", true).get(0);
                                     if (maxxp == xp) {
-                                        emotes[7] = member.getGuild().getEmotesByName("full3", true).get(0);
+                                        emotes[7] = jda.getEmotesByName("full3", true).get(0);
                                     }
                                 }
                             }
@@ -150,18 +158,19 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             }
         }
         StringBuilder stringBuilder = new StringBuilder();
-        for (Emote emote:emotes) {
+        Arrays.stream(emotes).map(Emote::getAsMention).forEach(stringBuilder::append);
+        /*for (Emote emote:emotes) {
             stringBuilder.append(emote.getAsMention());
-        }
+        }*/
         stringBuilder.append("\n\n");
         return stringBuilder.toString();
     }
 
     private void checkLvl(Member member) {
-        if (database.getUserXp(member.getUser())>=(database.getUserLvl(member.getUser()))*4) {
+        if (database.getUserXp(member.getUser())>=(database.getUserLvl(member.getUser())) * 8) {
             database.addUserLvl(member.getUser());
         }
-        if (database.getGuildXp(member)>=(database.getGuildLvl(member)*4)) {
+        if (database.getGuildXp(member)>=(database.getGuildLvl(member) * 8)) {
             database.addGuildLvl(member);
         }
     }
