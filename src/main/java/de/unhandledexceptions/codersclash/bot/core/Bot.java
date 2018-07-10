@@ -76,6 +76,7 @@ public class Bot {
                 .put(new BlockCommand(), "block", "deny")
                 .put(new SettingsCommand(database, commandSettings), "settings")
                 .put(new RoleCommand(), "role", "mangage")
+                .put(new MoveRole(), "moverole", "setmentionable")
                 .activate();
 
         this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager));

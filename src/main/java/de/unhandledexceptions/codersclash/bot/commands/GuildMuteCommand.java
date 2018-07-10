@@ -41,6 +41,7 @@ public class GuildMuteCommand implements ICommand {
             if (args.length == 0) {
                 if (guildIds.contains(event.getGuild().getIdLong())) {
                     guildIds.remove(event.getGuild().getIdLong());
+                    // TODO mit Rolle
                     channel.delete().queue((v) -> {
                         var guild = event.getGuild();
                         PermissionOverride override;
@@ -75,6 +76,7 @@ public class GuildMuteCommand implements ICommand {
     private void muteGuild(Member member) {
         var guild = member.getGuild();
         guild.getController().createTextChannel("guild-mute").queue((textChannel) -> {
+            // TODO mit Rolle
             for (var m : guild.getMemberCache()) {
                 for (var channel : guild.getTextChannelCache()) {
                     channel.putPermissionOverride(m).setDeny(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue();
