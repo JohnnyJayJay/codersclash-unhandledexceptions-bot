@@ -45,7 +45,9 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
-        // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
+        if (!database.xpSystemActivated(commandEvent.getGuild().getIdLong()))
+            return;
+
         long xp = database.getGuildXp(member);
         long maxxp = database.getGuildLvl(member)*4;
         EmbedBuilder embedBuilder = new EmbedBuilder()
@@ -68,9 +70,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
     @Override
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
-        // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
-        // FIXME Exceptions bei pinned messages und webhooks
-        if (origevent instanceof GuildMessageDeleteEvent)
+        if (origevent instanceof GuildMessageDeleteEvent || !database.xpSystemActivated(origevent.getGuild().getIdLong()))
             return;
 
         if (origevent instanceof GuildMessageReactionAddEvent) {
@@ -102,10 +102,14 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             }
             int length = event.getMessage().getContentRaw().length();
             int result;
-            if (length > 10) {
-                result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
-            } else result = ThreadLocalRandom.current().nextInt(length);
-            database.addXp(event.getMember(), result);
+            if (length > 0) {
+                if (length > 10)
+                    result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
+                else
+                    result = ThreadLocalRandom.current().nextInt(length);
+
+                database.addXp(event.getMember(), result);
+            }
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
             if (msg.getMember() != null)
