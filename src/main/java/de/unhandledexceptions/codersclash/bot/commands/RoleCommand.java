@@ -9,7 +9,6 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
@@ -28,10 +27,9 @@ public class RoleCommand implements ICommand {
             return;
 
         if(Permissions.getPermissionLevel(member) >= 5) {
-            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(add|remove) <@.\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
+            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
-                // FIXME wtf is this
-                var role = String.join(" ", Arrays.asList(args).subList(2, args.length));
+                var role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
                     sendMessage(channel, Messages.Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember())).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
                 } else if (event.getGuild().getRolesByName(role, true).isEmpty()){
