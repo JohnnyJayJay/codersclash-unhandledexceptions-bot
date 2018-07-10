@@ -4,14 +4,13 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.concurrent.TimeUnit;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 /**
@@ -31,21 +30,21 @@ public class RoleCommand implements ICommand {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 var role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
-                    sendMessage(channel, Messages.Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember())).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
+                    sendMessage(channel, Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember())).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
                 } else if (event.getGuild().getRolesByName(role, true).isEmpty()){
-                    sendMessage(channel, Messages.Type.ERROR, String.format("Role `%s` doesn't exist!", role)).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
+                    sendMessage(channel, Type.ERROR, String.format("Role `%s` doesn't exist!", role)).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
                 } else if (args[0].equalsIgnoreCase("add")) {
                         event.getGuild().getController().addSingleRoleToMember(event.getMessage().getMentionedMembers().get(0), event.getGuild().getRolesByName(role, true).get(0)).queue();
-                        sendMessage(channel, Messages.Type.SUCCESS, String.format("Successfully granted Role `%s` to `%#s` by %s",  role, target.getUser(), member.getAsMention()), true).queue();
+                        sendMessage(channel, Type.SUCCESS, String.format("Successfully granted Role `%s` to `%#s` by %s",  role, target.getUser(), member.getAsMention()), true).queue();
                 } else if (args[0].equalsIgnoreCase("remove")) {
                         event.getGuild().getController().removeSingleRoleFromMember(event.getMessage().getMentionedMembers().get(0), event.getGuild().getRolesByName(role, true).get(0)).queue();
-                        sendMessage(channel, Messages.Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member.getAsMention()), true).queue();
+                        sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member.getAsMention()), true).queue();
                 }
             } else {
-                sendMessage(channel, Messages.Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
             }
         } else {
-            Messages.noPermissionsMessage(channel, member);
+            noPermissionsMessage(channel, member);
         }
     }
 

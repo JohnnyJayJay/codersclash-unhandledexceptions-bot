@@ -5,7 +5,6 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
@@ -21,7 +20,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Logger;
+
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 public class XPCommand extends ListenerAdapter implements ICommand {
 
@@ -56,7 +57,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                 "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
                 "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()) * 4, member)
                         , true);
-        Messages.sendMessage(textChannel, Messages.Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+        sendMessage(textChannel, Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
     }
 
     @Override

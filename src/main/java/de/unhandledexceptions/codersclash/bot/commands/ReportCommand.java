@@ -6,8 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -16,7 +15,7 @@ import org.slf4j.Logger;
 
 import java.util.Arrays;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 /**
@@ -45,12 +44,12 @@ public class ReportCommand implements ICommand {
                     String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
                     if (database.addReport(target, reason)) {
                         sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention()))
-                                .queue(null, Messages.defaultFailure(channel));
+                                .queue(null, defaultFailure(channel));
                         // TODO
                         if (Bot.getBotOwners().contains(target.getUser().getIdLong()) && reportList.size() >= database.getReportsUntilBan(event.getGuild())
                                 && event.getGuild().getSelfMember().canInteract(target)) {
                             event.getGuild().getController().ban(target, 0, format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
-                                    .queue(null, Messages.defaultFailure(channel));
+                                    .queue(null, defaultFailure(channel));
                         }
                     } else {
                         sendMessage(channel, Type.WARNING, "This member already has 10 reports!").queue();
@@ -65,7 +64,7 @@ public class ReportCommand implements ICommand {
                         if (index != 0) {
                             if (index <= reportList.size()) {
                                 sendMessage(channel, Type.INFO, format("Report `%d` of Member `%#s`:\n```\n%s```", index, target.getUser(), reportList.get(index - 1)))
-                                        .queue(null, Messages.defaultFailure(channel));
+                                        .queue(null, defaultFailure(channel));
                             } else {
                                 sendMessage(channel, Type.WARNING, format("Member `%#s` does not have `%d` reports!\nYou may use `%sreport get` %s instead!",
                                         target.getUser(), index, Bot.getPrefix(event.getGuild().getIdLong()), target.getAsMention())).queue();
@@ -75,7 +74,7 @@ public class ReportCommand implements ICommand {
                             for (int i = 1; i <= reportList.size(); i++)
                                 builder.append("Report " + i + ": " + reportList.get(i -1) + "\n");
                             sendMessage(channel, Type.INFO, format("Reports of Member `%#s`:\n```\n%s```", target.getUser(), builder.toString()))
-                                    .queue(null, Messages.defaultFailure(channel));
+                                    .queue(null, defaultFailure(channel));
                         }
                     } else if (args[0].equalsIgnoreCase("remove")) {
                         if (index != 0) {
@@ -97,7 +96,7 @@ public class ReportCommand implements ICommand {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
             }
         } else {
-            Messages.noPermissionsMessage(channel, member);
+            noPermissionsMessage(channel, member);
         }
     }
 

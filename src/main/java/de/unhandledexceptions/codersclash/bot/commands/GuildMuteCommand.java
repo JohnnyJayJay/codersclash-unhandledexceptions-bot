@@ -5,7 +5,6 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.Permission;
@@ -15,6 +14,9 @@ import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 /**
  * @author Johnny_JayJay
@@ -54,19 +56,19 @@ public class GuildMuteCommand implements ICommand {
                         }
                     });
                 } else {
-                    Messages.sendMessage(channel, Type.WARNING, "This will have immediate effect and will result in a completely muted guild.\nAre you sure?").queue((msg) -> {
+                    sendMessage(channel, Type.WARNING, "This will have immediate effect and will result in a completely muted guild.\nAre you sure?").queue((msg) -> {
                         Reactions.newYesNoMenu(msg, member.getUser(), (v) -> {
                             msg.delete().queue();
-                            Messages.sendMessage(channel, Type.WARNING, "Muting guild...").queue();
+                            sendMessage(channel, Type.WARNING, "Muting guild...").queue();
                             muteGuild(member);
                         }, Reactions.NOTHING);
                     });
                 }
             } else {
-                Messages.sendMessage(channel, Type.WARNING, "Wrong Usage. Command info:\n\n" + this.info(member)).queue();
+                sendMessage(channel, Type.WARNING, "Wrong Usage. Command info:\n\n" + this.info(member)).queue();
             }
         } else {
-            Messages.noPermissionsMessage(channel, member);
+            noPermissionsMessage(channel, member);
         }
     }
 
@@ -82,7 +84,7 @@ public class GuildMuteCommand implements ICommand {
                 }
             }
             textChannel.putPermissionOverride(member).setAllow(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue();
-            Messages.sendMessage((TextChannel) textChannel, Type.SUCCESS, String.format("This guild has been muted. To unmute the guild, please type `%s[guildmute|muteguild|lockdown]` " +
+            sendMessage((TextChannel) textChannel, Type.SUCCESS, String.format("This guild has been muted. To unmute the guild, please type `%s[guildmute|muteguild|lockdown]` " +
                             "again.", Bot.getPrefix(guild.getIdLong())), true).queue();
             ((TextChannel) textChannel).sendMessage(member.getAsMention()).queue();
             guildIds.add(guild.getIdLong());
