@@ -5,7 +5,7 @@ Level 0:
 
 Level 1:
 - User Info command
--XP Command
+- XP Command
 
 Level 2:
 - Block Command
@@ -13,12 +13,13 @@ Level 2:
 Level 3:
 - Mute Command
 - Report Command
-- Clear Command
 
 Level 4:
 - Vote Command
-- Mail Command
+- Clear Command
 - Autochannel
 
 Level 5:
 - Settings Command
+- Mail Command
+- Role Command

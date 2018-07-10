@@ -8,11 +8,9 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.Icon;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GenericGuildMessageEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
@@ -23,8 +21,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Logger;
 
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+
+// TODO Fortschritt verlangsamen
 public class XPCommand extends ListenerAdapter implements ICommand {
 
     private final Map<String, String> urls = new HashMap<>() {{
@@ -46,73 +46,73 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
-        // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
-        database.createMemberIfNotExists(member.getGuild().getIdLong(), member.getUser().getIdLong());
+        if (!database.xpSystemActivated(commandEvent.getGuild().getIdLong()))
+            return;
+
         long xp = database.getGuildXp(member);
-        long maxxp = database.getGuildLvl(member)*4;
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .addField("Guild", "Level: "+database.getGuildLvl(member)+
-                        "\nXp: "+database.getGuildXp(member)+"/"+database.getGuildLvl(member)*4+
-                        "\n"+getProgressBar(database.getGuildXp(member), database.getGuildLvl(member) * 4, member)
-                        ,true)
-                .addField("User", "Level: "+database.getUserLvl(member.getUser())+
-                "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
-                "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()) * 4, member)
-                        , true);
-        Messages.sendMessage(textChannel, Messages.Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+        long maxxp = database.getGuildLvl(member) * 4;
+        if (commandEvent.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
+            try {
+                for (String name : urls.keySet()) {
+                    if (commandEvent.getJDA().getEmotesByName(name, true).size() == 0) {
+                        commandEvent.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
+                    }
+                }
+            } catch (IOException e) {
+                Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
+                return;
+            }
+            EmbedBuilder embedBuilder = new EmbedBuilder()
+                    .addField("Guild", "Level: " + database.getGuildLvl(member) +
+                                    "\nXp: " + database.getGuildXp(member) + "/" + database.getGuildLvl(member) * 4 +
+                                    "\n" + getProgressBar(database.getGuildXp(member), database.getGuildLvl(member) * 4, member)
+                            ,true)
+                    .addField("User", "Level: "+database.getUserLvl(member.getUser())+
+                                    "\nXp: "+database.getUserXp(member.getUser())+"/"+database.getUserLvl(member.getUser())*4+
+                                    "\n"+getProgressBar(database.getUserXp(member.getUser()), database.getUserLvl(member.getUser()) * 4, member)
+                            , true);
+            sendMessage(textChannel, Messages.Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+        }
     }
 
     @Override
     public String info(Member member) {
-        return String.format("**Description**: Gives you information about your Level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
+        return String.format("**Description**: Gives you information about your level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }
 
     @Override
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
-        // TODO Überprüfen, ob der Guild das XP system aktiviert hat. wenn nicht -> return
+        if (origevent instanceof GuildMessageDeleteEvent || !database.xpSystemActivated(origevent.getGuild().getIdLong()))
+            return;
+
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
-            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getUser().getIdLong());
-            event.getReaction().getTextChannel()
-                    .getMessageById(event.getReaction().getMessageId()).queue(
-                            (msg) -> database.addXp(msg.getMember(), 1)
-            );
+            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.addXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
-            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getUser().getIdLong());
-            event.getReaction().getTextChannel().getMessageById(event.getReaction().getMessageId()).queue(
-                    (msg) -> database.removeXp(event.getMember(), 1)
-            );
+            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.removeXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
-            database.createMemberIfNotExists(event.getGuild().getIdLong(), event.getAuthor().getIdLong());
-            if (!event.getAuthor().isBot()) {
-                if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-                    try {
-                        for (String name : urls.keySet()) {
-                            if (event.getMember().getGuild().getEmotesByName(name, true).size() == 0) {
-                                event.getMember().getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
-                            }
-                        }
-                    } catch (IOException e) {
-                        Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
-                    }
-                }
-                int length = event.getMessage().getContentRaw().length();
-                int result;
-                if (length > 10) {
+            if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
+                return;
+
+            int length = event.getMessage().getContentRaw().length();
+            int result;
+            if (length > 0) {
+                if (length > 10)
                     result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
-                } else result = ThreadLocalRandom.current().nextInt(length);
+                else
+                    result = ThreadLocalRandom.current().nextInt(length);
+
                 database.addXp(event.getMember(), result);
             }
         }
-
-        // TODO (vorläufiger Test, ob das die NPEs verhindert
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
-            database.createMemberIfNotExists(msg.getGuild().getIdLong(), msg.getAuthor().getIdLong());
-            this.checkLvl(msg.getMember());
+            if (msg.getMember() != null)
+                this.checkLvl(msg.getMember());
         });
+
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
@@ -154,8 +154,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             stringBuilder.append(emote.getAsMention());
         }
         stringBuilder.append("\n\n");
-        // FIXME was ist das ? xD
-        //database."SELECT * FROM Customers ORDER BY CustomerID;"
         return stringBuilder.toString();
     }
 

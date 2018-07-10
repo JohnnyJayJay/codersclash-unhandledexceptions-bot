@@ -28,7 +28,7 @@ public class Database {
             countUsers, countGuilds, countMembers,
             insertUser, insertGuild, insertMember,
             updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl, updatePrefix, updateMailChannel, updateMaxReports,
-            selectReports;
+            selectReports, updateXpSystem;
 
     private String[] creationStatements;
 
@@ -105,6 +105,7 @@ public class Database {
         this.updatePrefix = "UPDATE discord_guild SET prefix = ? WHERE guild_id = ?;";
         this.updateMailChannel = "UPDATE discord_guild SET mail_channel = ? WHERE guild_id = ?;";
         this.updateMaxReports = "UPDATE discord_guild SET reports_until_ban = ? WHERE guild_id = ?;";
+        this.updateXpSystem = "UPDATE discord_guild SET xp_system_activated = ? WHERE guild_id = ?;";
         logger.info("statement preparation successful.");
     }
 
@@ -259,6 +260,10 @@ public class Database {
         }
     }
 
+    public void setUseXpSystem(long guildId, boolean use) {
+        this.executeUpdate(updateXpSystem, use ? 1 : 0, guildId);
+    }
+
     public Map<Long, String> getPrefixes() {
         Map<Long, String> ret = Collections.EMPTY_MAP;
         try (var connection = dataSource.getConnection();
@@ -272,6 +277,10 @@ public class Database {
             logger.error("An Exception occurred while getting guild prefixes from database:", e);
         }
         return ret;
+    }
+
+    public boolean xpSystemActivated(long guildId) {
+        return this.getFirst("xp_system_activated", selectFromGuild, Integer.TYPE, guildId) == 1;
     }
 
     public long getUserXp(User user) {

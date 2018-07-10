@@ -5,20 +5,22 @@ import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
 import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
 import de.unhandledexceptions.codersclash.bot.commands.VoteCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
-import de.unhandledexceptions.codersclash.bot.listeners.DeleteListener;
+import de.unhandledexceptions.codersclash.bot.commands.*;
+import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
+import java.awt.Color;
+import java.util.List;
 
 public class Bot {
 
     private int failCount;
 
-    private final Config config;
+    private static Config config;
     private final Database database;
 
     private DefaultShardManagerBuilder builder;
@@ -54,23 +56,29 @@ public class Bot {
             }
 
         }
-        this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
+        commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         logger.info("CommandSettings are being configured");
-
-        VoteCommand voteCommand = new VoteCommand(database);
 
         // command settings einstellen
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
+
+        var xpCommand = new XPCommand(commandSettings, database);
+        var voteCommand = new VoteCommand(database);
+
         commandSettings.addHelpLabels("help", "helpme", "commands")
-                .setHelpCommandColor(Color.YELLOW)
-                .put(new ClearCommand(commandSettings), "clear", "clean", "delete")
+                .setHelpCommandColor(Color.CYAN)
+                .put(new ClearCommand(), "clear", "clean", "delete")
+                .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
-                .put(new XPCommand(commandSettings, database), "xp", "level", "lvl")
+                .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
                 .put(voteCommand, "vote")
+                .put(new BlockCommand(), "block", "deny")
+                .put(new SettingsCommand(database, commandSettings), "settings")
+                .put(new RoleCommand(), "role", "mangage")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), new DeleteListener(database), voteCommand);
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager));
     }
 
     public void shutdown() {
@@ -90,4 +98,7 @@ public class Bot {
         return commandSettings.getPrefix(guildId);
     }
 
+    public static List getBotOwners() {
+        return config.getBotOwners();
+    }
 }
