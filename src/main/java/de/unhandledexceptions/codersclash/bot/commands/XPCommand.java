@@ -159,9 +159,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         }
         StringBuilder stringBuilder = new StringBuilder();
         Arrays.stream(emotes).map(Emote::getAsMention).forEach(stringBuilder::append);
-        /*for (Emote emote:emotes) {
-            stringBuilder.append(emote.getAsMention());
-        }*/
         stringBuilder.append("\n\n");
         return stringBuilder.toString();
     }
