@@ -1,20 +1,23 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
-import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
-import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
-import de.unhandledexceptions.codersclash.bot.commands.VoteCommand;
-import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
 import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
+import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.entities.Icon;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.awt.Color;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Bot {
 
@@ -28,6 +31,15 @@ public class Bot {
     private static CommandSettings commandSettings;
 
     private static Logger logger = Logging.getLogger();
+
+    private final Map<String, String> emotes = new HashMap<>() {{
+        put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
+        put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
+        put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
+        put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
+        put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
+        put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
+    }};
 
     public Bot(Config config, Database database) {
         this.failCount = 0;
@@ -78,9 +90,36 @@ public class Bot {
                 .put(new SettingsCommand(database, commandSettings), "settings")
                 .put(new RoleCommand(), "role", "mangage")
                 .put(new MoveRole(), "moverole", "setmentionable")
+                .put(new InviteCommand(), "invite")
                 .activate();
 
         this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager));
+    }
+
+    // FIXME geht noch nicht
+    private void checkAndCreateEmotes() {
+        if (emotes.keySet().stream().anyMatch((name) -> {
+            var emoteList = shardManager.getEmotesByName(name, false);
+            return emoteList.isEmpty() || !emoteList.get(0).getImageUrl().equals(emotes.get(name));
+        })) {
+            long random = ThreadLocalRandom.current().nextLong(2137673435212321312L);
+            JDA shard = shardManager.getShardById(0);
+            shard.createGuild(Long.toString(random)).queue((v) -> {
+                var controller = shard.getGuildsByName(Long.toString(random), false).get(0).getController();
+                emotes.keySet().forEach((name) -> {
+                    try {
+                        controller.createEmote(name, Icon.from(new URL(emotes.get(name)).openStream())).queue();
+                    } catch (IOException e) {
+                        logger.error("IOException while creating emotes.", e);
+                    }
+                });
+            });
+        }
+    }
+
+    public void shutdown(int shard) {
+        logger.warn("Shard " + shard + " is shutting down...");
+        shardManager.shutdown(shard);
     }
 
     public void shutdown() {

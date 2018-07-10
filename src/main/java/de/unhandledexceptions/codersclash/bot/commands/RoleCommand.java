@@ -4,6 +4,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -28,12 +29,22 @@ public class RoleCommand implements ICommand {
         if(Permissions.getPermissionLevel(member) >= 5) {
             if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
-                var role = event.getCommand().getJoinedArgs(2);
+                String role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
                     sendMessage(channel, Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember().getEffectiveName())).queue((msg) ->
                             msg.delete().queueAfter(7, TimeUnit.SECONDS));
                 } else if (event.getGuild().getRolesByName(role, false).isEmpty()){
                     sendMessage(channel, Type.ERROR, String.format("Role `%s` doesn't exist!", role)).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
+                    sendMessage(channel, Type.QUESTION, "Do you wish to create the Role `" + role + "`?").queue(
+                            (msg) -> Reactions.newYesNoMenu(msg, member.getUser(),
+                                    (mssg) -> {
+                                        mssg.delete().queue();
+                                        var controller = event.getGuild().getController();
+                                        controller.createRole().setName(role).queue((newRole) -> {
+                                            sendMessage(channel, Type.SUCCESS, "Role created! Do you want to add the role?").queue(
+                                                    (message) -> Reactions.newYesNoMenu(message, event.getAuthor(), (msssg) -> controller.addSingleRoleToMember(event.getMessage().getMentionedMembers().get(0), newRole).queue()));
+                                        }, defaultFailure(channel));
+                                    }));
                 } else if (args[0].equalsIgnoreCase("add")) {
                         event.getGuild().getController().addSingleRoleToMember(event.getMessage().getMentionedMembers().get(0), event.getGuild().getRolesByName(role, true).get(0)).queue();
                         sendMessage(channel, Type.SUCCESS, String.format("Successfully granted Role `%s` to `%#s` by %s",  role, target.getUser(), member.getAsMention()), true).queue();

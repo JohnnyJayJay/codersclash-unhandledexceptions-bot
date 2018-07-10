@@ -63,7 +63,7 @@ public class ClearCommand implements ICommand {
                 } else if (size == 1) { // nur noch eine message kann gelöscht werden
                     deletableMsgs.get(0).delete().queue(
                             (v) -> this.success(channel), defaultFailure(channel));
-                } else if (size > 1) { // zwischen 1 und 100 messages können gelöscht werden
+                } else { // zwischen 1 und 100 messages können gelöscht werden
                     channel.deleteMessages(deletableMsgs).queue(
                             (v) -> this.success(channel), defaultFailure(channel));
                 }

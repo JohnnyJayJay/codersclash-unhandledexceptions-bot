@@ -78,7 +78,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                             , true);
             sendMessage(channel, Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
         } else {
-            sendMessage(channel, Type.WARNING, "The Bot needs to have permission to manage Custom emotes in order to display you xp status!").queue();
+            sendMessage(channel, Type.WARNING, "The Bot needs to have permission to manage Custom emotes in order to display your xp status!").queue();
         }
     }
 

@@ -40,7 +40,7 @@ public class Permissions implements ICommand {
                             "try-catch-bot. Be careful, members with this role have full control about try-catch-permissions!").queue(), Messages.defaultFailure(channel));
         } else if (!member.getRoles().contains(role)) {
             sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions. Request help for more. " + member.getAsMention()).queue();
-        } else if (!event.getCommand().getJoinedArgs().matches("(<@!?\\d+>)|(<@&\\d+>) [0-5]") ||
+        } else if (!event.getCommand().getJoinedArgs().matches("((<@!?\\d+>)|(<@&\\d+>)) [0-5]") ||
                 event.getMessage().getMentions(Message.MentionType.ROLE, Message.MentionType.USER).isEmpty()) {
             sendMessage(channel, Type.INFO, "Wrong usage. Command info: \n\n" + info(member)).queue();
         } else {

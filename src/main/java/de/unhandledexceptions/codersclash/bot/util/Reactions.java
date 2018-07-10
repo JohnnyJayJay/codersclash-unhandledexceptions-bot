@@ -1,5 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.util;
 
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -9,6 +10,8 @@ import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEv
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -22,30 +25,36 @@ public class Reactions {
     public static final String YES_EMOTE = "\u2705";
     public static final String NO_EMOTE = "\u274C";
 
-    public static final Consumer<Void> NOTHING = aVoid -> {};
+    public static final Consumer<Message> DO_NOTHING = msg -> {};
 
-    public static void newYesNoMenu(Message message, User user, Consumer<Void> yes, Consumer<Void> no) {
+    public static final Consumer<Message> DELETE_MESSAGE = msg -> msg.delete().queue();
+
+    public static void newYesNoMenu(Message message, User user, Consumer<Message> yes, Consumer<Message> no) {
         message.addReaction(YES_EMOTE).queue();
         message.addReaction(NO_EMOTE).queue();
         user.getJDA().addEventListener(new ReactionListener(user.getIdLong(), message.getIdLong(), Map.of(YES_EMOTE, yes, NO_EMOTE, no)));
     }
 
-    public static void newMenu(Message message, User user, Map<String, Consumer<Void>> forReaction) {
-        message.addReaction(NO_EMOTE).queue();
+    public static void newYesNoMenu(Message message, User user, Consumer<Message> yes) {
+        newYesNoMenu(message, user, yes, DO_NOTHING);
+    }
+
+    public static void newMenu(Message message, User user, Map<String, Consumer<Message>> forReaction) {
         forReaction.keySet().forEach((emoji) -> message.addReaction(emoji).queue());
+        message.addReaction(NO_EMOTE).queue();
         user.getJDA().addEventListener(new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction));
     }
 
-    public static void newMessageWaiter(Member member, Consumer<Message> messageReceived) {
-        member.getJDA().addEventListener(new MessageListener(member.getUser().getIdLong(), member.getGuild().getIdLong(), MessageListener.NO_CHANNEL, messageReceived));
+    public static void newMessageWaiter(Member member, Consumer<Message> messageReceived, int waitSeconds) {
+        member.getJDA().addEventListener(new MessageListener(member.getUser().getIdLong(), member.getGuild().getIdLong(), MessageListener.NO_CHANNEL, messageReceived, member.getJDA(), waitSeconds));
     }
 
-    public static void newMessageWaiter(User user, MessageChannel channel, Consumer<Message> messageReceived) {
-        user.getJDA().addEventListener(new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, channel.getIdLong(), messageReceived));
+    public static void newMessageWaiter(User user, MessageChannel channel, Consumer<Message> messageReceived, int waitSeconds) {
+        user.getJDA().addEventListener(new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, channel.getIdLong(), messageReceived, user.getJDA(), waitSeconds));
     }
 
-    public static void newMessageWaiter(User user, Consumer<Message> messageReceived) {
-        user.getJDA().addEventListener(new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, MessageListener.NO_CHANNEL, messageReceived));
+    public static void newMessageWaiter(User user, Consumer<Message> messageReceived, int waitSeconds) {
+        user.getJDA().addEventListener(new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, MessageListener.NO_CHANNEL, messageReceived, user.getJDA(), waitSeconds));
     }
 
     private static class MessageListener extends ListenerAdapter {
@@ -57,7 +66,14 @@ public class Reactions {
         private final long channelId;
         private final Consumer<Message> messageReceived;
 
-        public MessageListener(long userId, long guildId, long channelId, Consumer<Message> messageReceived) {
+        public MessageListener(long userId, long guildId, long channelId, Consumer<Message> messageReceived, JDA jda, int waitSeconds) {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    jda.removeEventListener(this);
+                    this.cancel();
+                }
+            }, waitSeconds * 1000);
             this.userId = userId;
             this.guildId = guildId;
             this.channelId = channelId;
@@ -86,11 +102,19 @@ public class Reactions {
 
     private static class ReactionListener extends ListenerAdapter {
 
+        private int reactions;
+        private final int waitSeconds;
         private final long userId;
         private final long messageId;
-        private final Map<String, Consumer<Void>> forReaction;
+        private final Map<String, Consumer<Message>> forReaction;
 
-        public ReactionListener(long authorId, long messageId, Map<String, Consumer<Void>> forReaction) {
+        public ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> forReaction) {
+            this(authorId, messageId, forReaction, 45);
+        }
+
+        public ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> forReaction, int waitSeconds) {
+            this.reactions = 0;
+            this.waitSeconds = waitSeconds;
             this.userId = authorId;
             this.messageId = messageId;
             this.forReaction = forReaction;
@@ -98,6 +122,13 @@ public class Reactions {
 
         @Override
         public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
+            if (reactions == 0) {
+                event.getChannel().getMessageById(event.getMessageIdLong()).queueAfter(waitSeconds, TimeUnit.SECONDS, (msg) -> {
+                    msg.delete().queue();
+                    event.getJDA().removeEventListener(this);
+                }, (throwable) -> event.getJDA().removeEventListener(this));
+            }
+            reactions++;
             var user = event.getUser();
             if (user == event.getJDA().getSelfUser() || event.getMessageIdLong() != messageId)
                 return;
@@ -111,8 +142,7 @@ public class Reactions {
                     return;
                 }
                 if (forReaction.containsKey(name)) {
-                    forReaction.get(name).accept(null);
-                    event.getChannel().getMessageById(messageId).queueAfter(3, TimeUnit.SECONDS, null, (throwable) -> event.getJDA().removeEventListener(this));
+                    event.getChannel().getMessageById(messageId).queue((msg) -> forReaction.get(name).accept(msg));
                 }
             } else {
                 event.getReaction().removeReaction(user).queue();
