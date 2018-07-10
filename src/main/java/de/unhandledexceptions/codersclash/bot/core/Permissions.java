@@ -73,4 +73,9 @@ public class Permissions implements ICommand {
     public static int getPermissionLevel(Member member) {
         return database.getPermissionLevel(member);
     }
+
+    public static int getVotePermissionLevel()
+    {
+        return 4;
+    }
 }

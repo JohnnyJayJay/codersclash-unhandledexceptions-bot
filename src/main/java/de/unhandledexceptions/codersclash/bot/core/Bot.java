@@ -1,6 +1,10 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
+import de.unhandledexceptions.codersclash.bot.commands.ClearCommand;
+import de.unhandledexceptions.codersclash.bot.commands.ReportCommand;
+import de.unhandledexceptions.codersclash.bot.commands.VoteCommand;
+import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
 import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -52,11 +56,15 @@ public class Bot {
             }
 
         }
-        this.commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
+        commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         logger.info("CommandSettings are being configured");
+
         // command settings einstellen
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
+
         var xpCommand = new XPCommand(commandSettings, database);
+        var voteCommand = new VoteCommand(database);
+
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
                 .put(new ClearCommand(), "clear", "clean", "delete")
@@ -64,11 +72,13 @@ public class Bot {
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
+                .put(voteCommand, "vote")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new SettingsCommand(database, commandSettings), "settings")
                 .put(new RoleCommand(), "role", "mangage")
                 .activate();
-        this.shardManager.addEventListener(xpCommand, new DatabaseListener(database, shardManager));
+
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager));
     }
 
     public void shutdown() {
