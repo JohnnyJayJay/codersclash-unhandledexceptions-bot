@@ -80,14 +80,12 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
         answers.add(new Answer(event.getGuild().getId(), event.getMessage().getContentRaw()));
         event.getChannel().sendMessage("Next Answer").queue();
-
-
     }
 
     private class Answer {
         private String guildID, answer;
 
-        public Answer(String guildID, String answer)
+        private Answer(String guildID, String answer)
         {
             this.guildID = guildID;
             this.answer = answer;
