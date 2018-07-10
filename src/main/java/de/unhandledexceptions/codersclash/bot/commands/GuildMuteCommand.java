@@ -82,7 +82,7 @@ public class GuildMuteCommand implements ICommand {
                 }
             }
             textChannel.putPermissionOverride(member).setAllow(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION).queue();
-            Messages.sendMessage((TextChannel) textChannel, Type.SUCCESS, String.format("This guild has been muted. To unmute the guild, please type `%s[guildmute|muteguild]` " +
+            Messages.sendMessage((TextChannel) textChannel, Type.SUCCESS, String.format("This guild has been muted. To unmute the guild, please type `%s[guildmute|muteguild|lockdown]` " +
                             "again.", Bot.getPrefix(guild.getIdLong())), true).queue();
             ((TextChannel) textChannel).sendMessage(member.getAsMention()).queue();
             guildIds.add(guild.getIdLong());

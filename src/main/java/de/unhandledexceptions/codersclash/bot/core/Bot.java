@@ -64,8 +64,9 @@ public class Bot {
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
-                .put(new BlockCommand(commandSettings), "block", "deny")
+                .put(new BlockCommand(), "block", "deny")
                 .put(new SettingsCommand(database, commandSettings), "settings")
+                .put(new RoleCommand(), "role", "mangage")
                 .activate();
         this.shardManager.addEventListener(xpCommand, new DatabaseListener(database, shardManager));
     }
