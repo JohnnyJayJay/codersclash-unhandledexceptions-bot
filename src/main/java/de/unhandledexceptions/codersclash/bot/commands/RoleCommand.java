@@ -30,8 +30,9 @@ public class RoleCommand implements ICommand {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 var role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
-                    sendMessage(channel, Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember())).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
-                } else if (event.getGuild().getRolesByName(role, true).isEmpty()){
+                    sendMessage(channel, Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember().getEffectiveName())).queue((msg) ->
+                            msg.delete().queueAfter(7, TimeUnit.SECONDS));
+                } else if (event.getGuild().getRolesByName(role, false).isEmpty()){
                     sendMessage(channel, Type.ERROR, String.format("Role `%s` doesn't exist!", role)).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
                 } else if (args[0].equalsIgnoreCase("add")) {
                         event.getGuild().getController().addSingleRoleToMember(event.getMessage().getMentionedMembers().get(0), event.getGuild().getRolesByName(role, true).get(0)).queue();

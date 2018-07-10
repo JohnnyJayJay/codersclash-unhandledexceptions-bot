@@ -48,7 +48,7 @@ public class Messages {
     }
 
     public static void noPermissionsMessage(MessageChannel channel, Member member) {
-        sendMessage(channel, Type.ERROR, "You do not have permission to execute this command. " + member.getAsMention()).queue((msg) -> msg.delete().queueAfter(5, TimeUnit.SECONDS));
+        sendMessage(channel, Type.ERROR, "You do not have permission to execute this command. " + member.getAsMention()).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
     }
 
     public enum Type {

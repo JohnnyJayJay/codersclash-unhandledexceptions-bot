@@ -83,7 +83,7 @@ public class Database {
                 "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT DEFAULT 0,user_lvl INT DEFAULT 1, PRIMARY KEY (user_id));",
                 "CREATE TABLE IF NOT EXISTS discord_member (member_id BIGINT NOT NULL AUTO_INCREMENT, guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE," +
                         "user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE," +
-                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 0,PRIMARY KEY (user_id, guild_id), INDEX (member_id));",
+                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 1,PRIMARY KEY (user_id, guild_id), INDEX (member_id));",
                 "CREATE TABLE IF NOT EXISTS reports (member_id BIGINT NOT NULL REFERENCES discord_member (member_id) ON DELETE CASCADE,report1 TEXT,report2 TEXT,report3 TEXT," +
                         "report4 TEXT,report5 TEXT,report6 TEXT,report7 TEXT,report8 TEXT,report9 TEXT,report10 TEXT,PRIMARY KEY (member_id));"
         };
@@ -106,7 +106,7 @@ public class Database {
         this.updateMailChannel = "UPDATE discord_guild SET mail_channel = ? WHERE guild_id = ?;";
         this.updateMaxReports = "UPDATE discord_guild SET reports_until_ban = ? WHERE guild_id = ?;";
         this.updateXpSystem = "UPDATE discord_guild SET xp_system_activated = ? WHERE guild_id = ?;";
-        logger.info("statement preparation successful.");
+        logger.info("Statement preparation successful.");
     }
 
     public void disconnect() {
