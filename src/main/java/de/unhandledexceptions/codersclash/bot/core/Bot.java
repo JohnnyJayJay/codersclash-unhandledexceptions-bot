@@ -10,12 +10,13 @@ import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.awt.Color;
+import java.util.List;
 
 public class Bot {
 
     private int failCount;
 
-    private final Config config;
+    private static Config config;
     private final Database database;
 
     private DefaultShardManagerBuilder builder;
@@ -64,6 +65,7 @@ public class Bot {
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep")
                 .put(new BlockCommand(commandSettings), "block", "deny")
+                .put(new SettingsCommand(database, commandSettings), "settings")
                 .activate();
         this.shardManager.addEventListener(xpCommand, new DatabaseListener(database, shardManager));
     }
@@ -83,5 +85,9 @@ public class Bot {
 
     public static String getPrefix(long guildId) {
         return commandSettings.getPrefix(guildId);
+    }
+
+    public static List getBotOwners() {
+        return config.getBotOwners();
     }
 }

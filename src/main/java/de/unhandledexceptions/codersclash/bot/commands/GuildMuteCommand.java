@@ -7,10 +7,11 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
-import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.PermissionOverride;
+import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,9 +23,6 @@ import java.util.Set;
 public class GuildMuteCommand implements ICommand {
 
     private CommandSettings settings;
-
-    private final String YES_EMOTE = "\u2705";
-    private final String NO_EMOTE = "\u274C";
     private Set<Long> guildIds;
 
     public GuildMuteCommand(CommandSettings settings) {
@@ -57,9 +55,11 @@ public class GuildMuteCommand implements ICommand {
                     });
                 } else {
                     Messages.sendMessage(channel, Type.WARNING, "This will have immediate effect and will result in a completely muted guild.\nAre you sure?").queue((msg) -> {
-                        msg.addReaction(YES_EMOTE).queue();
-                        msg.addReaction(NO_EMOTE).queue();
-                        event.getJDA().addEventListener(new ReactionListener(msg.getIdLong(), member.getUser().getIdLong()));
+                        Reactions.newYesNoMenu(msg, member.getUser(), (v) -> {
+                            msg.delete().queue();
+                            Messages.sendMessage(channel, Type.WARNING, "Muting guild...").queue();
+                            muteGuild(member);
+                        }, Reactions.NOTHING);
                     });
                 }
             } else {
@@ -93,38 +93,5 @@ public class GuildMuteCommand implements ICommand {
     public String info(Member member) {
         // TODO
         return " ";
-    }
-
-    private class ReactionListener extends ListenerAdapter {
-
-        private final long messageId;
-        private final long userId;
-
-        public ReactionListener(long messageId, long userId) {
-            this.messageId = messageId;
-            this.userId = userId;
-        }
-
-        @Override
-        public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-            if (event.getMessageIdLong() == messageId) {
-                if (event.getUser().isBot())
-                    return;
-
-                if (event.getUser().getIdLong() == userId) {
-                    switch (event.getReactionEmote().getName()) {
-                        case YES_EMOTE:
-                            Messages.sendMessage(event.getChannel(), Type.WARNING, "Muting guild...").queue();
-                            muteGuild(event.getMember());
-                        case NO_EMOTE:
-                            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> msg.delete().queue());
-                            event.getJDA().removeEventListener(this);
-                        default:
-                            event.getReaction().removeReaction(event.getUser()).queue();
-                    }
-                } else
-                    event.getReaction().removeReaction(event.getUser()).queue();
-            }
-        }
     }
 }

@@ -36,6 +36,7 @@ public class ReportCommand implements ICommand {
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
             return;
+
         if (Permissions.getPermissionLevel(member) >= 3) {
             if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(<@!?\\d+> .+)|((get|remove) <@!?\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
@@ -45,13 +46,17 @@ public class ReportCommand implements ICommand {
                     if (database.addReport(target, reason)) {
                         sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention()))
                                 .queue(null, Messages.defaultFailure(channel));
-                        if (reportList.size() >= database.getReportsUntilBan(event.getGuild()) && event.getGuild().getSelfMember().canInteract(target)) {
+                        // TODO
+                        if (Bot.getBotOwners().contains(target.getUser().getIdLong()) && reportList.size() >= database.getReportsUntilBan(event.getGuild())
+                                && event.getGuild().getSelfMember().canInteract(target)) {
                             event.getGuild().getController().ban(target, 0, format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
                                     .queue(null, Messages.defaultFailure(channel));
                         }
                     } else {
                         sendMessage(channel, Type.WARNING, "This member already has 10 reports!").queue();
                     }
+                } else if (reportList.isEmpty()) {
+                    sendMessage(channel, Type.INFO, format("Member `%#s` does not have any reports!", target.getUser())).queue();
                 } else {
                     short index = 0;
                     if (args.length == 3)
@@ -65,8 +70,6 @@ public class ReportCommand implements ICommand {
                                 sendMessage(channel, Type.WARNING, format("Member `%#s` does not have `%d` reports!\nYou may use `%sreport get` %s instead!",
                                         target.getUser(), index, Bot.getPrefix(event.getGuild().getIdLong()), target.getAsMention())).queue();
                             }
-                        } else if (reportList.isEmpty()) {
-                            sendMessage(channel, Type.INFO, format("Member `%#s` does not have any reports!", target.getUser())).queue();
                         } else {
                             var builder = new StringBuilder();
                             for (int i = 1; i <= reportList.size(); i++)

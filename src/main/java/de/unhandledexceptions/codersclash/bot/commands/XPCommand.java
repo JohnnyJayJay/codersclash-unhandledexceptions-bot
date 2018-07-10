@@ -107,7 +107,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             database.addXp(event.getMember(), result);
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
-            if (msg.getType() == MessageType.DEFAULT && !msg.isWebhookMessage())
+            if (msg.getMember() != null)
                 this.checkLvl(msg.getMember());
         });
 

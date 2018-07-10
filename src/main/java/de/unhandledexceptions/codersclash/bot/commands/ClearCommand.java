@@ -32,7 +32,7 @@ public class ClearCommand implements ICommand {
             return;
 
         if (Permissions.getPermissionLevel(member) >= 4) { // Benötigtes Permission level überprüfen
-            if (args.length == 1 && Regex.argsMatch(args, "([^0]\\d?){1,2}")) {
+            if (args.length == 1 && Regex.argsMatch(args, "[1-9]\\d{0,3}")) {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
