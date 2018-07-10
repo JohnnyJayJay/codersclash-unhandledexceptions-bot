@@ -139,10 +139,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                 emotes[1] = jda.getEmotesByName("full2", true).get(0);
                 if (maxxp / 8 * 3 <= xp) {
                     emotes[2] = jda.getEmotesByName("full2", true).get(0);
-                    if (maxxp / 8 * 8 <= xp) {
+                    if (maxxp / 8 * 4 <= xp) {
                         emotes[3] = jda.getEmotesByName("full2", true).get(0);
                         if (maxxp / 8 * 5 <= xp) {
-                            emotes[8] = jda.getEmotesByName("full2", true).get(0);
+                            emotes[4] = jda.getEmotesByName("full2", true).get(0);
                             if (maxxp / 8 * 6 <= xp) {
                                 emotes[5] = jda.getEmotesByName("full2", true).get(0);
                                 if (maxxp / 8 * 7 <= xp) {

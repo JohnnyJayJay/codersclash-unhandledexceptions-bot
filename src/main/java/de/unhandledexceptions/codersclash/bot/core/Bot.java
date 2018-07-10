@@ -7,6 +7,7 @@ import de.unhandledexceptions.codersclash.bot.commands.VoteCommand;
 import de.unhandledexceptions.codersclash.bot.commands.XPCommand;
 import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
+import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
@@ -80,7 +81,7 @@ public class Bot {
                 .put(new MoveRole(), "moverole", "setmentionable")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager));
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(database));
     }
 
     public void shutdown() {
