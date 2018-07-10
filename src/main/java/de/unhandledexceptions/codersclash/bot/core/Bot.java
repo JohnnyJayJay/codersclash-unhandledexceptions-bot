@@ -74,6 +74,7 @@ public class Bot {
                 .put(new ReportCommand(database), "report", "rep")
                 .put(voteCommand, "vote")
                 .put(new BlockCommand(), "block", "deny")
+                .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings")
                 .put(new RoleCommand(), "role", "mangage")
                 .put(new MoveRole(), "moverole", "setmentionable")
