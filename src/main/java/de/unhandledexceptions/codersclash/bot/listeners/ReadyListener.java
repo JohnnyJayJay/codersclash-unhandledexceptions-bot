@@ -3,7 +3,6 @@ package de.unhandledexceptions.codersclash.bot.listeners;
 import de.unhandledexceptions.codersclash.bot.core.Config;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import net.dv8tion.jda.core.managers.AccountManager;
 
 /**
  * @author TheRealYann
@@ -20,10 +19,9 @@ public class ReadyListener extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-
-        AccountManager accountManager = new AccountManager(event.getJDA().getSelfUser());
-        if (!accountManager.getSelfUser().getName().equals(config.getBotName())) {
-            accountManager.setName(config.getBotName()).queue();
+        
+        if (!event.getJDA().getSelfUser().getName().equals(config.getBotName())) {
+            event.getJDA().getSelfUser().getManager().setName(config.getBotName()).queue();
         }
     }
 }

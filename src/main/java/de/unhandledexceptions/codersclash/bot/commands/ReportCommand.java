@@ -43,7 +43,7 @@ public class ReportCommand implements ICommand {
                         sendMessage(channel, Type.SUCCESS, format("Successfully reported `%#s` for ```\n%s``` by %s", target.getUser(), reason, member.getAsMention()))
                                 .queue(null, defaultFailure(channel));
                         // TODO
-                        if (Bot.getBotOwners().contains(target.getUser().getIdLong()) && reportList.size() >= database.getReportsUntilBan(event.getGuild())
+                        if (!Bot.getBotOwners().contains(target.getUser().getIdLong()) && reportList.size() + 1 >= database.getReportsUntilBan(event.getGuild())
                                 && event.getGuild().getSelfMember().canInteract(target)) {
                             event.getGuild().getController().ban(target, 0, format("User `%#s` had too many reports and was therefore banned.", target.getUser()))
                                     .queue(null, defaultFailure(channel));

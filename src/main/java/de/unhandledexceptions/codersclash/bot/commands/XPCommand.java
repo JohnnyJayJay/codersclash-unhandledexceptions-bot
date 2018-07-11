@@ -117,7 +117,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             }
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
-            if (msg.getMember() != null)
+            if (msg.getType() == MessageType.DEFAULT && msg.getMember() != null)
                 this.checkLvl(msg.getMember());
         });
 
