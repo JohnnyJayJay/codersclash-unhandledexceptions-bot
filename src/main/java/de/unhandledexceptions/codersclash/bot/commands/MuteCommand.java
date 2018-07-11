@@ -80,13 +80,11 @@ public class MuteCommand implements ICommand {
     public String info (Member member){
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         int permLevel = Permissions.getPermissionLevel(member);
-        String[] prefixArr = new String[2];
-        Arrays.fill(prefixArr, prefix);
         String ret = permLevel < 3
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Mutes a member so that he can't write in the whole guild.\n\n" +
-                "**Usage**: `%s[mute|silence] @Member <reason>` to *mute*\n\n**Permission level**: `3`", prefixArr);
+                "**Usage**: `%s[mute|silence] @Member <reason>` to *mute*\n\n**Permission level**: `3`", prefix, prefix);
         return ret;
     }
 }

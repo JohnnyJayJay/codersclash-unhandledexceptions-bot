@@ -7,18 +7,12 @@ import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.Icon;
+import net.dv8tion.jda.core.entities.Game;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Bot {
 
@@ -33,14 +27,14 @@ public class Bot {
 
     private static Logger logger = Logging.getLogger();
 
-    private final Map<String, String> emotes = new HashMap<>() {{
+    /*private final Map<String, String> emotes = new HashMap<>() {{
         put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
         put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
         put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
         put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
         put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
         put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
-    }};
+    }};*/
 
     public Bot(Config config, Database database) {
         this.failCount = 0;
@@ -52,6 +46,7 @@ public class Bot {
     public void start() {
         builder.setAutoReconnect(true)
                 .setShardsTotal(config.getMaxShards())
+                .setGame(Game.listening("@try-catch | Ping me!"))
                 .setToken(config.getToken());
         try {
             this.shardManager = builder.build();
@@ -80,6 +75,7 @@ public class Bot {
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
+                .setCooldown(3000)
                 .put(new ClearCommand(), "clear", "clean", "delete")
                 .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
@@ -94,11 +90,11 @@ public class Bot {
                 .put(new InviteCommand(), "invite")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(database));
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config));
     }
 
     // FIXME geht noch nicht
-    private void checkAndCreateEmotes() {
+    /*private void checkAndCreateEmotes() {
         if (emotes.keySet().stream().anyMatch((name) -> {
             var emoteList = shardManager.getEmotesByName(name, false);
             return emoteList.isEmpty() || !emoteList.get(0).getImageUrl().equals(emotes.get(name));
@@ -116,7 +112,7 @@ public class Bot {
                 });
             });
         }
-    }
+    }*/
 
     public void shutdown(int shard) {
         logger.warn("Shard " + shard + " is shutting down...");

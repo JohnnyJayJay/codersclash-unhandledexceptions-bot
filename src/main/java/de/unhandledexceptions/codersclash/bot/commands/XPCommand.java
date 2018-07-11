@@ -59,7 +59,8 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
             try {
                 for (String name : urls.keySet()) {
-                    if (event.getJDA().getEmotesByName(name, true).size() == 0) {
+                    var emotes = event.getJDA().asBot().getShardManager().getEmotesByName(name, false);
+                    if (emotes.isEmpty() || emotes.get(0).getImageUrl().equals(urls.get(name))) {
                         event.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
                     }
                 }
@@ -123,7 +124,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
-        var jda = member.getJDA();
+        var jda = member.getJDA().asBot().getShardManager();
         Emote[] emotes = new Emote[8];
         emotes[0] = jda.getEmotesByName("empty1", true).get(0);
         emotes[1] = jda.getEmotesByName("empty2", true).get(0);

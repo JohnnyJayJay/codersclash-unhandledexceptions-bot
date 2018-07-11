@@ -14,10 +14,11 @@ import java.util.function.Consumer;
 public class Messages {
 
     private static MessageEmbed buildMessage(Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
-        return embedBuilder
-                .setDescription(content)
-                .setColor(type.color)
-                .setFooter(type.footer, type.footerUrl)
+        embedBuilder.setDescription(content);
+        if (type.color != null) {
+            embedBuilder.setColor(type.color);
+        }
+        return embedBuilder.setFooter(type.footer, type.footerUrl)
                 .setTitle(title)
                 .setTimestamp(timestamp ? Instant.now() : null)
                 .build();
@@ -56,8 +57,9 @@ public class Messages {
         WARNING("Warning", "https://previews.123rf.com/images/faysalfarhan/faysalfarhan1711/faysalfarhan171142240/89589613-exclamation-mark-icon-isolated-on-yellow-round-button-abstract-illustration.jpg", Color.YELLOW),
         ERROR("Error", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Dialog-error-round.svg/2000px-Dialog-error-round.svg.png", Color.RED),
         SUCCESS("Success", "https://cdn.pixabay.com/photo/2012/04/11/17/44/check-mark-29114_960_720.png", Color.GREEN),
-        QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", Color.BLUE),
-        DEFAULT("Message", null, Color.WHITE);
+        QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", Color.WHITE),
+        NO_TYPE(null, null, null),
+        DEFAULT("Message", null, Color.BLUE);
 
         private String footer, footerUrl;
         private Color color;
