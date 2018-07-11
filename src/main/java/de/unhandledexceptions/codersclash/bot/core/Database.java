@@ -167,9 +167,18 @@ public class Database {
         if (currentReports.size() < 10) {
             int memberId = this.getMemberId(member.getGuild().getIdLong(), member.getUser().getIdLong());
             int where;
-            for (where = 0; where <= currentReports.size(); where++);
-            this.executeUpdate("UPDATE reports SET report" + where + " = ? WHERE member_id = ?;", report, memberId);
-            ret = true;
+            try (var connection = dataSource.getConnection();
+                 var statement = connection.prepareStatement(selectReports)) {
+                logger.debug("Execute query: " + selectReports);
+                statement.setInt(1, memberId);
+                var resultSet = statement.executeQuery();
+                resultSet.next();
+                for (where = 1; resultSet.getString("report" + where) != null; where++);
+                this.executeUpdate("UPDATE reports SET report" + where + " = ? WHERE member_id = ?;", report, memberId);
+                ret = true;
+            } catch (SQLException e) {
+                logger.error("An Exception occurred while deleting report", e);
+            }
         }
         return ret;
     }
