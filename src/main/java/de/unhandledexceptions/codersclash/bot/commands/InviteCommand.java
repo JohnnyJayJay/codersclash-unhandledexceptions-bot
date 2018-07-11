@@ -35,7 +35,7 @@ public class InviteCommand implements ICommand {
                             msg.delete().queue();
                             channel.createInvite().queue((invite) -> {
                                 var builder = new EmbedBuilder().addField("Invite for this guild:", invite.getURL(), true).setThumbnail(event.getGuild().getIconUrl()).setColor(event.getGuild().getSelfMember().getColor());
-                                Messages.sendMessage(channel, Type.NO_TYPE, "\uD83D\uDCE1 **" + event.getGuild().getName() +"**", "Invite", false, builder).queue();
+                                Messages.sendMessage(channel, Type.NO_TYPE, "\uD83D\uDCE1 **" + event.getGuild().getName() + "**", "Invite", false, builder).queue();
                             });
                         }));
             });
