@@ -57,9 +57,9 @@ public class Messages {
         WARNING("Warning", "https://i.imgur.com/ozSen6U.png", Color.YELLOW),
         ERROR("Error", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Dialog-error-round.svg/2000px-Dialog-error-round.svg.png", Color.RED),
         SUCCESS("Success", "https://cdn.pixabay.com/photo/2012/04/11/17/44/check-mark-29114_960_720.png", Color.GREEN),
-        QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", Color.WHITE),
+        QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", new Color(60,132,167)), //Hell: 70, 159, 204 Dunkel: 60,132,167
         NO_TYPE(null, null, null),
-        DEFAULT("Message", null, new Color(36, 95, 233));
+        DEFAULT(null, null, Color.WHITE);
 
         private String footer, footerUrl;
         private Color color;

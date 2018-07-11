@@ -6,11 +6,8 @@ import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-
-import java.time.format.DateTimeFormatter;
 
 public class MentionListener extends ListenerAdapter {
 
@@ -34,7 +31,6 @@ public class MentionListener extends ListenerAdapter {
             }
             config.getBotOwners().forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
             builder.clear().addField("Name", config.getBotName(), true)
-                    .setThumbnail(event.getGuild().getSelfMember().getUser().getAvatarUrl())
                     .addField("Default Prefix", "`" + config.getPrefix() + "`", true)
                     .addField("This Guild's Prefix", "`" + prefix + "`", true)
                     .addField("Birth", "2018/06/23 12:00", true)

@@ -4,6 +4,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
+import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
@@ -90,7 +91,7 @@ public class Bot {
                 .put(new InviteCommand(config), "invite")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config));
+        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config), new ReadyListener(config));
     }
 
     // FIXME geht noch nicht
