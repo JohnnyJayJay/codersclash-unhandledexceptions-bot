@@ -5,13 +5,11 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
-import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
-import org.slf4j.Logger;
 
 import java.util.Arrays;
 
@@ -24,7 +22,6 @@ import static java.lang.String.format;
  */
 public class ReportCommand implements ICommand {
 
-    private static Logger logger = Logging.getLogger();
     private Database database;
 
     public ReportCommand(Database database) {

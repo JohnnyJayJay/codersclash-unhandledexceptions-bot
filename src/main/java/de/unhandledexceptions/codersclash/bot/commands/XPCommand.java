@@ -28,7 +28,7 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 // TODO Fortschritt verlangsamen
 public class XPCommand extends ListenerAdapter implements ICommand {
 
-    private final Map<String, String> urls = new HashMap<>() {{
+    private static final Map<String, String> urls = new HashMap<>() {{
         put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
         put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
         put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
