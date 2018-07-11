@@ -194,12 +194,17 @@ public class Database {
             var resultSet = statement.executeQuery();
             resultSet.next();
             if (number < 10 && resultSet.getString("report" + (number + 1)) != null) {
-                List<String> toSet = new ArrayList<>();
+                var builder = new StringBuilder().append("UPDATE reports SET ");
                 for (int i = number; i < 11 && resultSet.getString("report" + i) != null; i++) {
                     String next = i < 10 ? resultSet.getString("report" + (i + 1)) : null;
-                    toSet.add("report" + i + " = " + (next != null ? ("'" + next + "'") : "NULL"));
+                    if (next == null) {
+                        builder.append("report" + i + " = NULL ");
+                        break;
+                    } else
+                        builder.append("report" + i + " = '" + next + "', ");
                 }
-                this.executeUpdate("UPDATE reports SET " + String.join(", ", toSet) + " WHERE member_id = ?;", memberId);
+                builder.append("WHERE member_id = ?;");
+                this.executeUpdate(builder.toString(), memberId);
             } else {
                 this.executeUpdate("UPDATE reports SET report" + number + " = NULL WHERE member_id = ?;", memberId);
             }
