@@ -31,16 +31,15 @@ public class MoveRole implements ICommand {
             var role = event.getGuild().getRolesByName(event.getCommand().getJoinedArgs(), false).get(0);
             role.getManager().setMentionable(true).queue();
         }
-
-        Role muted = null;
-        var mutedRoles = event.getGuild().getRolesByName("tc-muted", false);
-        channel.sendMessage("Rollen, die tc-muted heißen: " + mutedRoles.size()).queue();
-        if (!mutedRoles.isEmpty()) {
-            channel.sendMessage("Hat permission: " + Boolean.toString(mutedRoles.get(0).hasPermission(Permission.MESSAGE_WRITE))).queue();
-            //var first = mutedRoles.stream().filter((role) -> role.hasPermission(Permission.MESSAGE_WRITE, Permission.VOICE_SPEAK));
-            //channel.sendMessage("Rollen nach filtern: " + first.count()).queue();
-            //channel.sendMessage("First is present: " + first.findFirst().isPresent()).queue();
-        }
-
+//		
+//		Role muted = null;
+//        var mutedRoles = event.getGuild().getRolesByName("tc-muted", false);
+//        channel.sendMessage("Rollen, die tc-muted heißen: " + mutedRoles.size()).queue();
+//        if (!mutedRoles.isEmpty()) {
+//            channel.sendMessage("Hat permission: " + Boolean.toString(mutedRoles.get(0).hasPermission(Permission.MESSAGE_WRITE))).queue();
+//            //var first = mutedRoles.stream().filter((role) -> role.hasPermission(Permission.MESSAGE_WRITE, Permission.VOICE_SPEAK));
+//            //channel.sendMessage("Rollen nach filtern: " + first.count()).queue();
+//            //channel.sendMessage("First is present: " + first.findFirst().isPresent()).queue();
+//        }
     }
 }

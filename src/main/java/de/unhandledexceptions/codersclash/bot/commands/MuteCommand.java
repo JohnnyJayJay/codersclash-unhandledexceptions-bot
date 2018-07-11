@@ -38,7 +38,7 @@ public class MuteCommand implements ICommand {
                 var guild = event.getGuild();
                 var controller = guild.getController();
                 if (role == null) {
-                    controller.createRole().setName("tc-muted").setColor(Color.GRAY).queue((newRole) -> {
+                    controller.createRole().setName("tc-muted").setColor(Color.GRAY).setHoisted(true).setMentionable(true).queue((newRole) -> {
                         newRole.getManager().revokePermissions(Permission.MESSAGE_WRITE, Permission.VOICE_SPEAK).queue((v) -> {
                             guild.getTextChannelCache().forEach((textChannel) -> textChannel.putPermissionOverride(newRole).setDeny(Permission.MESSAGE_WRITE).queue());
                             guild.getVoiceChannelCache().forEach((voiceChannel) -> voiceChannel.putPermissionOverride(newRole).setDeny(Permission.VOICE_SPEAK).queue());
@@ -50,7 +50,7 @@ public class MuteCommand implements ICommand {
                     if (!mutedMembers.containsKey(guild.getIdLong()))
                         mutedMembers.put(guild.getIdLong(), new HashSet<>());
 
-                    if (mutedMembers.get(target.getUser().getIdLong()).contains(target.getUser().getIdLong())) {
+                    if (mutedMembers.get(guild.getIdLong()).contains(target.getUser().getIdLong())) {
                         controller.removeSingleRoleFromMember(target, role).queue();
                         mutedMembers.get(guild.getIdLong()).remove(target.getUser().getIdLong());
                         sendMessage(channel, Type.SUCCESS, format("Successfully unmuted `%#s` by %s", target.getUser(), member.getAsMention()), true).queue();
@@ -83,7 +83,7 @@ public class MuteCommand implements ICommand {
         String[] prefixArr = new String[2];
         Arrays.fill(prefixArr, prefix);
         String ret = permLevel < 3
-                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Mutes a member so that he can't write in the whole guild.\n\n" +
                 "**Usage**: `%s[mute|silence] @Member <reason>` to *mute*\n\n**Permission level**: `3`", prefixArr);
