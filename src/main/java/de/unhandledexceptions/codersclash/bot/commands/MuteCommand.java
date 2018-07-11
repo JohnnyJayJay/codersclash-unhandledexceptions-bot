@@ -44,8 +44,8 @@ public class MuteCommand implements ICommand {
                             guild.getVoiceChannelCache().forEach((voiceChannel) -> voiceChannel.putPermissionOverride(newRole).setDeny(Permission.VOICE_SPEAK).queue());
                             controller.modifyRolePositions().selectPosition(newRole).moveTo(guild.getSelfMember().getRoles().get(1).getPosition()).queue();
                             this.onCommand(event, member, channel, args);
-                        }, Messages.defaultFailure(channel));
-                    }, Messages.defaultFailure(channel));
+                        }, defaultFailure(channel));
+                    }, defaultFailure(channel));
                 } else {
                     if (!mutedMembers.containsKey(guild.getIdLong()))
                         mutedMembers.put(guild.getIdLong(), new HashSet<>());

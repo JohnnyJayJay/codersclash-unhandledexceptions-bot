@@ -43,16 +43,17 @@ public class MentionListener extends ListenerAdapter {
                     .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), false)
                     .addField("Members", Long.toString(members), true)
                     .setColor(event.getGuild().getSelfMember().getColor());
-            Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", true, builder).queue(this::reactionsAdd);
+            Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue();
+            //Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue(this::reactionsAdd);
         }
     }
 
-    private void reactionsAdd(Message msg) {
+    /*private void reactionsAdd(Message msg) {
         msg.addReaction("\uD83C\uDDF9").queue();
         msg.addReaction("\uD83C\uDDF7").queue();
         msg.addReaction("\uD83C\uDDFE").queue();
         msg.addReaction("\uD83C\uDDE8").queue();
         msg.addReaction("\uD83C\uDDE6").queue();
         msg.addReaction("\uD83C\uDDED").queue();
-    }
+    }*/
 }

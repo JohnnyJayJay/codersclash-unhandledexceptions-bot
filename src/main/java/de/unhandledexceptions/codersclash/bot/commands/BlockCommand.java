@@ -24,8 +24,6 @@ import static java.lang.String.format;
 
 public class BlockCommand implements ICommand {
 
-    private Logger logger = Logging.getLogger();
-
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))

@@ -46,7 +46,7 @@ public class Bot {
     public void start() {
         builder.setAutoReconnect(true)
                 .setShardsTotal(config.getMaxShards())
-                .setGame(Game.listening("@try-catch | Ping me!"))
+                .setGame(Game.listening("@"+ config.getBotName() + " | Ping me!"))
                 .setToken(config.getToken());
         try {
             this.shardManager = builder.build();
@@ -60,7 +60,7 @@ public class Bot {
                 this.start();
             } else {
                 logger.error("Login failed after 3 times. Exiting the program");
-                System.exit(1);
+               Runtime.getRuntime().exit(1);
             }
 
         }
@@ -87,7 +87,7 @@ public class Bot {
                 .put(new SettingsCommand(database, commandSettings), "settings")
                 .put(new RoleCommand(), "role", "mangage")
                 .put(new MoveRole(), "moverole", "setmentionable")
-                .put(new InviteCommand(), "invite")
+                .put(new InviteCommand(config), "invite")
                 .activate();
 
         this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config));

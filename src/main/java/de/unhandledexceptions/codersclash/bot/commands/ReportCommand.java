@@ -24,7 +24,6 @@ import static java.lang.String.format;
  */
 public class ReportCommand implements ICommand {
 
-    private static Logger logger = Logging.getLogger();
     private Database database;
 
     public ReportCommand(Database database) {

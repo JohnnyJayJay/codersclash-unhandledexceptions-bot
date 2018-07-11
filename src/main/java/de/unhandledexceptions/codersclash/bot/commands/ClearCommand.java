@@ -35,7 +35,7 @@ public class ClearCommand implements ICommand {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
-                sendMessage(channel, Type.WARNING, String.format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
+                sendMessage(channel, Type.WARNING, format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
             } else {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + info(member)).queue();
             }
