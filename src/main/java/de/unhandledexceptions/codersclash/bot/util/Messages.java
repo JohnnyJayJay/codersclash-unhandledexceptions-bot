@@ -59,7 +59,7 @@ public class Messages {
         SUCCESS("Success", "https://cdn.pixabay.com/photo/2012/04/11/17/44/check-mark-29114_960_720.png", Color.GREEN),
         QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", Color.WHITE),
         NO_TYPE(null, null, null),
-        DEFAULT("Message", null, Color.BLUE);
+        DEFAULT("Message", null, new Color(36, 95, 233));
 
         private String footer, footerUrl;
         private Color color;
