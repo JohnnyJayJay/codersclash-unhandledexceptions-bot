@@ -19,7 +19,7 @@ public class ReadyListener extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-        
+
         if (!event.getJDA().getSelfUser().getName().equals(config.getBotName())) {
             event.getJDA().getSelfUser().getManager().setName(config.getBotName()).queue();
         }
