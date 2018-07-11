@@ -13,9 +13,6 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import java.awt.*;
 import java.util.Map;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
-import static java.lang.String.format;
-
 /**
  * @author Johnny_JayJay
  * @version 0.1-SNAPSHOT
@@ -33,16 +30,16 @@ public class InviteCommand implements ICommand {
                             msg.delete().queue();
                             String botInvite = "[Click here!](https://discordapp.com/api/oauth2/authorize?client_id="+ event.getGuild().getSelfMember().getUser().getIdLong() +"&permissions=8&scope=bot)";
                             channel.sendMessage(new EmbedBuilder()
-                                            .setColor(Color.WHITE)
+                                            .setColor(event.getGuild().getSelfMember().getColor())
                                             .setThumbnail(event.getGuild().getSelfMember().getUser().getAvatarUrl())
                                             .setDescription("\uD83E\uDD16 **try-catch**")
-                                            .addField("Invite it to your guild as well!\n", botInvite, true)
+                                            .addField("Invite me to your guild as well!\n", botInvite, true)
                                             .build()
                             ).queue();
                         }, "\uD83D\uDCE1", (v) -> {
                             msg.delete().queue();
                             channel.createInvite().setTemporary(false).queue((invite) -> channel.sendMessage(new EmbedBuilder()
-                                             .setColor(Color.WHITE)
+                                             .setColor(event.getGuild().getSelfMember().getColor())
                                              .setThumbnail(event.getGuild().getIconUrl())
                                              .setDescription("\uD83D\uDCE1 **" + event.getGuild().getName() +"**")
                                             .addField("Invite for this guild:\n", invite.getURL() , true)
