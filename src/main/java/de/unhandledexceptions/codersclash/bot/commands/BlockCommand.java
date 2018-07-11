@@ -40,17 +40,13 @@ public class BlockCommand implements ICommand {
                 if (targetMember.hasPermission(targetChannel, Permission.VIEW_CHANNEL, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)) {
                     targetChannel.putPermissionOverride(targetMember).setDeny(Permission.VIEW_CHANNEL, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ).queue();
                     if (args.length == 2) {
-                        sendMessage(channel, Type.SUCCESS, String.format("Successfully blocked `%#s` in %s by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), member.getAsMention()), true).queue();
+                        sendMessage(channel, Type.SUCCESS, format("Successfully blocked `%#s` in %s by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), member.getAsMention()), true).queue();
                     } else {
-                        sendMessage(channel, Type.SUCCESS, String.format("Successfully blocked `%#s` in %s for ```\n%s``` by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), reason, member.getAsMention()), true).queue();
+                        sendMessage(channel, Type.SUCCESS, format("Successfully blocked `%#s` in %s for ```\n%s``` by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), reason, member.getAsMention()), true).queue();
                     }
                 } else {
                     channelManager.removePermissionOverride(targetMember).queue();
-                    if (args.length == 2) {
-                        sendMessage(channel, Type.SUCCESS, String.format("Successfully unblocked `%#s` in %s by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), member.getAsMention()), true).queue();
-                    } else {
-                        sendMessage(channel, Type.SUCCESS, String.format("Successfully unblocked `%#s` in %s for ```\n%s``` by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), reason, member.getAsMention()), true).queue();
-                    }
+                    sendMessage(channel, Type.SUCCESS, format("Successfully unblocked `%#s` in %s by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), member.getAsMention()), true).queue();
                 }
             } else {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
