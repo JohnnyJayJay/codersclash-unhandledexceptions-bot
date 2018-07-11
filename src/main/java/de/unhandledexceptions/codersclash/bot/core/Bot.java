@@ -85,7 +85,7 @@ public class Bot {
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings")
-                .put(new RoleCommand(), "role", "mangage")
+                .put(new RoleCommand(), "role", "manage")
                 .put(new MoveRole(), "moverole", "setmentionable")
                 .put(new InviteCommand(config), "invite")
                 .activate();

@@ -54,7 +54,7 @@ public class Messages {
 
     public enum Type {
         INFO("Information", "https://vignette.wikia.nocookie.net/dragonvale/images/f/fd/Blue_Information_Sign.png/revision/latest?cb=20120415234017", Color.CYAN),
-        WARNING("Warning", "https://previews.123rf.com/images/faysalfarhan/faysalfarhan1711/faysalfarhan171142240/89589613-exclamation-mark-icon-isolated-on-yellow-round-button-abstract-illustration.jpg", Color.YELLOW),
+        WARNING("Warning", "https://i.imgur.com/ozSen6U.png", Color.YELLOW),
         ERROR("Error", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Dialog-error-round.svg/2000px-Dialog-error-round.svg.png", Color.RED),
         SUCCESS("Success", "https://cdn.pixabay.com/photo/2012/04/11/17/44/check-mark-29114_960_720.png", Color.GREEN),
         QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", Color.WHITE),

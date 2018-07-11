@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 
 public class MentionListener extends ListenerAdapter {
 
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm");
     private EmbedBuilder builder = new EmbedBuilder();
     private Config config;
 
@@ -37,7 +36,7 @@ public class MentionListener extends ListenerAdapter {
             builder.clear().addField("Name", config.getBotName(), true)
                     .addField("Default Prefix", "`" + config.getPrefix() + "`", true)
                     .addField("This Guild's Prefix", "`" + prefix + "`", true)
-                    .addField("Birth", event.getJDA().getSelfUser().getCreationTime().format(formatter), true)
+                    .addField("Birth", "2018/06/23 12:00", true)
                     .addField("Help Command", "`" + prefix + "[help|helpme|commands] <command>`", false)
                     .addField("Creators", stringBuilder.toString(), false)
                     .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), false)
