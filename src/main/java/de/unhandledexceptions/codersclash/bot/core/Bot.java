@@ -89,6 +89,7 @@ public class Bot {
                 .put(new RoleCommand(), "role", "manage")
                 .put(new MoveRole(), "moverole", "setmentionable")
                 .put(new InviteCommand(config), "invite")
+                .put(new ScoreBoardCommand(database), "scoreboard", "sb")
                 .activate();
 
         this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config), new ReadyListener(config));

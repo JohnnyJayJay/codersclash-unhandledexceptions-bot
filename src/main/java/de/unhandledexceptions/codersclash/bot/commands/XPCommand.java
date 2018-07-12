@@ -4,6 +4,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
+import de.unhandledexceptions.codersclash.bot.core.ScoreBoardUser;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -17,6 +18,8 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
