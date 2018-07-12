@@ -36,13 +36,30 @@ public class ScoreBoardCommand implements ICommand {
                 order = "member_lvl";
             }
             StringBuilder builder = new StringBuilder();
-            builder.append("**ScoreBoard**\n");
+            builder.append("**ScoreBoard**\n```");
             var list = database.getScoreBoard(table, order);
-            for (int i =0; 10>i; i++) {
-                var user = list.get(i);
-                var name = shardManager.getUserById(user.getUserid()).getName();
-                System.out.println(name);
-                builder.append(name+"   "+"Level: "+user.getLvl()+"   "+"XP: "+user.getXp()+"\n");
+            int i =0;
+            int i2 = 10;
+            for (ScoreBoardUser user : list) {
+                System.out.println("HELLO");
+                if (i2>i) {
+                    System.out.println("AJAJA");
+                    if (shardManager.getUserById(user.getUserid()).isBot()) {
+                        i2++;
+                    } else {
+                        builder.append(shardManager.getUserById(user.getUserid()).getName() +
+                                shardManager.getUserById(user.getUserid()).getDiscriminator() + "   " +
+                                "Level: " + user.getLvl() + "   " + "XP: " + user.getXp() + "\n");
+                    }
+                    i++;
+                }
+            }
+            for (int i3 =0; list.size()>i3; i3++) {
+                var user = list.get(i3);
+                if (user.getUserid().equals(member.getUser().getId())) {
+                    System.out.println("lol: "+user.getUserid());
+                    builder.append(":arrow_right: **Your place**\n"+String.valueOf(i));
+                }
             }
             embedBuilder.addField(((type.equals("member")) ? "Guild" : "User"), builder.toString(), true);
         }

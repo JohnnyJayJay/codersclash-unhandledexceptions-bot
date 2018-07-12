@@ -105,18 +105,20 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.removeXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
-            if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
-                return;
+            if (!event.getAuthor().isBot()) {
+                if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
+                    return;
 
-            int length = event.getMessage().getContentRaw().length();
-            int result;
-            if (length > 0) {
-                if (length > 10)
-                    result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
-                else
-                    result = ThreadLocalRandom.current().nextInt(length);
+                int length = event.getMessage().getContentRaw().length();
+                int result;
+                if (length > 0) {
+                    if (length > 10)
+                        result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
+                    else
+                        result = ThreadLocalRandom.current().nextInt(length);
 
-                database.addXp(event.getMember(), result);
+                    database.addXp(event.getMember(), result);
+                }
             }
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
