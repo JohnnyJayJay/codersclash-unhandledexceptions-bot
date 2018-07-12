@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author Johnny_JayJay
@@ -20,9 +21,11 @@ public class Reactions {
     // weitere Emotes hier hinzufügen
     public static final String YES_EMOTE = "\u2705";
     public static final String NO_EMOTE = "\u274C";
-    public static final String EXCLAMATION = "❗";
+    public static final String EXCLAMATION_MARK = "❗";
     public static final String QUESTION_MARK = "❓";
-    public static final String BACK_EMOTE = "↪";
+    public static final String SPEECH_BUBBLE = "\uD83D\uDCAC";
+    public static final String FLOPPY = "\uD83D\uDCBE";
+    public static final String BACK = "↪";
     public static final String SHINY_STAR = "\uD83C\uDF1F";
     public static final String STAR = "⭐";
     public static final String BLACK_STAR = "✴";
@@ -30,6 +33,11 @@ public class Reactions {
     public static final String Y = "\uD83C\uDDFE";
     public static final String N = "\uD83C\uDDF3";
     public static final String P = "\uD83C\uDDF5";
+    public static final String MAIL = "\uD83D\uDCE9";
+    public static final String REPEAT = "\uD83D\uDD01";
+    public static final String CONTROLLER = "\uD83C\uDFAE";
+    public static final String NEW = "\uD83C\uDD95";
+    public static final String CLOSED_INBOX = "\uD83D\uDCEA";
 
     public static final Consumer<Message> DO_NOTHING = msg -> {};
 
@@ -86,8 +94,10 @@ public class Reactions {
         member.getJDA().addEventListener(new MessageListener(member.getUser().getIdLong(), member.getGuild().getIdLong(), MessageListener.NO_CHANNEL, messageReceived, member.getJDA(), waitSeconds, v -> {}));
     }
 
-    public static void newMessageWaiter(User user, MessageChannel channel, Consumer<Message> messageReceived, int waitSeconds, Consumer<Void> afterExpiration) {
-        user.getJDA().addEventListener(new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, channel.getIdLong(), messageReceived, user.getJDA(), waitSeconds, afterExpiration));
+    public static void newMessageWaiter(User user, MessageChannel channel, Consumer<Message> messageReceived, Predicate<String> condition, int waitSeconds, Consumer<Void> afterExpiration) {
+        var listener = new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, channel.getIdLong(), messageReceived, user.getJDA(), waitSeconds, afterExpiration);
+        listener.setCondition(condition);
+        user.getJDA().addEventListener(listener);
     }
 
     public static void newMessageWaiter(User user, Consumer<Message> messageReceived, int waitSeconds) {
@@ -105,13 +115,17 @@ public class Reactions {
         private final long guildId;
         private final long channelId;
         private final Consumer<Message> messageReceived;
+        private Predicate<String> condition;
+        private boolean receivedMessage;
 
         public MessageListener(long userId, long guildId, long channelId, Consumer<Message> messageReceived, JDA jda, int waitSeconds, Consumer<Void> afterExpiration) {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    jda.removeEventListener(this);
-                    afterExpiration.accept(null);
+                    if (!receivedMessage) {
+                        jda.removeEventListener(this);
+                        afterExpiration.accept(null);
+                    }
                     this.cancel();
                 }
             }, waitSeconds * 1000);
@@ -119,6 +133,11 @@ public class Reactions {
             this.guildId = guildId;
             this.channelId = channelId;
             this.messageReceived = messageReceived;
+            this.condition = (s) -> true;
+        }
+
+        public void setCondition(Predicate<String> condition) {
+            this.condition = condition;
         }
 
         @Override
@@ -126,16 +145,20 @@ public class Reactions {
             if (event.getAuthor().getIdLong() != userId)
                 return;
 
+            String raw = event.getMessage().getContentRaw();
             if (channelId == NO_CHANNEL) {
-                if (guildId == NO_GUILD) {
+                if (guildId == NO_GUILD && condition.test(raw)) {
                     messageReceived.accept(event.getMessage());
+                    this.receivedMessage = true;
                     event.getJDA().removeEventListener(this);
-                } else if (event.getGuild() != null && event.getGuild().getIdLong() == guildId) {
+                } else if (event.getGuild() != null && event.getGuild().getIdLong() == guildId && condition.test(raw)) {
                     messageReceived.accept(event.getMessage());
+                    this.receivedMessage = true;
                     event.getJDA().removeEventListener(this);
                 }
-            } else if (event.getChannel().getIdLong() == channelId) {
+            } else if (event.getChannel().getIdLong() == channelId && condition.test(raw)) {
                 messageReceived.accept(event.getMessage());
+                this.receivedMessage = true;
                 event.getJDA().removeEventListener(this);
             }
         }
@@ -168,6 +191,7 @@ public class Reactions {
             this.map = map;
             this.function = function;
             this.useFunction = map == null;
+            this.andThen = Collections.EMPTY_LIST;
         }
 
         public void setAndThen(Collection<Consumer<Message>> andThen) {
@@ -190,17 +214,17 @@ public class Reactions {
                 String name = event.getReactionEmote().getName();
                 event.getReaction().removeReaction(user).queue();
                 if (name.equals(NO_EMOTE)) {
+                    if (useFunction)
+                        apply(event, name);
+                    else if (map.containsKey(NO_EMOTE))
+                        map.get(NO_EMOTE).accept(null);
+
                     event.getJDA().removeEventListener(this);
                     event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> msg.delete().queue());
                     return;
                 }
                 if (useFunction) {
-                    event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
-                        Consumer<Message> andThenCombined = m -> {};
-                        for (Consumer<Message> c : andThen)
-                            andThenCombined = andThenCombined.andThen(c);
-                        function.apply(name).andThen(andThenCombined).accept(msg);
-                    });
+                    apply(event, name);
                 } else if (map.containsKey(name)) {
                     Consumer<Message> andThenCombined = m -> {};
                     for (Consumer<Message> c : andThen)
@@ -212,6 +236,17 @@ public class Reactions {
                 event.getReaction().removeReaction(user).queue();
             }
         }
+
+        private void apply(GuildMessageReactionAddEvent event, String name) {
+            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
+                Consumer<Message> andThenCombined = m -> {};
+                for (Consumer<Message> c : andThen)
+                    andThenCombined = andThenCombined.andThen(c);
+                function.apply(name).andThen(andThenCombined).accept(msg);
+            });
+        }
     }
 
-}
+
+
+    }

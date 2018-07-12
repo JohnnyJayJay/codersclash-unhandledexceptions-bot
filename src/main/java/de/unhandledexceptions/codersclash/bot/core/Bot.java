@@ -90,7 +90,8 @@ public class Bot {
                 .put(voteCommand, "vote")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
-                .put(new SettingsCommand(database, commandSettings), "settings")
+                .put(new SettingsCommand(database, commandSettings), "settings", "control")
+                .put(new MailCommand(database), "mail", "contact")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .activate();

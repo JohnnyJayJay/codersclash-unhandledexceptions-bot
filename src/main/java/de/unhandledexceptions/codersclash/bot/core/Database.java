@@ -51,7 +51,7 @@ public class Database {
                 preparedStatement.executeUpdate();
                 logger.info("Database created (or it already existed).");
             } catch (SQLException e) {
-                logger.warn("Exception caught while connecting", e);
+                logger.error("Exception caught while connecting", e);
             }
             config = new HikariConfig();
             logger.info("Connecting to " + ip + "...");
@@ -314,7 +314,7 @@ public class Database {
         return null;
     }
 
-    public long getMailChannel(Guild guild) {
+    public Long getMailChannel(Guild guild) {
         return this.<Long>getFirst("mail_channel", selectFromGuild, Long.TYPE, guild.getIdLong());
     }
 
