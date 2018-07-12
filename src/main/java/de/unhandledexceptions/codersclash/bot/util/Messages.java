@@ -2,11 +2,12 @@ package de.unhandledexceptions.codersclash.bot.util;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
 
-import java.awt.Color;
+import java.awt.*;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -50,6 +51,10 @@ public class Messages {
 
     public static void noPermissionsMessage(MessageChannel channel, Member member) {
         sendMessage(channel, Type.ERROR, "You do not have permission to execute this command. " + member.getAsMention()).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
+    }
+
+    public static void deleteAfterFiveSec(Message message) {
+        message.delete().queueAfter(5, TimeUnit.SECONDS);
     }
 
     public enum Type {
