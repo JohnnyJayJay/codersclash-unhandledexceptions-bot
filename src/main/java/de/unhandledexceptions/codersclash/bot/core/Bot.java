@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Bot {
@@ -22,6 +23,7 @@ public class Bot {
     private static Config config;
     private final Database database;
 
+    private List<Object> listeners;
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
     private static CommandSettings commandSettings;
@@ -42,12 +44,13 @@ public class Bot {
         this.config = config;
         this.database = database;
         this.builder = new DefaultShardManagerBuilder();
+        this.listeners = new ArrayList<>();
     }
 
     public void start() {
         builder.setAutoReconnect(true)
                 .setShardsTotal(config.getMaxShards())
-                .setGame(Game.listening("@"+ config.getBotName() + " | Ping me!"))
+                .setGame(Game.listening("@" + config.getBotName() + " | Ping me!"))
                 .setToken(config.getToken());
         try {
             this.shardManager = builder.build();
@@ -57,11 +60,12 @@ public class Bot {
                 logger.error("Login failed, reloading... (Check your token in config.json)");
                 try {
                     Thread.sleep(3000);
-                } catch (InterruptedException e1) {}
+                } catch (InterruptedException e1) {
+                }
                 this.start();
             } else {
                 logger.error("Login failed after 3 times. Exiting the program");
-               Runtime.getRuntime().exit(1);
+                Runtime.getRuntime().exit(1);
             }
 
         }
@@ -87,11 +91,12 @@ public class Bot {
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings")
                 .put(new RoleCommand(), "role", "manage")
-                .put(new MoveRole(), "moverole", "setmentionable")
+                .put(new Management(this), "manage", "setmentionable")
                 .put(new InviteCommand(config), "invite")
                 .activate();
 
-        this.shardManager.addEventListener(new XPCommand(commandSettings, database), voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config), new ReadyListener(config));
+        listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config), new ReadyListener(config)));
+        listeners.forEach(shardManager::addEventListener);
     }
 
     // FIXME geht noch nicht
@@ -115,14 +120,40 @@ public class Bot {
         }
     }*/
 
+    public void restart(int shard) {
+        var jda = shardManager.getShardById(shard);
+        logger.warn("Restarting shard " + shard + "...");
+        listeners.forEach(jda::removeEventListener);
+        shardManager.restart(shard);
+        listeners.forEach(jda::addEventListener);
+    }
+
+    public void restart() {
+        listeners.forEach(shardManager::removeEventListener);
+        commandSettings.deactivate();
+        logger.warn("Restarting all shards...");
+        shardManager.restart();
+        listeners.forEach(shardManager::addEventListener);
+        commandSettings.activate();
+    }
+
     public void shutdown(int shard) {
+        var jda = shardManager.getShardById(shard);
+        listeners.forEach(jda::removeEventListener);
         logger.warn("Shard " + shard + " is shutting down...");
         shardManager.shutdown(shard);
     }
 
     public void shutdown() {
         logger.warn("Bot is shutting down...");
+        listeners.forEach(shardManager::removeEventListener);
+        commandSettings.deactivate();
         shardManager.shutdown();
+    }
+
+    public void addListener(Object listener) {
+        listeners.add(listener);
+        shardManager.addEventListener(listener);
     }
 
     public ShardManager getAPI() {

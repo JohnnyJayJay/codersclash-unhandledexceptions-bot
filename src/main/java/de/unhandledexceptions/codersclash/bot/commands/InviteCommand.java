@@ -38,7 +38,7 @@ public class InviteCommand implements ICommand {
                 Reactions.newMenu(msg, member.getUser(), Map.of(
                         "\uD83E\uDD16", (v) -> {
                             msg.delete().queue();
-                            String botInvite = "[Click here!](https://discordapp.com/api/oauth2/authorize?client_id=" + event.getJDA().getSelfUser().getIdLong() + "&permissions=8&scope=bot)";
+                            String botInvite = "[Click here!](" + event.getJDA().asBot().getInviteUrl(Permission.ADMINISTRATOR) + ")";
                             var builder = new EmbedBuilder().addField("Invite me to your guild as well!\n", botInvite, true).setThumbnail(event.getJDA().getSelfUser().getAvatarUrl()).setColor(event.getGuild().getSelfMember().getColor());
                             Messages.sendMessage(channel, Type.NO_TYPE, "\uD83E\uDD16  **" + config.getBotName() + "**", "Bot Invite", false, builder).queue();
                         }, "\uD83D\uDCE1", (v) -> {
