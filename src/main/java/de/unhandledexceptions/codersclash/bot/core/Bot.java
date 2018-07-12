@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
+import de.unhandledexceptions.codersclash.bot.listeners.Management;
 import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
 import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -90,12 +91,12 @@ public class Bot {
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings")
-                .put(new RoleCommand(), "role", "manage")
-                .put(new Management(this), "manage", "setmentionable")
+                .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .activate();
 
-        listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config), new ReadyListener(config)));
+        listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
+                new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);
     }
 
