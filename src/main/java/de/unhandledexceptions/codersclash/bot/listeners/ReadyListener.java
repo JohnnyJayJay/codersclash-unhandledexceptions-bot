@@ -21,12 +21,13 @@ public class ReadyListener extends ListenerAdapter {
     private Config config;
     private static Icon icon;
     private static URL iconURL;
+    private String configIconURL = config.getICONURL();
 
     private static Logger logger = Logging.getLogger();
 
-    static {
+    {
         try {
-            iconURL = new URL("https://i.imgur.com/X7je2jH.png");
+            iconURL = new URL(configIconURL);
         } catch (MalformedURLException e) {
             logger.error("An Exception occured while getting the URL.",e);
         }

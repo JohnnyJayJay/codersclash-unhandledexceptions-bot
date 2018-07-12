@@ -21,6 +21,7 @@ public class Config {
     private final long[] BOT_OWNERS = {261083609148948488L,234343108773412864L,226011931935375360L,138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
+    private final String ICON_URL = "https://i.imgur.com/X7je2jH.png";
     private final long COMMAND_COOLDOWN = 0;
 
     private Path file; // config.json Datei
@@ -42,8 +43,7 @@ public class Config {
             // Wenn ein Key irgendwo in der config keinen Wert hat
             success = !hasAnyNullValue(config); // dann kann nicht garantiert werden, dass alle values da sind (muss nicht unbedingt relevant sein, nur als "info")
         } catch (IOException e) {
-            logger.error("Config could not be loaded due to an IOException. Check the application's reading permissions.");
-            e.printStackTrace();
+            logger.error("Config could not be loaded due to an IOException. Check the application's reading permissions.", e);
             success = false;
         }
         logger.info("Config successfully loaded!");
@@ -64,8 +64,7 @@ public class Config {
             Files.write(file, defaultConfigContent().getBytes()); // Den default Content der Config als byte-array in die config.json schreiben
             logger.info("Default config.json content created");
         } catch (IOException e) {
-            logger.error("Config couldn't be created. Please check if this application has permission to write files.");
-            e.printStackTrace();
+            logger.error("Config couldn't be created. Please check if this application has permission to write files.", e);
         }
     }
 
@@ -76,6 +75,7 @@ public class Config {
                 .key("OWNER").value(BOT_OWNERS)
                 .key("VERSION").value(VERSION)
                 .key("NAME").value(BOT_NAME).endObject()
+                .key("ICON").value(ICON_URL)
                 .key("TOKEN").value(null)
                 .key("DEFAULT_PREFIX").value(null)
                 .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
@@ -101,6 +101,10 @@ public class Config {
 
     public String getBotName() {
         return config.getJSONObject("BOTINFO").getString("NAME");
+    }
+
+    public String getICONURL() {
+        return config.getJSONObject("BOTINFO").getString("ICON");
     }
 
     public List<Object> getBotOwners() {
