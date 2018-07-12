@@ -32,11 +32,8 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     private Set<Answer> answers;
     private Set<Member> members;
     private Set<TextChannel> textChannels;
-<<<<<<< HEAD
     private HashMap<Member, State> currentState;
-=======
     private static Logger logger = Logging.getLogger();
->>>>>>> Dev
 
     public VoteCommand(Database database)
     {
@@ -44,11 +41,8 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         this.answers = new HashSet<>();
         this.members = new HashSet<>();
         this.textChannels = new HashSet<>();
-<<<<<<< HEAD
         this.currentState = new HashMap();
-=======
-        logger.debug("reset");
->>>>>>> Dev
+
     }
 
     @Override
