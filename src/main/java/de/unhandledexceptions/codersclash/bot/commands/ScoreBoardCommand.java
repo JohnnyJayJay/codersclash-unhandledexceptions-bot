@@ -36,7 +36,7 @@ public class ScoreBoardCommand implements ICommand {
                 order = "member_lvl";
             }
             StringBuilder builder = new StringBuilder();
-            builder.append("**ScoreBoard**\n```");
+            builder.append("**ScoreBoard**\n```\n");
             var list = database.getScoreBoard(table, order);
             int i =0;
             int i2 = 10;
@@ -47,19 +47,20 @@ public class ScoreBoardCommand implements ICommand {
                     if (shardManager.getUserById(user.getUserid()).isBot()) {
                         i2++;
                     } else {
-                        builder.append(shardManager.getUserById(user.getUserid()).getName() +
+                        builder.append(shardManager.getUserById(user.getUserid()).getName() + "#" +
                                 shardManager.getUserById(user.getUserid()).getDiscriminator() + "   " +
-                                "Level: " + user.getLvl() + "   " + "XP: " + user.getXp() + "\n");
+                                "\tLevel: " + user.getLvl() + "   " + "\tXP: " + user.getXp() + "\n");
                     }
                     i++;
                 }
             }
+            builder.append("```");
             for (int i3 =0; list.size()>i3; i3++) {
                 var user = list.get(i3);
                 if (user.getUserid().equals(member.getUser().getId())) {
                     if (!builder.toString().contains(":arrow_right: **Your place**\n")) {
                         System.out.println("lol: " + user.getUserid());
-                        builder.append(":arrow_right: **Your place**\n" + String.valueOf(i3));
+                        builder.append(":arrow_right: **Your place**\n" + String.valueOf(i3+1));
                     }
                 }
                 System.out.println("asdf");
