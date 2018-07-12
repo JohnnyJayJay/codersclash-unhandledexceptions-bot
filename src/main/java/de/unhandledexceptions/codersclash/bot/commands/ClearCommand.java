@@ -21,7 +21,7 @@ import static java.lang.String.format;
  * @version 0.1-SNAPSHOT
  */
 
-// FIXME ErrorResponseActions
+// FIXME ErrorResponseActions (wahrscheinlich nicht fixbar)
 public class ClearCommand implements ICommand {
 
     @Override
@@ -35,7 +35,7 @@ public class ClearCommand implements ICommand {
                 int amount = Integer.parseInt(args[0]);
                 event.getMessage().delete().queue((v) -> this.clear(channel, amount), defaultFailure(channel));
             } else if (args.length == 1){
-                sendMessage(channel, Type.WARNING, String.format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
+                sendMessage(channel, Type.WARNING, format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
             } else {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + info(member)).queue();
             }
@@ -63,7 +63,7 @@ public class ClearCommand implements ICommand {
                 } else if (size == 1) { // nur noch eine message kann gelöscht werden
                     deletableMsgs.get(0).delete().queue(
                             (v) -> this.success(channel), defaultFailure(channel));
-                } else if (size > 1) { // zwischen 1 und 100 messages können gelöscht werden
+                } else { // zwischen 1 und 100 messages können gelöscht werden
                     channel.deleteMessages(deletableMsgs).queue(
                             (v) -> this.success(channel), defaultFailure(channel));
                 }

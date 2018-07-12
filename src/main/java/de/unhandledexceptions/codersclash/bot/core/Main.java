@@ -4,7 +4,6 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import org.slf4j.Logger;
 
 
-
 public class Main {
 
     private static Logger logger = Logging.getLogger();

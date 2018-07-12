@@ -51,7 +51,7 @@ public class SettingsCommand implements ICommand {
                                                 settings.setCustomPrefix(guild.getIdLong(), args[1]);
                                                 database.setPrefix(guild.getIdLong(), args[1]);
                                                 sendMessage(channel, Type.SUCCESS, "Successfully set `" + args[1] + "` as the new prefix!").queue();
-                                            }, Reactions.NOTHING));
+                                            }));
                         } else {
                             sendMessage(channel, Type.WARNING, String.format("The prefix `%s` is not valid! Remember, prefixes **cannot** contain these symbols: `? * + \\ ^ " +
                                             "| $`\nAlso, the prefix cannot be longer than 40 characters.", args[1])).queue();

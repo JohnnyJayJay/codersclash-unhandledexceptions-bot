@@ -22,9 +22,12 @@ public class Roles {
         Role muted = null;
         var mutedRoles = guild.getRolesByName("tc-muted", false);
         if (!mutedRoles.isEmpty()) {
-            if (mutedRoles.get(0).hasPermission(Permission.MESSAGE_WRITE) && guild.getSelfMember().canInteract(mutedRoles.get(0))) {
-                mutedRoles.get(0).getManager().revokePermissions(Permission.MESSAGE_WRITE).queue();
-                muted = mutedRoles.get(0);
+            var first = mutedRoles.stream().filter((role) -> {
+                var perms = role.getPermissions();
+                return !(perms.contains(Permission.VOICE_SPEAK) || perms.contains(Permission.MESSAGE_WRITE));
+            }).findFirst();
+            if (first.isPresent()) {
+                muted = first.get();
             }
         }
         return muted;

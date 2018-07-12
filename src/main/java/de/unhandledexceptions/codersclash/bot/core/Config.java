@@ -18,7 +18,7 @@ public class Config {
 
     // Konstanten, die beim erstellen der Config automatisch eingetragen werden
     private final int DEFAULT_MAX_SHARDS = 3;
-    private final long[] BOT_OWNERS = {226011931935375360L, 261083609148948488L, 234343108773412864L, 138607604506165248L};
+    private final long[] BOT_OWNERS = {261083609148948488L,234343108773412864L,226011931935375360L,138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
     private final long COMMAND_COOLDOWN = 0;

@@ -4,10 +4,12 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +32,11 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     private Set<Answer> answers;
     private Set<Member> members;
     private Set<TextChannel> textChannels;
+<<<<<<< HEAD
     private HashMap<Member, State> currentState;
+=======
+    private static Logger logger = Logging.getLogger();
+>>>>>>> Dev
 
     public VoteCommand(Database database)
     {
@@ -38,7 +44,11 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         this.answers = new HashSet<>();
         this.members = new HashSet<>();
         this.textChannels = new HashSet<>();
+<<<<<<< HEAD
         this.currentState = new HashMap();
+=======
+        logger.debug("reset");
+>>>>>>> Dev
     }
 
     @Override
