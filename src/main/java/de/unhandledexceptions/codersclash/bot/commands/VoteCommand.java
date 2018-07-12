@@ -11,8 +11,13 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
  * @author oskar
@@ -27,6 +32,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     private Set<Answer> answers;
     private Set<Member> members;
     private Set<TextChannel> textChannels;
+    private HashMap<Member, State> currentState;
     private static Logger logger = Logging.getLogger();
 
     public VoteCommand(Database database)
@@ -35,32 +41,32 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         this.answers = new HashSet<>();
         this.members = new HashSet<>();
         this.textChannels = new HashSet<>();
-        logger.debug("reset");
+        this.currentState = new HashMap();
+
     }
 
-
     @Override
-    public void onCommand(CommandEvent event, Member member, TextChannel textChannel, String[] args)
+    public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args)
     {
-
         if (Permissions.getPermissionLevel(member) < Permissions.getVotePermissionLevel())
         {
-            textChannel.sendMessage("Your permission level is too low. (" + Permissions.getPermissionLevel(member) + "/" + Permissions.getVotePermissionLevel() + ")").queue();
+            channel.sendMessage("Your permission level is too low. (" + Permissions.getPermissionLevel(member) + "/" + Permissions.getVotePermissionLevel() + ")").queue();
             return;
         }
 
-        event.getChannel().sendMessage("Let's create your vote! Write your answers").queue();
-
-        textChannels.add(textChannel);
-        members.add(member);
-
+        if (!members.add(member))
+        {
+            sendMessage(channel, Type.ERROR, "You are already in the voting setup. If you want to cancel the vote setup type: 'cancel'.").queue();
+            return;
+        }
+        textChannels.add(channel);
+        sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!\nWhen should the vote end?").queue();
+        currentState.put(member, State.TIME);
     }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event)
     {
-
-
         if (!textChannels.contains(event.getChannel()))
         {
             return;
@@ -71,18 +77,50 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             return;
         }
 
+        State state = currentState.get(event.getMember());
+
+        if (event.getMessage().getContentRaw().equals("cancel"))
+        {
+            members.remove(event.getMember());
+            textChannels.remove(event.getChannel());
+            answers.forEach(answer -> {
+                if (answer.getGuildID().equals(event.getGuild().getId()))
+                    answers.remove(answer);
+            });
+            sendMessage(event.getChannel(), Type.SUCCESS, "Successfully canceled vote setup!").queue();
+            currentState.put(event.getMember(), State.DEFAULT);
+            return;
+        }
+
         if (!event.getMessage().getMentionedMembers().isEmpty())
         {
             if (event.getMessage().getMentionedMembers().get(0).getAsMention().equals(event.getGuild().getSelfMember().getAsMention()))
             {
-                members.remove(event.getMember());
-                textChannels.remove(event.getChannel());
-                return;
+                if (state.equals(State.POSSIBILLITIES))
+                {
+                    int i = (int) answers.stream().filter(answer -> answer.getGuildID().equals(event.getGuild().getId())).count();
+
+                    if (i == 0)
+                    {
+                        sendMessage(event.getChannel(), Type.WARNING, "You did't submit any possibilities. If you want to cancel the vote setup type: 'cancel'.").queue();
+                        return;
+                    }
+
+                    sendMessage(event.getChannel(), Type.SUCCESS, "Successfully completed vote setup with " + i + " vote possibilities!").queue();
+                }
             }
         }
 
-        answers.add(new Answer(event.getGuild().getId(), event.getMessage().getContentRaw()));
-        event.getChannel().sendMessage("Next Answer").queue();
+        if (state.equals(State.TIME))
+        {
+            
+        }
+
+        if (state.equals(State.POSSIBILLITIES))
+        {
+            answers.add(new Answer(event.getGuild().getId(), event.getMessage().getContentRaw()));
+            event.getChannel().sendMessage("Next Answer").queue();
+        }
     }
 
     private class Answer {
@@ -103,5 +141,30 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         {
             return guildID;
         }
+    }
+
+    private enum State{
+        DEFAULT(),
+        TIME(),
+        POSSIBILLITIES()
+    }
+
+    private TimeUnit time(String timeUnit)
+    {
+        timeUnit = timeUnit.toLowerCase();
+
+        if (timeUnit.matches("^sec"))
+            return TimeUnit.SECONDS;
+
+        if (timeUnit.matches("^min"))
+            return TimeUnit.MINUTES;
+
+        if (timeUnit.matches("^hour"))
+            return TimeUnit.HOURS;
+
+        if (timeUnit.matches("^day"))
+            return TimeUnit.DAYS;
+
+        return null;
     }
 }
