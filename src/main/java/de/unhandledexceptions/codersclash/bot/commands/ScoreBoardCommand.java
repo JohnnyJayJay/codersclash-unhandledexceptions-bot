@@ -57,9 +57,12 @@ public class ScoreBoardCommand implements ICommand {
             for (int i3 =0; list.size()>i3; i3++) {
                 var user = list.get(i3);
                 if (user.getUserid().equals(member.getUser().getId())) {
-                    System.out.println("lol: "+user.getUserid());
-                    builder.append(":arrow_right: **Your place**\n"+String.valueOf(i));
+                    if (!builder.toString().contains(":arrow_right: **Your place**\n")) {
+                        System.out.println("lol: " + user.getUserid());
+                        builder.append(":arrow_right: **Your place**\n" + String.valueOf(i3));
+                    }
                 }
+                System.out.println("asdf");
             }
             embedBuilder.addField(((type.equals("member")) ? "Guild" : "User"), builder.toString(), true);
         }
