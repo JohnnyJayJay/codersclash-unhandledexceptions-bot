@@ -26,9 +26,9 @@ public class MentionListener extends ListenerAdapter {
             var shardManager = event.getJDA().asBot().getShardManager();
             var stringBuilder = new StringBuilder();
             long members = 0;
-            for (Guild guild : shardManager.getGuildCache()) {
+            for (Guild guild : shardManager.getGuildCache())
                 members += guild.getMemberCache().size();
-            }
+
             config.getBotOwners().forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
             builder.clear().addField("Name", config.getBotName(), true)
                     .addField("Default Prefix", "`" + config.getPrefix() + "`", true)
@@ -38,6 +38,7 @@ public class MentionListener extends ListenerAdapter {
                     .addField("Creators", stringBuilder.toString(), false)
                     .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), false)
                     .addField("Members", Long.toString(members), true)
+                    .addField("Source Code", "[Click me](https://github.com)", false)
                     .setColor(event.getGuild().getSelfMember().getColor());
             Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue();
             //Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue(this::reactionsAdd);

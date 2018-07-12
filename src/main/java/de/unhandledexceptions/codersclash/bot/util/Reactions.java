@@ -10,10 +10,12 @@ import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEv
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Johnny_JayJay
@@ -39,6 +41,12 @@ public class Reactions {
         newYesNoMenu(message, user, yes, DO_NOTHING);
     }
 
+    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, Set<String> emojis) {
+        emojis.forEach((emoji) -> message.addReaction(emoji).queue());
+        message.addReaction(NO_EMOTE).queue();
+        user.getJDA().addEventListener(new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction));
+    }
+
     public static void newMenu(Message message, User user, Map<String, Consumer<Message>> forReaction) {
         forReaction.keySet().forEach((emoji) -> message.addReaction(emoji).queue());
         message.addReaction(NO_EMOTE).queue();
@@ -61,7 +69,7 @@ public class Reactions {
         private static final long NO_CHANNEL = -1;
         private static final long NO_GUILD = -1;
 
-        // TODO mit einem Consumer für mehrere Nachrichten
+        // TODO mit einem Consumer für mehrere Nachrichten (andThen)
         //private final int howMany;
         private final long userId;
         private final long guildId;
@@ -106,20 +114,28 @@ public class Reactions {
 
         private int reactions;
         private final int waitSeconds;
+        private final boolean useFunction;
         private final long userId;
         private final long messageId;
-        private final Map<String, Consumer<Message>> forReaction;
+        private final Function<String, Consumer<Message>> function;
+        private final Map<String, Consumer<Message>> map;
 
         public ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> forReaction) {
-            this(authorId, messageId, forReaction, 45);
+            this(authorId, messageId, forReaction, null, 30);
         }
 
-        public ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> forReaction, int waitSeconds) {
+        public ReactionListener(long authorId, long messageId, Function<String, Consumer<Message>> forReaction) {
+            this(authorId, messageId, null, forReaction, 30);
+        }
+
+        private ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> map, Function<String, Consumer<Message>> function, int waitSeconds) {
             this.reactions = 0;
             this.waitSeconds = waitSeconds;
             this.userId = authorId;
             this.messageId = messageId;
-            this.forReaction = forReaction;
+            this.map = map;
+            this.function = function;
+            this.useFunction = map == null;
         }
 
         @Override
@@ -143,8 +159,10 @@ public class Reactions {
                     event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> msg.delete().queue());
                     return;
                 }
-                if (forReaction.containsKey(name)) {
-                    event.getChannel().getMessageById(messageId).queue((msg) -> forReaction.get(name).accept(msg));
+                if (useFunction) {
+                    event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> function.apply(name).accept(msg));
+                } else if (map.containsKey(name)) {
+                    event.getChannel().getMessageById(messageId).queue((msg) -> map.get(name).accept(msg));
                 }
             } else {
                 event.getReaction().removeReaction(user).queue();

@@ -21,7 +21,7 @@ import static java.lang.String.format;
  * @version 0.1-SNAPSHOT
  */
 
-// FIXME ErrorResponseActions
+// FIXME ErrorResponseActions (wahrscheinlich nicht fixbar)
 public class ClearCommand implements ICommand {
 
     @Override

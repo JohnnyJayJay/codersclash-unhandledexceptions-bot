@@ -43,6 +43,6 @@ public class MailCommand implements ICommand {
     // TODO
     @Override
     public String info(Member member) {
-        return null;
+        return " ";
     }
 }
