@@ -4,6 +4,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -50,14 +51,16 @@ public class MailCommand implements ICommand {
                         if (mailChannel != null) {
                             var builder = new EmbedBuilder();
                             var author = event.getAuthor();
-                            builder.setTitle("Mail received from guild " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")")
+                            builder.setTitle("Via \"" + event.getGuild().getName() + "\" (" + event.getGuild().getId() + ")")
                                     .setAuthor(String.format("%#s", author), null, author.getEffectiveAvatarUrl())
                                     .setColor(member.getColor())
                                     .setFooter("Inbox", null)
                                     .setTimestamp(Instant.now())
-                                    .addField(args.length > 3 ? String.join(" ", event.getCommand().getArgsAsList().subList(0, 4)) + "..."
-                                            : "Message", event.getCommand().getJoinedArgs(), false);
-                            mailChannel.sendMessage(builder.build()).queue();
+                                    .addField(args.length > 4 ? String.join(" ", event.getCommand().getArgsAsList().subList(1, 4)) + "..."
+                                            : "Message", event.getCommand().getJoinedArgs(1), false);
+                            mailChannel.sendMessage(builder.build()).queue(
+                                    (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(Messages::deleteAfterFiveSec),
+                                    Messages.defaultFailure(channel));
                         } else {
                             sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild.getName() + "`, it seems like they deleted their mail channel!").queue();
                         }
@@ -82,7 +85,7 @@ public class MailCommand implements ICommand {
                                     i++;
                                 }
                                 stringBuilder.append("```");
-                                int finalI = i;
+                                int finalI = i - 1;
                                 sendMessage(channel, Type.SUCCESS, "Results:\n" + stringBuilder.toString()).queue((message) -> {
                                     if (finalI <= 10) {
                                         for (int j = 1; j <= finalI; j++)
@@ -90,14 +93,14 @@ public class MailCommand implements ICommand {
                                         Reactions.newMenu(message, event.getAuthor(), (emoji) -> {
                                             Consumer<Message> ret = g -> {};
                                             int select;
-                                            for (select = 1; select <= finalI + 1; select++) {
-                                                if (emoji.equals(Reactions.getNumber(select)))
-                                                    break;
-                                            }
+                                            for (select = 1; select <= 11 && !emoji.equals(Reactions.getNumber(select)); select++);
                                             if (select < 11) {
                                                 int finalSelect = select;
                                                 args[0] = guilds.get(finalSelect - 1).getId();
-                                                ret = (g) -> this.onCommand(event, member, channel, args);
+                                                ret = (g) -> {
+                                                    message.delete().queue();
+                                                    this.onCommand(event, member, channel, args);
+                                                };
                                             }
                                             return ret;
                                         }, true);

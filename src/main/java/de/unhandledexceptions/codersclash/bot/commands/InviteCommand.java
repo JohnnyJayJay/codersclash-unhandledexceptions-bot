@@ -36,12 +36,12 @@ public class InviteCommand implements ICommand {
         if (Permissions.getPermissionLevel(member) >= 1) {
             Messages.sendMessage(channel, Type.QUESTION, "What invite do you wish to get?\n\n\uD83E\uDD16 Give me the bot's invite!\n\uD83D\uDCE1 The invite for this guild!").queue((msg) -> {
                 Reactions.newMenu(msg, member.getUser(), Map.of(
-                        "\uD83E\uDD16", (v) -> {
+                        Reactions.BOT, (v) -> {
                             msg.delete().queue();
                             String botInvite = "[Click here!](" + event.getJDA().asBot().getInviteUrl(Permission.ADMINISTRATOR) + ")";
                             var builder = new EmbedBuilder().addField("Invite me to your guild as well!\n", botInvite, true).setThumbnail(event.getJDA().getSelfUser().getAvatarUrl()).setColor(event.getGuild().getSelfMember().getColor());
                             Messages.sendMessage(channel, Type.NO_TYPE, "\uD83E\uDD16  **" + config.getBotName() + "**", "Bot Invite", false, builder).queue();
-                        }, "\uD83D\uDCE1", (v) -> {
+                        }, Reactions.SATTELITE, (v) -> {
                             msg.delete().queue();
                             channel.createInvite().queue((invite) -> {
                                 var builder = new EmbedBuilder().addField("Invite for this guild:", invite.getURL(), true).setThumbnail(event.getGuild().getIconUrl()).setColor(event.getGuild().getSelfMember().getColor());

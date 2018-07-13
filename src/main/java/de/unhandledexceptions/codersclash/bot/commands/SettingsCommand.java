@@ -10,10 +10,15 @@ import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
@@ -24,6 +29,13 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 public class SettingsCommand implements ICommand {
 
     private static EmbedBuilder builder;
+    private static List<String> zeroToTenReactions;
+
+    static {
+        zeroToTenReactions = new ArrayList<>();
+        for (int i = 0; i <= 10; i++)
+            zeroToTenReactions.add(Reactions.getNumber(i));
+    }
 
     private Database database;
     private CommandSettings settings;
@@ -35,11 +47,18 @@ public class SettingsCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION))
+            return;
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_MANAGE)) {
+            sendMessage(channel, Type.WARNING, "I can't open the settings dialogue because I don't have permission to manage messages in this channel!").queue();
+            return;
+        }
         if (Permissions.getPermissionLevel(member) >= 5) {
             if (args.length == 0) {
                 builder = new EmbedBuilder();
+                event.getMessage().delete().queue();
                 channel.sendMessage(builder.setDescription("Loading Main Menu...").build()).queue((msg) ->
-                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU));
+                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU), Messages.defaultFailure(channel));
             } else {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n" + this.info(member)).queue();
             }
@@ -51,6 +70,7 @@ public class SettingsCommand implements ICommand {
     private void menu(User user, Message message, Layer current, Layer before) {
         message.clearReactions().queue((v) -> {
             editMessage(message, current);
+            //builder.clear().setColor(message.getGuild().getSelfMember().getColor());
             Reactions.newMenu(message, user, (emoji) -> (v2) -> {
                 if (emoji.equals(Reactions.BACK)) {
                     menu(user, message, before, current);
@@ -103,8 +123,7 @@ public class SettingsCommand implements ICommand {
                     case PREFIX:
                         if (emoji.equals(Reactions.Y)) {
                             message.clearReactions().queue();
-                            builder.clear().setColor(message.getGuild().getSelfMember().getColor())
-                                    .setTitle("Change your prefix").setDescription("Please type in the new prefix now!");
+                            builder.setTitle("Change your prefix").setDescription("Please type in the new prefix now!");
                             message.editMessage(builder.build()).queue();
                             var channel = message.getTextChannel();
                             Reactions.newMessageWaiter(user, channel, (msg) -> {
@@ -160,8 +179,7 @@ public class SettingsCommand implements ICommand {
                     case MAIL_CHANNEL:
                         if (emoji.equals(Reactions.Y)) {
                             message.clearReactions().queue();
-                            builder.clear().setColor(message.getGuild().getSelfMember().getColor())
-                                    .setTitle("Change Mail Channel").setDescription("Mention the new Mail Channel now!");
+                            builder.setTitle("Change Mail Channel").setDescription("Mention the new Mail Channel now!");
                             message.editMessage(builder.build()).queue();
                             Reactions.newMessageWaiter(user, message.getChannel(), (msg) -> {
                                 msg.delete().queue();
@@ -175,6 +193,27 @@ public class SettingsCommand implements ICommand {
                                 sendMessage(message.getChannel(), Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
                                 menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL);
                             });
+                        } else if (emoji.equals(Reactions.BOT)) {
+                            sendMessage(message.getChannel(), Type.DEFAULT, "Creating the channel...").queue((msg) -> {
+                                if (message.getGuild().getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                                    message.getGuild().getController().createTextChannel("inbox").queue((channel) -> {
+                                        msg.delete().queue();
+                                        database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
+                                        sendMessage(message.getChannel(), Type.SUCCESS, "Success! Your new mail channel is "
+                                                + ((TextChannel)channel).getAsMention()).queue(Messages::deleteAfterFiveSec);
+                                        menu(user, message, Layer.MAIN_MENU, current);
+                                    }, (t) -> {
+                                        msg.delete().queue();
+                                        Messages.defaultFailure(message.getChannel()).accept(t);
+                                        menu(user, message, Layer.MAIN_MENU, current);
+                                    });
+                                } else {
+                                    msg.delete().queue();
+                                    sendMessage(message.getChannel(), Type.ERROR, "Woops. It seems like I don't have permission to do that!").queue(Messages::deleteAfterFiveSec);
+                                    message.editMessage(builder.setTitle("Please be patient").setDescription("Sending you back to main menu...").build())
+                                            .queue((m) -> menu(user, message, Layer.MAIN_MENU, current), (t) -> menu(user, message, Layer.MAIN_MENU, current));
+                                }
+                            });
                         } else if (emoji.equals(Reactions.CLOSED_INBOX)) {
                             Reactions.newYesNoMenu("Do you want to reset your mail channel and therefore deactivate the mail function?", message.getTextChannel(), user, (msg) -> {
                                 msg.delete().queue();
@@ -185,7 +224,7 @@ public class SettingsCommand implements ICommand {
                         }
                         break;
                 }
-            },true);
+            }, current.EMOJIS, true);
         });
     }
 
@@ -193,10 +232,6 @@ public class SettingsCommand implements ICommand {
         builder.clear().setColor(message.getGuild().getSelfMember().getColor());
         switch (layer) {
             case MAIN_MENU:
-                message.addReaction(Reactions.SPEECH_BUBBLE).queue();
-                message.addReaction(Reactions.FLOPPY).queue();
-                message.addReaction(Reactions.CONTROLLER).queue();
-                message.addReaction(Reactions.QUESTION_MARK).queue();
                 builder.setTitle("Main Menu")
                         .setDescription("This is the main menu. Select one of the options below!\n"
                                 + Reactions.SPEECH_BUBBLE + " Channel Settings\n"
@@ -208,37 +243,31 @@ public class SettingsCommand implements ICommand {
                                 + Reactions.NO_EMOTE + " Exit");
                 break;
             case CHANNEL_MANAGEMENT:
-                message.addReaction(Reactions.MAIL).queue();
-                message.addReaction(Reactions.REPEAT).queue();
                 builder.setTitle("Channel Management")
                         .setDescription("Set your Mail Channel and your Autochannel here!\n"
                                 + Reactions.MAIL + " Set Mail Channel\n"
                                 + Reactions.REPEAT + " Set Autochannel");
                 break;
             case FEATURES:
-                message.addReaction(Reactions.STAR).queue();
-                message.addReaction(Reactions.EXCLAMATION_MARK).queue();
-                message.addReaction(Reactions.P).queue();
                 builder.setTitle("Feature Management").setDescription("Settings for the bot's features.\n"
                         + Reactions.STAR + " Disable/Enable the XP-system.\n"
                         + Reactions.EXCLAMATION_MARK + " Configure report settings\n"
                         + Reactions.P + " Change the command prefix");
                 break;
             case XP_SYSTEM:
-                message.addReaction(Reactions.Y).queue();
                 builder.setTitle("XP System").setDescription((database.xpSystemActivated(message.getGuild().getIdLong())
                         ? "The xp system is currently activated for this guild. Would you like to deactivate it?"
                         : "The xp system is currently deactivated for this guild. Would you like to activate it?")
                         + "\n" + Reactions.Y + " Yes\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
                 break;
             case REPORTS:
-                for (int i = 0; i <= 10; i++)
-                    message.addReaction(Reactions.getNumber(i)).queue();
                 int currentValue = database.getReportsUntilBan(message.getGuild());
-                builder.setTitle("Report System")
-                        .setDescription(String.format("Currently, a member will be banned after `%d` reports. "
-                                + "After how many reports should a member be banned?\n"
-                                + "(%s means never)", currentValue, Reactions.getNumber(0)));
+                builder.setTitle("Report System");
+                builder.appendDescription(currentValue == 11
+                        ? "Currently, members will not be banned for reports.\n"
+                        : "Currently, a member will be banned after `" + currentValue + "` reports.");
+                builder.appendDescription("After how many reports should a member be banned?\n("
+                        + Reactions.getNumber(0) + " means never)");
                 break;
             case HELP:
                 builder.setTitle("Help")
@@ -249,18 +278,15 @@ public class SettingsCommand implements ICommand {
                                 + Reactions.NO_EMOTE + " deletes this message and closes the dialogue.");
                 break;
             case PREFIX:
-                message.addReaction(Reactions.Y).queue();
                 builder.setTitle("Prefix settings")
                         .setDescription("The bot's prefix on this guild is `" + Bot.getPrefix(message.getGuild().getIdLong())
                                 + "`, the default prefix is `" + Bot.getPrefix(-1) + "`. Would you like to change this guild's prefix?\n"
-                                + Reactions.Y + " Yes\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
+                                + Reactions.Y + " Yes, let me set a new prefix\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
                 break;
             case GAME:
                 builder.setTitle("Game channel").setDescription(""); // TODO
                 break;
             case MAIL_CHANNEL:
-                message.addReaction(Reactions.Y).queue();
-                message.addReaction(Reactions.CLOSED_INBOX).queue();
                 Long id = database.getMailChannel(message.getGuild());
                 String currentChannel;
                 if (id != null && message.getGuild().getTextChannelById(id) != null)
@@ -269,28 +295,43 @@ public class SettingsCommand implements ICommand {
                     currentChannel = "Not Set";
                 builder.setTitle("Mail Channel/Inbox").setDescription("Set this guild's inbox channel here! Current channel: " + currentChannel
                         + "\nDo you want to change that?\n"
-                        + Reactions.Y + " Yes\n"
+                        + Reactions.Y + " Yes, let me set a new channel\n"
+                        + Reactions.BOT + " Yes, create one for me\n"
                         + Reactions.CLOSED_INBOX + " Deactivate the mail function by deactivating current mail channel\n"
                         + Reactions.BACK + " Go Back\n"
+                        + Reactions.M + " Main Menu\n"
                         + Reactions.NO_EMOTE + " Exit"); // TODO
                 break;
         }
         message.editMessage(builder.build()).queue();
-        message.addReaction(Reactions.BACK).queue();
-        message.addReaction(Reactions.M).queue();
     }
 
     private enum Layer {
-        MAIN_MENU,
-        CHANNEL_MANAGEMENT,
-        FEATURES,
-        HELP,
-        REPORTS,
-        XP_SYSTEM,
-        PREFIX,
-        GAME,
-        MAIL_CHANNEL,
-        AUTO_CHANNEL
+        MAIN_MENU(Reactions.SPEECH_BUBBLE, Reactions.FLOPPY, Reactions.CONTROLLER, Reactions.QUESTION_MARK),
+        CHANNEL_MANAGEMENT(Reactions.MAIL, Reactions.REPEAT),
+        FEATURES(Reactions.STAR, Reactions.EXCLAMATION_MARK, Reactions.P),
+        HELP(),
+        REPORTS(zeroToTenReactions),
+        XP_SYSTEM(Reactions.Y),
+        PREFIX(Reactions.Y),
+        GAME(),
+        MAIL_CHANNEL(Reactions.Y, Reactions.BOT, Reactions.CLOSED_INBOX),
+        AUTO_CHANNEL(Reactions.Y);
+
+        public final List<String> EMOJIS;
+
+        Layer(String... emojis) {
+            this.EMOJIS = new ArrayList<>();
+            this.EMOJIS.addAll(Arrays.asList(emojis));
+            this.EMOJIS.add(Reactions.BACK);
+            this.EMOJIS.add(Reactions.M);
+        }
+
+        Layer(List<String> emojis) {
+            this.EMOJIS = emojis;
+            this.EMOJIS.add(Reactions.BACK);
+            this.EMOJIS.add(Reactions.M);
+        }
     }
 
     @Override

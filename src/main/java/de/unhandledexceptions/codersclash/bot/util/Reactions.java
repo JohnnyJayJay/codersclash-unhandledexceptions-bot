@@ -38,6 +38,8 @@ public class Reactions {
     public static final String CONTROLLER = "\uD83C\uDFAE";
     public static final String NEW = "\uD83C\uDD95";
     public static final String CLOSED_INBOX = "\uD83D\uDCEA";
+    public static final String BOT = "\uD83E\uDD16";
+    public static final String SATTELITE = "\uD83D\uDCE1";
 
     public static final Consumer<Message> DO_NOTHING = msg -> {};
 
@@ -71,7 +73,7 @@ public class Reactions {
         Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(msg, user, yes, no));
     }
 
-    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, Set<String> emojis, boolean removeListener) {
+    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, Collection<String> emojis, boolean removeListener) {
         emojis.forEach((emoji) -> message.addReaction(emoji).queue());
         message.addReaction(NO_EMOTE).queue();
         ReactionListener listener = new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction);
@@ -81,7 +83,7 @@ public class Reactions {
     }
 
     public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, boolean removeListener) {
-        newMenu(message, user, forReaction, Collections.EMPTY_SET, removeListener);
+        newMenu(message, user, forReaction, Collections.EMPTY_LIST, removeListener);
     }
 
     public static void newMenu(Message message, User user, Map<String, Consumer<Message>> forReaction) {
