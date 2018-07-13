@@ -1,23 +1,30 @@
 package de.unhandledexceptions.codersclash.bot.commands;
 
+import ch.qos.logback.core.util.TimeUtil;
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
+import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * @author oskar
@@ -59,6 +66,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             sendMessage(channel, Type.ERROR, "You are already in the voting setup. If you want to cancel the vote setup type: 'cancel'.").queue();
             return;
         }
+
         textChannels.add(channel);
         sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!\nWhen should the vote end?").queue();
         currentState.put(member, State.TIME);
@@ -92,11 +100,14 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             return;
         }
 
+
+        int time = 0;
+
         if (!event.getMessage().getMentionedMembers().isEmpty())
         {
             if (event.getMessage().getMentionedMembers().get(0).getAsMention().equals(event.getGuild().getSelfMember().getAsMention()))
             {
-                if (state.equals(State.POSSIBILLITIES))
+                if (state.equals(State.POSSIBILITIES))
                 {
                     int i = (int) answers.stream().filter(answer -> answer.getGuildID().equals(event.getGuild().getId())).count();
 
@@ -105,18 +116,40 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                         sendMessage(event.getChannel(), Type.WARNING, "You did't submit any possibilities. If you want to cancel the vote setup type: 'cancel'.").queue();
                         return;
                     }
-
                     sendMessage(event.getChannel(), Type.SUCCESS, "Successfully completed vote setup with " + i + " vote possibilities!").queue();
+
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+
+
+
+                        }
+                    }, Date.from(Instant.now()), time);
                 }
             }
         }
 
         if (state.equals(State.TIME))
         {
-            
+
+            final String[] emoji = {"\u23F2", "\uD83D\uDCC5", "\uD83D\uDD5B", "\u231A"};
+
+            final String message =
+                    emoji[0] + " When should the vote end?\n\n" +
+                    emoji[1] + " Day\n" +
+                    emoji[2] + " Hour\n" +
+                    emoji[3] + " Minute";
+
+
+
+            sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
+                Reactions.newMenu(msg, event.getAuthor(), ;
+            });
+
         }
 
-        if (state.equals(State.POSSIBILLITIES))
+        if (state.equals(State.POSSIBILITIES))
         {
             answers.add(new Answer(event.getGuild().getId(), event.getMessage().getContentRaw()));
             event.getChannel().sendMessage("Next Answer").queue();
@@ -132,12 +165,12 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             this.answer = answer;
         }
 
-        public String getAnswer()
+        private String getAnswer()
         {
             return answer;
         }
 
-        public String getGuildID()
+        private String getGuildID()
         {
             return guildID;
         }
@@ -146,25 +179,31 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     private enum State{
         DEFAULT(),
         TIME(),
-        POSSIBILLITIES()
+        POSSIBILITIES()
     }
 
-    private TimeUnit time(String timeUnit)
+    private int time(String timeUnit, int time)
     {
         timeUnit = timeUnit.toLowerCase();
 
         if (timeUnit.matches("^sec"))
-            return TimeUnit.SECONDS;
+            return time * 1000;
 
         if (timeUnit.matches("^min"))
-            return TimeUnit.MINUTES;
+            return time * 60000;
 
         if (timeUnit.matches("^hour"))
-            return TimeUnit.HOURS;
+            return time * 3600000;
 
         if (timeUnit.matches("^day"))
-            return TimeUnit.DAYS;
+            return time * 86400000;
 
-        return null;
+        return 0;
+    }
+
+    private void timeSet(GuildMessageReceivedEvent event, String timeUnit, Message msg)
+    {
+        msg.delete().queue();
+        event.getChannel().sendMessage(timeUnit  + " " + time(timeUnit, 1)).queue();
     }
 }
