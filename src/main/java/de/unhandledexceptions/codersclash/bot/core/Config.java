@@ -103,7 +103,7 @@ public class Config {
         return config.getJSONObject("BOTINFO").getString("NAME");
     }
 
-    public String getICONURL() {
+    public String getIconURL() {
         return config.getJSONObject("BOTINFO").getString("ICON");
     }
 

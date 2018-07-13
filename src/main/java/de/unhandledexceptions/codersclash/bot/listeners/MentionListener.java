@@ -30,13 +30,15 @@ public class MentionListener extends ListenerAdapter {
                 members += guild.getMemberCache().size();
 
             config.getBotOwners().forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
-            builder.clear().addField("Name", config.getBotName(), true)
+            builder.clear().setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
+                    .addField("Name", config.getBotName(), true)
+                    .addField("Version", config.getVersion(),true)
                     .addField("Default Prefix", "`" + config.getPrefix() + "`", true)
                     .addField("This Guild's Prefix", "`" + prefix + "`", true)
-                    .addField("Birth", "2018/06/23 12:00", true)
                     .addField("Help Command", "`" + prefix + "[help|helpme|commands] <command>`", false)
+                    .addField("Birth", "2018/06/23 12:00", false)
                     .addField("Creators", stringBuilder.toString(), false)
-                    .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), false)
+                    .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), true)
                     .addField("Members", Long.toString(members), true)
                     .addField("Source Code", "[Click me](https://github.com)", false)
                     .setColor(event.getGuild().getSelfMember().getColor());

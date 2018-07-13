@@ -26,7 +26,8 @@ public class ReadyListener extends ListenerAdapter {
 
     {
         try {
-            iconURL = new URL(config.getICONURL());
+            iconURL = new URL("https://i.imgur.com/X7je2jH.png");
+            //iconURL = new URL(config.getIconUrl()); FIXME erzeugt einen NullPointer beim aufrufen von "getIconURL"
         } catch (MalformedURLException e) {
             logger.error("An Exception occured while getting the URL.",e);
         }

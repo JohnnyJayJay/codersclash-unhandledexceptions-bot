@@ -141,12 +141,12 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                     emoji[2] + " Hour\n" +
                     emoji[3] + " Minute";
 
-
-
-            sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
-                Reactions.newMenu(msg, event.getAuthor(), ;
-            });
-
+					
+					
+            sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> { 
+                Reactions.newMenu(msg, event.getAuthor(), ; 
+            }); 
+ 
         }
 
         if (state.equals(State.POSSIBILITIES))
