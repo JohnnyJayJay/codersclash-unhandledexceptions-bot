@@ -40,6 +40,8 @@ public class Reactions {
     public static final String CLOSED_INBOX = "\uD83D\uDCEA";
     public static final String BOT = "\uD83E\uDD16";
     public static final String SATTELITE = "\uD83D\uDCE1";
+    public static final String ARROW_UP = "\uD83D\uDD3C";
+    public static final String ARROW_DOWN = "\uD83D\uDD3D";
 
     public static final Consumer<Message> DO_NOTHING = msg -> {};
 
@@ -77,6 +79,15 @@ public class Reactions {
         emojis.forEach((emoji) -> message.addReaction(emoji).queue());
         message.addReaction(NO_EMOTE).queue();
         ReactionListener listener = new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction);
+        if (removeListener)
+            listener.setAndThen(List.of((msg) -> msg.getJDA().removeEventListener(listener)));
+        user.getJDA().addEventListener(listener);
+    }
+
+    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, Collection<String> emojis, boolean removeListener, int waitSeconds) {
+        emojis.forEach((emoji) -> message.addReaction(emoji).queue());
+        message.addReaction(NO_EMOTE).queue();
+        ReactionListener listener = new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction, waitSeconds);
         if (removeListener)
             listener.setAndThen(List.of((msg) -> msg.getJDA().removeEventListener(listener)));
         user.getJDA().addEventListener(listener);
@@ -183,6 +194,10 @@ public class Reactions {
 
         public ReactionListener(long authorId, long messageId, Function<String, Consumer<Message>> forReaction) {
             this(authorId, messageId, null, forReaction, 30);
+        }
+
+        public ReactionListener(long authorId, long messageId, Function<String, Consumer<Message>> forReaction, int waitSeconds) {
+            this(authorId, messageId, null, forReaction, waitSeconds);
         }
 
         private ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> map, Function<String, Consumer<Message>> function, int waitSeconds) {

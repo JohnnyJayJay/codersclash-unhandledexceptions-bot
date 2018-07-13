@@ -94,6 +94,7 @@ public class Bot {
                 .put(new MailCommand(database), "mail", "contact")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
+                .put(new SearchCommand(), "search", "lookfor", "browse")
                 .activate();
 
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),

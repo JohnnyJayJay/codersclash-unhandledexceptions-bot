@@ -28,7 +28,6 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
  */
 public class SettingsCommand implements ICommand {
 
-    private static EmbedBuilder builder;
     private static List<String> zeroToTenReactions;
 
     static {
@@ -55,10 +54,10 @@ public class SettingsCommand implements ICommand {
         }
         if (Permissions.getPermissionLevel(member) >= 5) {
             if (args.length == 0) {
-                builder = new EmbedBuilder();
+                var builder = new EmbedBuilder();
                 event.getMessage().delete().queue();
                 channel.sendMessage(builder.setDescription("Loading Main Menu...").build()).queue((msg) ->
-                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU), Messages.defaultFailure(channel));
+                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU, builder), Messages.defaultFailure(channel));
             } else {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n" + this.info(member)).queue();
             }
@@ -67,16 +66,16 @@ public class SettingsCommand implements ICommand {
         }
     }
 
-    private void menu(User user, Message message, Layer current, Layer before) {
+    private void menu(User user, Message message, Layer current, Layer before, EmbedBuilder builder) {
         message.clearReactions().queue((v) -> {
-            editMessage(message, current);
+            editMessage(message, current, builder);
             //builder.clear().setColor(message.getGuild().getSelfMember().getColor());
             Reactions.newMenu(message, user, (emoji) -> (v2) -> {
                 if (emoji.equals(Reactions.BACK)) {
-                    menu(user, message, before, current);
+                    menu(user, message, before, current, builder);
                     return;
                 } else if (emoji.equals(Reactions.M)) {
-                    menu(user, message, Layer.MAIN_MENU, current);
+                    menu(user, message, Layer.MAIN_MENU, current, builder);
                     return;
                 }
 
@@ -84,39 +83,39 @@ public class SettingsCommand implements ICommand {
                     case MAIN_MENU:
                         switch (emoji) {
                             case Reactions.SPEECH_BUBBLE:
-                                menu(user, message, Layer.CHANNEL_MANAGEMENT, current);
+                                menu(user, message, Layer.CHANNEL_MANAGEMENT, current, builder);
                                 break;
                             case Reactions.FLOPPY:
-                                menu(user, message, Layer.FEATURES, current);
+                                menu(user, message, Layer.FEATURES, current, builder);
                                 break;
                             case Reactions.CONTROLLER:
-                                menu(user, message, Layer.GAME, current);
+                                menu(user, message, Layer.GAME, current, builder);
                                 break;
                             case Reactions.QUESTION_MARK:
-                                menu(user, message, Layer.HELP, current);
+                                menu(user, message, Layer.HELP, current, builder);
                                 break;
                         }
                         break;
                     case CHANNEL_MANAGEMENT:
                         switch (emoji) {
                             case Reactions.MAIL:
-                                menu(user, message, Layer.MAIL_CHANNEL, current);
+                                menu(user, message, Layer.MAIL_CHANNEL, current, builder);
                                 break;
                             case Reactions.REPEAT:
-                                menu(user, message, Layer.AUTO_CHANNEL, current);
+                                menu(user, message, Layer.AUTO_CHANNEL, current, builder);
                                 break;
                         }
                         break;
                     case FEATURES:
                         switch (emoji) {
                             case Reactions.STAR:
-                                menu(user, message, Layer.XP_SYSTEM, current);
+                                menu(user, message, Layer.XP_SYSTEM, current, builder);
                                 break;
                             case Reactions.EXCLAMATION_MARK:
-                                menu(user, message, Layer.REPORTS, current);
+                                menu(user, message, Layer.REPORTS, current, builder);
                                 break;
                             case Reactions.P:
-                                menu(user, message, Layer.PREFIX, current);
+                                menu(user, message, Layer.PREFIX, current, builder);
                                 break;
                         }
                         break;
@@ -136,17 +135,17 @@ public class SettingsCommand implements ICommand {
                                                 settings.setCustomPrefix(channel.getGuild().getIdLong(), prefix);
                                                 database.setPrefix(channel.getGuild().getIdLong(), prefix);
                                                 sendMessage(channel, Type.SUCCESS, "Successfully set `" + prefix + "` as the new prefix!").queue(Messages::deleteAfterFiveSec);
-                                                menu(user, message, Layer.MAIN_MENU, Layer.PREFIX);
+                                                menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
 
-                                            }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.PREFIX));
+                                            }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder));
                                 } else {
                                     sendMessage(channel, Type.ERROR, "Your prefix `" + prefix + "` is not valid. Remember that a valid prefix cannot contain "
                                             + "any of these: `? * + ^ \\ $`\nAlso, it cannot be longer than 40 characters.").queue(Messages::deleteAfterFiveSec);
-                                    menu(user, message, Layer.MAIN_MENU, Layer.PREFIX);
+                                    menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
                                 }
                             }, (s) -> true, 30, (v3) -> {
                                 sendMessage(message.getChannel(), Type.WARNING, "Your prefix change request expired.").queue(Messages::deleteAfterFiveSec);
-                                menu(user, message, Layer.MAIN_MENU, Layer.PREFIX);
+                                menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
                             });
                         }
                         break;
@@ -157,19 +156,19 @@ public class SettingsCommand implements ICommand {
                             database.setReportsUntilBan(message.getGuild().getIdLong(), 11);
                             sendMessage(message.getChannel(), Type.SUCCESS,
                                     "Automatic ban for reports is now deactivated!").queue(Messages::deleteAfterFiveSec);
-                            menu(user, message, Layer.MAIN_MENU, Layer.REPORTS);
+                            menu(user, message, Layer.MAIN_MENU, Layer.REPORTS, builder);
                         } else if (newValue < 11) {
                             database.setReportsUntilBan(message.getGuild().getIdLong(), newValue);
                             sendMessage(message.getChannel(), Type.SUCCESS,
                                     String.format("Member are now being banned after `%d` reports!", newValue)).queue(Messages::deleteAfterFiveSec);
-                            menu(user, message, Layer.MAIN_MENU, Layer.REPORTS);
+                            menu(user, message, Layer.MAIN_MENU, Layer.REPORTS, builder);
                         }
                         break;
                     case XP_SYSTEM:
                         if (emoji.equals(Reactions.Y)) {
                             database.setUseXpSystem(message.getGuild().getIdLong(), !database.xpSystemActivated(message.getGuild().getIdLong()));
                             sendMessage(message.getChannel(), Type.SUCCESS, "Changes were successful!").queue(Messages::deleteAfterFiveSec);
-                            menu(user, message, Layer.MAIN_MENU, Layer.XP_SYSTEM);
+                            menu(user, message, Layer.MAIN_MENU, Layer.XP_SYSTEM, builder);
                         }
                         break;
                     case GAME: // TODO
@@ -187,11 +186,11 @@ public class SettingsCommand implements ICommand {
                                     v3.delete().queue();
                                     database.setMailChannel(message.getGuild().getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
                                     sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
-                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL);
-                                }, (v3) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL));
+                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
+                                }, (v3) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
                             }, (string) -> string.matches(Regex.CHANNEL_MENTION), 30, (v3) -> {
                                 sendMessage(message.getChannel(), Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
-                                menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL);
+                                menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
                             });
                         } else if (emoji.equals(Reactions.BOT)) {
                             sendMessage(message.getChannel(), Type.DEFAULT, "Creating the channel...").queue((msg) -> {
@@ -201,17 +200,17 @@ public class SettingsCommand implements ICommand {
                                         database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
                                         sendMessage(message.getChannel(), Type.SUCCESS, "Success! Your new mail channel is "
                                                 + ((TextChannel)channel).getAsMention()).queue(Messages::deleteAfterFiveSec);
-                                        menu(user, message, Layer.MAIN_MENU, current);
+                                        menu(user, message, Layer.MAIN_MENU, current, builder);
                                     }, (t) -> {
                                         msg.delete().queue();
                                         Messages.defaultFailure(message.getChannel()).accept(t);
-                                        menu(user, message, Layer.MAIN_MENU, current);
+                                        menu(user, message, Layer.MAIN_MENU, current, builder);
                                     });
                                 } else {
                                     msg.delete().queue();
                                     sendMessage(message.getChannel(), Type.ERROR, "Woops. It seems like I don't have permission to do that!").queue(Messages::deleteAfterFiveSec);
                                     message.editMessage(builder.setTitle("Please be patient").setDescription("Sending you back to main menu...").build())
-                                            .queue((m) -> menu(user, message, Layer.MAIN_MENU, current), (t) -> menu(user, message, Layer.MAIN_MENU, current));
+                                            .queue((m) -> menu(user, message, Layer.MAIN_MENU, current, builder), (t) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                                 }
                             });
                         } else if (emoji.equals(Reactions.CLOSED_INBOX)) {
@@ -219,8 +218,8 @@ public class SettingsCommand implements ICommand {
                                 msg.delete().queue();
                                 database.setMailChannel(message.getGuild().getIdLong(), 0);
                                 sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
-                                menu(user, message, Layer.MAIN_MENU, current);
-                            }, (v3) -> menu(user, message, Layer.MAIN_MENU, current));
+                                menu(user, message, Layer.MAIN_MENU, current, builder);
+                            }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                         }
                         break;
                 }
@@ -228,7 +227,7 @@ public class SettingsCommand implements ICommand {
         });
     }
 
-    private void editMessage(Message message, Layer layer) {
+    private void editMessage(Message message, Layer layer, EmbedBuilder builder) {
         builder.clear().setColor(message.getGuild().getSelfMember().getColor());
         switch (layer) {
             case MAIN_MENU:
@@ -300,7 +299,7 @@ public class SettingsCommand implements ICommand {
                         + Reactions.CLOSED_INBOX + " Deactivate the mail function by deactivating current mail channel\n"
                         + Reactions.BACK + " Go Back\n"
                         + Reactions.M + " Main Menu\n"
-                        + Reactions.NO_EMOTE + " Exit"); // TODO
+                        + Reactions.NO_EMOTE + " Exit");
                 break;
         }
         message.editMessage(builder.build()).queue();

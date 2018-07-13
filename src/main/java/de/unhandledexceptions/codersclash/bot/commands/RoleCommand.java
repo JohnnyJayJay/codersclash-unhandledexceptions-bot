@@ -27,7 +27,7 @@ public class RoleCommand implements ICommand {
             return;
 
         if(Permissions.getPermissionLevel(member) >= 5) {
-            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
+            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(?i)(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 String role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {

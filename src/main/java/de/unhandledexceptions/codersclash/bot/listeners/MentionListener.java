@@ -36,9 +36,10 @@ public class MentionListener extends ListenerAdapter {
                     .addField("Birth", "2018/06/23 12:00", true)
                     .addField("Help Command", "`" + prefix + "[help|helpme|commands] <command>`", false)
                     .addField("Creators", stringBuilder.toString(), false)
-                    .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), false)
+                    .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), true)
                     .addField("Members", Long.toString(members), true)
                     .addField("Source Code", "[Click me](https://github.com)", false)
+                    .addField("Version", config.getVersion(), true)
                     .setColor(event.getGuild().getSelfMember().getColor());
             Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue();
             //Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue(this::reactionsAdd);

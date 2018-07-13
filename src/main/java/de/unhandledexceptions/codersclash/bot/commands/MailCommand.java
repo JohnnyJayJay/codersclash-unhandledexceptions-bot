@@ -27,11 +27,9 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 public class MailCommand implements ICommand {
 
     private Database database;
-    private EmbedBuilder builder;
 
     public MailCommand(Database database) {
         this.database = database;
-        this.builder = new EmbedBuilder();
     }
 
     @Override
@@ -43,7 +41,6 @@ public class MailCommand implements ICommand {
             if (args.length > 1) {
                 var shardManager = event.getJDA().asBot().getShardManager();
                 Guild guild;
-                builder.clear();
                 if (args[0].matches("\\d{1,18}") && (guild = shardManager.getGuildById(Long.parseLong(args[0]))) != null) {
                     Long mailChannelId;
                     if ((mailChannelId = database.getMailChannel(guild)) != null && mailChannelId != 0) {
