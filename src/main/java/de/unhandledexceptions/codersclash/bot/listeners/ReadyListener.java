@@ -21,13 +21,12 @@ public class ReadyListener extends ListenerAdapter {
     private Config config;
     private static Icon icon;
     private static URL iconURL;
-    private String configIconURL = config.getICONURL();
 
     private static Logger logger = Logging.getLogger();
 
     {
         try {
-            iconURL = new URL(configIconURL);
+            iconURL = new URL(config.getICONURL());
         } catch (MalformedURLException e) {
             logger.error("An Exception occured while getting the URL.",e);
         }
