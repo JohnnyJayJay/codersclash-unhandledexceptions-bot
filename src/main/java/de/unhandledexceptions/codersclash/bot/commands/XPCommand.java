@@ -4,6 +4,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
+import de.unhandledexceptions.codersclash.bot.core.ScoreBoardUser;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -17,6 +18,8 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -102,18 +105,20 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.removeXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
-            if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
-                return;
+            if (!event.getAuthor().isBot()) {
+                if (event.getMessage().getType() != MessageType.DEFAULT || event.getAuthor().isBot())
+                    return;
 
-            int length = event.getMessage().getContentRaw().length();
-            int result;
-            if (length > 0) {
-                if (length > 10)
-                    result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
-                else
-                    result = ThreadLocalRandom.current().nextInt(length);
+                int length = event.getMessage().getContentRaw().length();
+                int result;
+                if (length > 0) {
+                    if (length > 10)
+                        result = ThreadLocalRandom.current().nextInt(length - 10) + 10;
+                    else
+                        result = ThreadLocalRandom.current().nextInt(length);
 
-                database.addXp(event.getMember(), result);
+                    database.addXp(event.getMember(), result);
+                }
             }
         }
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
