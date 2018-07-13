@@ -15,6 +15,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -65,10 +66,10 @@ public class MailCommand implements ICommand {
                         sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
                     }
                 } else {
-                    sendMessage(channel, Type.ERROR, "No valid guild id detected. Do you want to try searching the guild by name?").queue((msg) -> Reactions.newYesNoMenu(msg, event.getAuthor(), (v) -> {
-                        v.delete().queue();
+                    sendMessage(channel, Type.ERROR, "No valid guild id detected. Do you want to try searching the guild by name?").queue((msg) -> Reactions.newYesNoMenu(event.getAuthor(), msg, (reaction) -> {
+                        msg.delete().queue();
                         sendMessage(channel, Type.DEFAULT, "Please type in the name of the guild you are looking for!").queue();
-                        Reactions.newMessageWaiter(event.getAuthor(), channel, (m) -> {
+                        Reactions.newMessageWaiter(event.getAuthor(), channel, 30, (m) -> {
                             String name = m.getContentRaw();
                             List<Guild> guilds = new ArrayList<>();
                             shardManager.getShardCache().forEach((jda) -> guilds.addAll(jda.getGuildsByName(name, true)));
@@ -87,7 +88,7 @@ public class MailCommand implements ICommand {
                                     if (finalI <= 10) {
                                         for (int j = 1; j <= finalI; j++)
                                             message.addReaction(Reactions.getNumber(j)).queue();
-                                        Reactions.newMenu(message, event.getAuthor(), (emoji) -> {
+                                        Reactions.newMenu(event.getAuthor(), message, (emoji) -> {
                                             Consumer<Message> ret = g -> {};
                                             int select;
                                             for (select = 1; select <= 11 && !emoji.equals(Reactions.getNumber(select)); select++);
@@ -99,14 +100,13 @@ public class MailCommand implements ICommand {
                                                     this.onCommand(event, member, channel, args);
                                                 };
                                             }
-                                            return ret;
-                                        }, true);
+                                        }, Collections.EMPTY_LIST);
                                     } else {
                                         sendMessage(channel, Type.WARNING, "Too many results! Please refer to the id manually and try again.").queue();
                                     }
                                 });
                             }
-                        }, (string) -> true, 30, (t) -> {});
+                        });
                     }));
                 }
             } else {

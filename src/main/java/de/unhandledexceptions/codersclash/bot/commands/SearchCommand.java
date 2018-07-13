@@ -76,7 +76,7 @@ public class SearchCommand implements ICommand {
             builder.appendDescription((i + 1) + ": " + list.get(i) + "\n");
         builder.appendDescription("```");
         message.editMessage(builder.build()).queue();
-        Reactions.newMenu(message, user, (emoji) -> (v) -> {
+        Reactions.newMenu(user, message, (emoji) -> {
             if (emoji.equals(Reactions.ARROW_DOWN)) {
                 if (to == list.size()) {
                     display(list, message, user, builder, from, to);
@@ -94,7 +94,7 @@ public class SearchCommand implements ICommand {
                     display(list, message, user, builder, 0, from);
                 }
             }
-        }, Collections.EMPTY_LIST, true, 120);
+        }, Collections.EMPTY_LIST, 120);
     }
 
     // TODO

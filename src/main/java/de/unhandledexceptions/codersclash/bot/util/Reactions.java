@@ -1,7 +1,9 @@
 package de.unhandledexceptions.codersclash.bot.util;
 
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -9,7 +11,6 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -43,10 +44,6 @@ public class Reactions {
     public static final String ARROW_UP = "\uD83D\uDD3C";
     public static final String ARROW_DOWN = "\uD83D\uDD3D";
 
-    public static final Consumer<Message> DO_NOTHING = msg -> {};
-
-    public static final Consumer<Message> DELETE_MESSAGE = msg -> msg.delete().queue();
-
     public static String getNumber(int number) {
         String ret = " ";
         if (number == 10) {
@@ -57,64 +54,54 @@ public class Reactions {
         return ret;
     }
 
-    public static void newYesNoMenu(Message message, User user, Consumer<Message> yes, Consumer<Message> no) {
+    public static void newYesNoMenu(User user, Message message, Consumer<String> yes, Consumer<String> no) {
         message.addReaction(YES_EMOTE).queue();
         message.addReaction(NO_EMOTE).queue();
-        user.getJDA().addEventListener(new ReactionListener(user.getIdLong(), message.getIdLong(), Map.of(YES_EMOTE, yes, NO_EMOTE, no)));
+        user.getJDA().addEventListener(new ReactionListener(Set.of(YES_EMOTE, NO_EMOTE), (emoji) -> {
+            if (emoji.equals(YES_EMOTE))
+                yes.accept(emoji);
+            else
+                no.accept(emoji);
+        }, user.getIdLong(), message.getIdLong(), 20, true));
     }
 
-    public static void newYesNoMenu(Message message, User user, Consumer<Message> yes) {
-        newYesNoMenu(message, user, yes, DO_NOTHING);
+    public static void newYesNoMenu(User user, Message message, Consumer<String> yes) {
+        newYesNoMenu(user, message, yes, (s) -> {});
     }
 
-    public static void newYesNoMenu(String question, TextChannel channel, User user, Consumer<Message> yes) {
-        Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(msg, user, yes, DO_NOTHING));
+    public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, int waitSeconds, boolean removeListener) {
+        for (String s : emojis) {
+            message.addReaction(s).queue();
+        }
+        if (!emojis.contains(NO_EMOTE))
+            message.addReaction(NO_EMOTE).queue();
+        user.getJDA().addEventListener(new ReactionListener(emojis, reacted, user.getIdLong(), message.getIdLong(), waitSeconds, removeListener));
     }
 
-    public static void newYesNoMenu(String question, TextChannel channel, User user, Consumer<Message> yes, Consumer<Message> no) {
-        Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(msg, user, yes, no));
+    public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, int waitSeconds) {
+        newMenu(user, message, reacted, emojis, waitSeconds, true);
     }
 
-    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, Collection<String> emojis, boolean removeListener) {
-        emojis.forEach((emoji) -> message.addReaction(emoji).queue());
-        message.addReaction(NO_EMOTE).queue();
-        ReactionListener listener = new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction);
-        if (removeListener)
-            listener.setAndThen(List.of((msg) -> msg.getJDA().removeEventListener(listener)));
-        user.getJDA().addEventListener(listener);
+    public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, boolean removeListener) {
+        newMenu(user, message, reacted, emojis, 30, removeListener);
     }
 
-    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, Collection<String> emojis, boolean removeListener, int waitSeconds) {
-        emojis.forEach((emoji) -> message.addReaction(emoji).queue());
-        message.addReaction(NO_EMOTE).queue();
-        ReactionListener listener = new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction, waitSeconds);
-        if (removeListener)
-            listener.setAndThen(List.of((msg) -> msg.getJDA().removeEventListener(listener)));
-        user.getJDA().addEventListener(listener);
+    public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis) {
+        newMenu(user, message, reacted, emojis, 30, true);
     }
 
-    public static void newMenu(Message message, User user, Function<String, Consumer<Message>> forReaction, boolean removeListener) {
-        newMenu(message, user, forReaction, Collections.EMPTY_LIST, removeListener);
-    }
-
-    public static void newMenu(Message message, User user, Map<String, Consumer<Message>> forReaction) {
-        forReaction.keySet().forEach((emoji) -> message.addReaction(emoji).queue());
-        message.addReaction(NO_EMOTE).queue();
-        user.getJDA().addEventListener(new ReactionListener(user.getIdLong(), message.getIdLong(), forReaction));
-    }
-
-    public static void newMessageWaiter(Member member, Consumer<Message> messageReceived, int waitSeconds) {
-        member.getJDA().addEventListener(new MessageListener(member.getUser().getIdLong(), member.getGuild().getIdLong(), MessageListener.NO_CHANNEL, messageReceived, member.getJDA(), waitSeconds, v -> {}));
-    }
-
-    public static void newMessageWaiter(User user, MessageChannel channel, Consumer<Message> messageReceived, Predicate<String> condition, int waitSeconds, Consumer<Void> afterExpiration) {
-        var listener = new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, channel.getIdLong(), messageReceived, user.getJDA(), waitSeconds, afterExpiration);
+    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Predicate<String> condition, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
+        var listener = new MessageListener(user.getJDA(), user.getIdLong(), channel.getIdLong(), waitSeconds, messageReceived, afterExpiration);
         listener.setCondition(condition);
         user.getJDA().addEventListener(listener);
     }
 
-    public static void newMessageWaiter(User user, Consumer<Message> messageReceived, int waitSeconds) {
-        user.getJDA().addEventListener(new MessageListener(user.getIdLong(), MessageListener.NO_GUILD, MessageListener.NO_CHANNEL, messageReceived, user.getJDA(), waitSeconds, v -> {}));
+    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
+        newMessageWaiter(user, channel, waitSeconds, (s) -> true, messageReceived, afterExpiration);
+    }
+
+    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Consumer<Message> messageReceived) {
+        newMessageWaiter(user, channel, waitSeconds, (s) -> true, messageReceived, (v) -> {});
     }
 
     private static class MessageListener extends ListenerAdapter {
@@ -125,13 +112,12 @@ public class Reactions {
         // TODO mit einem Consumer für mehrere Nachrichten (andThen)
         //private final int howMany;
         private final long userId;
-        private final long guildId;
         private final long channelId;
         private final Consumer<Message> messageReceived;
         private Predicate<String> condition;
         private boolean receivedMessage;
 
-        public MessageListener(long userId, long guildId, long channelId, Consumer<Message> messageReceived, JDA jda, int waitSeconds, Consumer<Void> afterExpiration) {
+        public MessageListener(JDA jda, long userId, long channelId, int waitSeconds, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -143,9 +129,9 @@ public class Reactions {
                 }
             }, waitSeconds * 1000);
             this.userId = userId;
-            this.guildId = guildId;
             this.channelId = channelId;
             this.messageReceived = messageReceived;
+            this.receivedMessage = false;
             this.condition = (s) -> true;
         }
 
@@ -159,111 +145,63 @@ public class Reactions {
                 return;
 
             String raw = event.getMessage().getContentRaw();
-            if (channelId == NO_CHANNEL) {
-                if (guildId == NO_GUILD && condition.test(raw)) {
-                    messageReceived.accept(event.getMessage());
-                    this.receivedMessage = true;
-                    event.getJDA().removeEventListener(this);
-                } else if (event.getGuild() != null && event.getGuild().getIdLong() == guildId && condition.test(raw)) {
-                    messageReceived.accept(event.getMessage());
-                    this.receivedMessage = true;
-                    event.getJDA().removeEventListener(this);
-                }
-            } else if (event.getChannel().getIdLong() == channelId && condition.test(raw)) {
-                messageReceived.accept(event.getMessage());
+            if (userId == event.getAuthor().getIdLong() && channelId == event.getChannel().getIdLong() && condition.test(raw)) {
                 this.receivedMessage = true;
-                event.getJDA().removeEventListener(this);
+                messageReceived.accept(event.getMessage());
             }
         }
     }
 
     private static class ReactionListener extends ListenerAdapter {
 
-        private int reactions;
-        private final int waitSeconds;
-        private final boolean useFunction;
-        private final long userId;
-        private final long messageId;
-        private final Function<String, Consumer<Message>> function;
-        private final Map<String, Consumer<Message>> map;
-        private Collection<Consumer<Message>> andThen;
+        private Collection<String> emojis;
+        private Consumer<String> reacted;
+        private long userId;
+        private long messageId;
+        private boolean firstReaction;
+        private boolean removeListener;
+        private int waitSeconds;
 
-        public ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> forReaction) {
-            this(authorId, messageId, forReaction, null, 30);
-        }
-
-        public ReactionListener(long authorId, long messageId, Function<String, Consumer<Message>> forReaction) {
-            this(authorId, messageId, null, forReaction, 30);
-        }
-
-        public ReactionListener(long authorId, long messageId, Function<String, Consumer<Message>> forReaction, int waitSeconds) {
-            this(authorId, messageId, null, forReaction, waitSeconds);
-        }
-
-        private ReactionListener(long authorId, long messageId, Map<String, Consumer<Message>> map, Function<String, Consumer<Message>> function, int waitSeconds) {
-            this.reactions = 0;
-            this.waitSeconds = waitSeconds;
-            this.userId = authorId;
+        ReactionListener(Collection<String> emojis, Consumer<String> reacted, long userId, long messageId, int waitSeconds, boolean removeListener) {
+            this.emojis = emojis;
+            this.reacted = reacted;
+            this.userId = userId;
             this.messageId = messageId;
-            this.map = map;
-            this.function = function;
-            this.useFunction = map == null;
-            this.andThen = Collections.EMPTY_LIST;
-        }
-
-        public void setAndThen(Collection<Consumer<Message>> andThen) {
-            this.andThen = andThen;
+            this.waitSeconds = waitSeconds;
+            this.removeListener = removeListener;
+            this.firstReaction = true;
         }
 
         @Override
         public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-            if (reactions == 0) {
+            if (firstReaction) {
                 event.getChannel().getMessageById(event.getMessageIdLong()).queueAfter(waitSeconds, TimeUnit.SECONDS,
-                        (msg) -> event.getJDA().removeEventListener(this),
-                        (throwable) -> event.getJDA().removeEventListener(this));
+                        (msg) -> event.getJDA().removeEventListener(this), (t) -> event.getJDA().removeEventListener(this));
+                firstReaction = false;
             }
-            reactions++;
-            var user = event.getUser();
+
+            User user = event.getUser();
+
             if (user == event.getJDA().getSelfUser() || event.getMessageIdLong() != messageId)
                 return;
 
-            if (user.getIdLong() == userId) {
-                String name = event.getReactionEmote().getName();
-                event.getReaction().removeReaction(user).queue();
-                if (name.equals(NO_EMOTE)) {
-                    if (useFunction)
-                        apply(event, name);
-                    else if (map.containsKey(NO_EMOTE))
-                        map.get(NO_EMOTE).accept(null);
+            event.getReaction().removeReaction(user).queue();
 
-                    event.getJDA().removeEventListener(this);
+            String emoji = event.getReactionEmote().getName();
+            if (user.getIdLong() == userId) {
+                if (emoji.equals(NO_EMOTE)) {
                     event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> msg.delete().queue());
+                    event.getJDA().removeEventListener(this);
                     return;
                 }
-                if (useFunction) {
-                    apply(event, name);
-                } else if (map.containsKey(name)) {
-                    Consumer<Message> andThenCombined = m -> {};
-                    for (Consumer<Message> c : andThen)
-                        andThenCombined = andThenCombined.andThen(c);
-                    Consumer<Message> finalAndThenCombined = andThenCombined;
-                    event.getChannel().getMessageById(messageId).queue((msg) -> map.get(name).andThen(finalAndThenCombined).accept(msg));
+                if (emojis.contains(emoji)) {
+                    reacted.accept(emoji);
+                    if (removeListener)
+                        event.getJDA().removeEventListener(this);
                 }
-            } else {
-                event.getReaction().removeReaction(user).queue();
             }
         }
-
-        private void apply(GuildMessageReactionAddEvent event, String name) {
-            event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
-                Consumer<Message> andThenCombined = m -> {};
-                for (Consumer<Message> c : andThen)
-                    andThenCombined = andThenCombined.andThen(c);
-                function.apply(name).andThen(andThenCombined).accept(msg);
-            });
-        }
     }
 
 
-
-    }
+}
