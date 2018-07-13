@@ -6,10 +6,7 @@ import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,26 +20,33 @@ public class SearchCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
-        // TODO !search [user|guild] <name>
-        // TODO Permission level festlegen
+        // TODO Permission level
         if (args.length > 1) {
             var shardmanager = event.getJDA().asBot().getShardManager();
             var builder = new EmbedBuilder();
-            String name = event.getCommand().getJoinedArgs(1);
             if (args[0].equalsIgnoreCase("user")){
                 sendMessage(channel, Type.DEFAULT, "Searching...").queue((msg) -> {
+                    String name = event.getCommand().getJoinedArgs(1);
+                    List<User> withDiscriminator = Collections.EMPTY_LIST;
                     List<User> users = new ArrayList<>();
                     if (name.matches(".+#\\d{4}")) {
-                        String nameOnly = name.replaceAll("#\\d{4,5}", "");
-                        String discriminator = name.replaceFirst(nameOnly + "#", "");
-                        shardmanager.getUserCache().stream().filter((user) -> user.getName().equalsIgnoreCase(nameOnly)).filter((user) -> user.getDiscriminator().equals(discriminator)).forEach(users::add);
-                        if (users.isEmpty()) {
-                            shardmanager.getUserCache().stream().filter((user) -> user.getName().equalsIgnoreCase(nameOnly)).forEach(users::add);
-                            shardmanager.getUserCache().stream().filter((user) -> user.getDiscriminator().equals(discriminator)).forEach(users::add);
-                        }
+                        String newName = name.replaceAll("#\\d{4,5}", "");
+                        String discriminator = name.replace(newName + "#", "");
+                        name = newName;
+                        String finalName = name;
+                        shardmanager.getUserCache().stream().filter((user) -> user.getName().equalsIgnoreCase(finalName)).filter((user) -> user.getDiscriminator().equals(discriminator)).forEach(users::add);
+                        withDiscriminator = shardmanager.getUserCache().stream().filter((user) -> user.getDiscriminator().equals(discriminator)).collect(Collectors.toList());
                     }
-                    for (var jda : shardmanager.getShards()) {
-                        users.addAll(jda.getUsersByName(name, true));
+                    String finalName = name;
+                    for (var jda : shardmanager.getShardCache()) {
+                        users.addAll(jda.getUsersByName(finalName, true));
+                    }
+                    if (users.isEmpty()) {
+                        shardmanager.getUserCache().stream().filter((user) -> user.getName().toLowerCase().startsWith(finalName.toLowerCase())).forEach(users::add);
+                        if (users.isEmpty()) {
+                            users.addAll(withDiscriminator);
+                            shardmanager.getUserCache().stream().filter((user) -> user.getName().toLowerCase().contains(finalName.toLowerCase())).forEach(users::add);
+                        }
                     }
                     msg.delete().queue();
                     if (users.isEmpty()) {
@@ -51,16 +55,33 @@ public class SearchCommand implements ICommand {
                         builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                         sendMessage(channel, Type.SUCCESS, "Loading results...")
                                 .queue((m) -> {
-                                            m.addReaction(Reactions.ARROW_UP).queue();
-                                            m.addReaction(Reactions.ARROW_DOWN).queue();
-                                            List<String> list = users.stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).collect(Collectors.toList());
-                                            display(list, m, event.getAuthor(), builder, 0, list.size() >= 10 ? 10 : list.size());
+                                            List<String> display = users.stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).collect(Collectors.toList());
+                                            display(display, m, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size());
                                         }, Messages.defaultFailure(channel));
                     }
                 });
 
             } else if (args[0].equalsIgnoreCase("guild")) {
-                // TODO
+                String name = event.getCommand().getJoinedArgs(1);
+                List<Guild> guilds = new ArrayList<>();
+                for (var jda : shardmanager.getShardCache()) {
+                    guilds.addAll(jda.getGuildsByName(name, true));
+                }
+                shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().contains(name)).forEach(guilds::add);
+                builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
+                sendMessage(channel, Type.SUCCESS, "Loading results...")
+                        .queue((m) -> {
+                            List<String> display = guilds.stream().map((guild) -> String.format("%s (%d)", guild.getName(), guild.getIdLong())).collect(Collectors.toList());
+                            display(display, m, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size());
+                        }, Messages.defaultFailure(channel));
+            } else if (args[0].equalsIgnoreCase("display") && args[1].matches("(?i)((guilds)|(users))")) {
+                builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
+                sendMessage(channel, Type.SUCCESS, "Loading results...").queue((msg) -> {
+                    List<String> display = args[1].equalsIgnoreCase("guilds")
+                            ? shardmanager.getGuildCache().stream().map((guild) -> String.format("%s (%d)", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
+                            : shardmanager.getUserCache().stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).collect(Collectors.toList());
+                    display(display, msg, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size());
+                });
             } else {
                 wrongUsageMessage(channel, member, this);
             }
@@ -70,7 +91,7 @@ public class SearchCommand implements ICommand {
     }
 
     private void display(List<String> list, Message message, User user, EmbedBuilder builder, int from, int to) {
-        builder.setDescription("**Results of your search:**\n");
+        builder.setDescription("**Results for your search:** " + list.size() + "\n");
         builder.appendDescription("```\n");
         for (int i = from; i < to; i++)
             builder.appendDescription((i + 1) + ": " + list.get(i) + "\n");
@@ -94,7 +115,7 @@ public class SearchCommand implements ICommand {
                     display(list, message, user, builder, 0, from);
                 }
             }
-        }, Collections.EMPTY_LIST, 120);
+        }, List.of(Reactions.ARROW_UP, Reactions.ARROW_DOWN));
     }
 
     // TODO
