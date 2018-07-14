@@ -41,6 +41,7 @@ public class MentionListener extends ListenerAdapter {
                     .addField("Guilds", Long.toString(shardManager.getGuildCache().size()), true)
                     .addField("Members", Long.toString(members), true)
                     .addField("Source Code", "[Click me](https://github.com)", false)
+                    .addField("Version", config.getVersion(), true)
                     .setColor(event.getGuild().getSelfMember().getColor());
             Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue();
             //Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue(this::reactionsAdd);

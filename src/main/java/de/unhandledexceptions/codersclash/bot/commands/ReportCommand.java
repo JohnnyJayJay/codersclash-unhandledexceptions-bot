@@ -34,7 +34,7 @@ public class ReportCommand implements ICommand {
             return;
 
         if (Permissions.getPermissionLevel(member) >= 3) {
-            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(<@!?\\d+> .+)|((get|remove) <@!?\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
+            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(?i)(<@!?\\d+> .+)|((get|remove) <@!?\\d+>( (10|[1-9]))?)") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 var reportList = database.getReports(target);
                 if (args[0].matches(Regex.MEMBER_MENTION)) {

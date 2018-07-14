@@ -27,7 +27,7 @@ public class RoleCommand implements ICommand {
             return;
 
         if(Permissions.getPermissionLevel(member) >= 5) {
-            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
+            if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(?i)(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 String role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
@@ -36,13 +36,13 @@ public class RoleCommand implements ICommand {
                 } else if (event.getGuild().getRolesByName(role, false).isEmpty()){
                     sendMessage(channel, Type.ERROR, String.format("Role `%s` doesn't exist!", role)).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
                     sendMessage(channel, Type.QUESTION, "Do you wish to create the Role `" + role + "`?").queue(
-                            (msg) -> Reactions.newYesNoMenu(msg, member.getUser(),
-                                    (mssg) -> {
-                                        mssg.delete().queue();
+                            (msg) -> Reactions.newYesNoMenu(member.getUser(), msg,
+                                    (reaction) -> {
+                                        msg.delete().queue();
                                         var controller = event.getGuild().getController();
                                         controller.createRole().setName(role).queue((newRole) -> {
                                             sendMessage(channel, Type.SUCCESS, "Role created! Do you want to add the role?").queue(
-                                                    (message) -> Reactions.newYesNoMenu(message, event.getAuthor(), (msssg) -> controller.addSingleRoleToMember(event.getMessage().getMentionedMembers().get(0), newRole).queue()));
+                                                    (message) -> Reactions.newYesNoMenu(event.getAuthor(), message, (emoji) -> controller.addSingleRoleToMember(event.getMessage().getMentionedMembers().get(0), newRole).queue()));
                                         }, defaultFailure(channel));
                                     }));
                 } else if (args[0].equalsIgnoreCase("add")) {

@@ -25,7 +25,7 @@ public class Main {
             logger.info("Database is being set up!");
             var database = new Database(config.getDBIp(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
             database.connect();
-            logger.warn("Connected to Database. Checking tables...");
+            logger.info("Connected to Database. Checking tables...");
             database.createTablesIfNotExist();
             Bot bot = new Bot(config, database);
             bot.start();

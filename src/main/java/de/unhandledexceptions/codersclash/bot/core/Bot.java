@@ -10,6 +10,7 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
@@ -78,6 +79,7 @@ public class Bot {
 
         var xpCommand = new XPCommand(commandSettings, database);
         var voteCommand = new VoteCommand(database);
+        var searchCommand = new SearchCommand();
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
@@ -90,13 +92,16 @@ public class Bot {
                 .put(voteCommand, "vote")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
-                .put(new SettingsCommand(database, commandSettings), "settings")
+                .put(new SettingsCommand(database, commandSettings), "settings", "control")
+                .put(new MailCommand(database, searchCommand), "mail", "contact")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
+                .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
                 .put(new ProfileCommand(), "profile")
                 .activate();
 
+        RestAction.setPassContext(true);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);

@@ -51,7 +51,7 @@ public class Database {
                 preparedStatement.executeUpdate();
                 logger.info("Database created (or it already existed).");
             } catch (SQLException e) {
-                logger.warn("Exception caught while connecting", e);
+                logger.error("Exception caught while connecting", e);
             }
             config = new HikariConfig();
             logger.info("Connecting to " + ip + "...");
@@ -79,7 +79,7 @@ public class Database {
         logger.info("Preparing statements...");
         this.creationStatements = new String[] {
                 "CREATE TABLE IF NOT EXISTS discord_guild (reports_until_ban SMALLINT DEFAULT 3, xp_system_activated BIT(1) DEFAULT 1,prefix VARCHAR(30),guild_id BIGINT NOT " +
-                        "NULL,mail_channel BIGINT,PRIMARY KEY (guild_id));",
+                        "NULL,mail_channel BIGINT,auto_channel BIGINT,PRIMARY KEY (guild_id));",
                 "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT DEFAULT 0,user_lvl INT DEFAULT 1, PRIMARY KEY (user_id));",
                 "CREATE TABLE IF NOT EXISTS discord_member (member_id BIGINT NOT NULL AUTO_INCREMENT, guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE," +
                         "user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE," +
@@ -140,12 +140,10 @@ public class Database {
     }
 
     public void deleteMember(long guildId, long userId) {
-        // TODO Testen
         this.executeUpdate("DELETE FROM discord_member WHERE guild_id = ? AND user_id = ?;", guildId, userId);
     }
 
     public void deleteGuild(long guildId) {
-        // TODO Testen
         this.executeUpdate("DELETE FROM discord_guild WHERE guild_id = ?;", guildId);
     }
 
@@ -339,7 +337,7 @@ public class Database {
         return null;
     }
 
-    public long getMailChannel(Guild guild) {
+    public Long getMailChannel(Guild guild) {
         return this.<Long>getFirst("mail_channel", selectFromGuild, Long.TYPE, guild.getIdLong());
     }
 

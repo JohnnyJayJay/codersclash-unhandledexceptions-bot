@@ -12,7 +12,7 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @author Johnny_JayJay
@@ -35,19 +35,20 @@ public class InviteCommand implements ICommand {
 
         if (Permissions.getPermissionLevel(member) >= 1) {
             Messages.sendMessage(channel, Type.QUESTION, "What invite do you wish to get?\n\n\uD83E\uDD16 Give me the bot's invite!\n\uD83D\uDCE1 The invite for this guild!").queue((msg) -> {
-                Reactions.newMenu(msg, member.getUser(), Map.of(
-                        "\uD83E\uDD16", (v) -> {
-                            msg.delete().queue();
-                            String botInvite = "[Click here!](" + event.getJDA().asBot().getInviteUrl(Permission.ADMINISTRATOR) + ")";
-                            var builder = new EmbedBuilder().addField("Invite me to your guild as well!\n", botInvite, true).setThumbnail(event.getJDA().getSelfUser().getAvatarUrl()).setColor(event.getGuild().getSelfMember().getColor());
-                            Messages.sendMessage(channel, Type.NO_TYPE, "\uD83E\uDD16  **" + config.getBotName() + "**", "Bot Invite", false, builder).queue();
-                        }, "\uD83D\uDCE1", (v) -> {
-                            msg.delete().queue();
-                            channel.createInvite().queue((invite) -> {
-                                var builder = new EmbedBuilder().addField("Invite for this guild:", invite.getURL(), true).setThumbnail(event.getGuild().getIconUrl()).setColor(event.getGuild().getSelfMember().getColor());
-                                Messages.sendMessage(channel, Type.NO_TYPE, "\uD83D\uDCE1 **" + event.getGuild().getName() + "**", "Guild Invite", false, builder).queue();
-                            });
-                        }));
+                Reactions.newMenu(member.getUser(), msg, (reaction) -> {
+                    if (reaction.equals(Reactions.BOT)) {
+                        msg.delete().queue();
+                        String botInvite = "[Click here!](" + event.getJDA().asBot().getInviteUrl(Permission.ADMINISTRATOR) + ")";
+                        var builder = new EmbedBuilder().addField("Invite me to your guild as well!\n", botInvite, true).setThumbnail(event.getJDA().getSelfUser().getAvatarUrl()).setColor(event.getGuild().getSelfMember().getColor());
+                        Messages.sendMessage(channel, Type.NO_TYPE, "\uD83E\uDD16  **" + config.getBotName() + "**", "Bot Invite", false, builder).queue();
+                    } else if (reaction.equals(Reactions.SATTELITE)) {
+                        msg.delete().queue();
+                        channel.createInvite().queue((invite) -> {
+                            var builder = new EmbedBuilder().addField("Invite for this guild:", invite.getURL(), true).setThumbnail(event.getGuild().getIconUrl()).setColor(event.getGuild().getSelfMember().getColor());
+                            Messages.sendMessage(channel, Type.NO_TYPE, "\uD83D\uDCE1 **" + event.getGuild().getName() + "**", "Guild Invite", false, builder).queue();
+                        });
+                    }
+                }, List.of(Reactions.BOT, Reactions.SATTELITE));
             });
         } else {
             Messages.noPermissionsMessage(channel, member);

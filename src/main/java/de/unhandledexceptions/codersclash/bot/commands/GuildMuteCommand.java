@@ -60,8 +60,8 @@ public class GuildMuteCommand implements ICommand {
                     });
                 } else {
                     sendMessage(channel, Type.WARNING, "This will have immediate effect and will result in a completely muted guild.\nAre you sure?").queue((msg) -> {
-                        Reactions.newYesNoMenu(msg, member.getUser(), (mssg) -> {
-                            mssg.delete().queue();
+                        Reactions.newYesNoMenu(member.getUser(), msg, (reaction) -> {
+                            msg.delete().queue();
                             settings.addChannelsToBlacklist(event.getGuild().getTextChannels().stream().map(TextChannel::getIdLong).collect(Collectors.toList()));
                             sendMessage(channel, Type.WARNING, "Muting guild...").queue();
                             muteGuild(member);

@@ -84,6 +84,7 @@ public class DatabaseListener extends ListenerAdapter {
 
     private synchronized void refreshDatabase() {
         logger.warn("Database is being refreshed...");
+        // TODO verlassene Guilds entfernen
         shardManager.getGuildCache().forEach((guild) ->
                 guild.getMemberCache().forEach((member) ->
                         database.createMemberIfNotExists(guild.getIdLong(), member.getUser().getIdLong())));
