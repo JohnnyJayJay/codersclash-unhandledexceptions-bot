@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
@@ -10,14 +11,14 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
@@ -28,9 +29,13 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 public class MailCommand implements ICommand {
 
     private Database database;
+    private SearchCommand searchCommand;
+    private Pattern topicPattern;
 
-    public MailCommand(Database database) {
+    public MailCommand(Database database, SearchCommand searchCommand) {
         this.database = database;
+        this.searchCommand = searchCommand;
+        this.topicPattern = Pattern.compile("##.+##");
     }
 
     @Override
@@ -49,13 +54,20 @@ public class MailCommand implements ICommand {
                         if (mailChannel != null) {
                             var builder = new EmbedBuilder();
                             var author = event.getAuthor();
+                            String message = event.getCommand().getJoinedArgs(1);
+                            String topic = "No Topic";
+                            Matcher matcher = topicPattern.matcher(event.getCommand().getJoinedArgs());
+                            if (matcher.find()) {
+                                String found = matcher.group();
+                                message = message.replaceFirst(found, "");
+                                topic = found.replaceAll("##", "");
+                            }
                             builder.setTitle("Via \"" + event.getGuild().getName() + "\" (" + event.getGuild().getId() + ")")
                                     .setAuthor(String.format("%#s", author), null, author.getEffectiveAvatarUrl())
                                     .setColor(member.getColor())
                                     .setFooter("Inbox", null)
                                     .setTimestamp(Instant.now())
-                                    .addField(args.length > 4 ? String.join(" ", event.getCommand().getArgsAsList().subList(1, 4)) + "..."
-                                            : "Message", event.getCommand().getJoinedArgs(1), false);
+                                    .addField(topic, message, false);
                             mailChannel.sendMessage(builder.build()).queue(
                                     (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(Messages::deleteAfterFiveSec),
                                     Messages.defaultFailure(channel));
@@ -66,48 +78,21 @@ public class MailCommand implements ICommand {
                         sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
                     }
                 } else {
-                    sendMessage(channel, Type.ERROR, "No valid guild id detected. Do you want to try searching the guild by name?").queue((msg) -> Reactions.newYesNoMenu(event.getAuthor(), msg, (reaction) -> {
+                    Reactions.newYesNoMenu(event.getAuthor(), channel, "No valid id detected. Do you want to try searching the guild by name?", (msg) -> {
                         msg.delete().queue();
-                        sendMessage(channel, Type.DEFAULT, "Please type in the name of the guild you are looking for!").queue();
+                        sendMessage(channel, Type.DEFAULT, "Please type in the name of the guild you are looking for!"
+                                + " If you find the guild you are looking for in the results, copy their id and try sending the mail again like this:\n"
+                                + "`" + Bot.getPrefix(event.getGuild().getIdLong()) + "mail <id> <message>`").queue();
                         Reactions.newMessageWaiter(event.getAuthor(), channel, 30, (m) -> {
-                            String name = m.getContentRaw();
-                            List<Guild> guilds = new ArrayList<>();
-                            shardManager.getShardCache().forEach((jda) -> guilds.addAll(jda.getGuildsByName(name, true)));
-                            if (guilds.isEmpty()) {
-                                sendMessage(channel, Type.ERROR, "No results found :(\nMaybe I'm not on the guild you are looking for?").queue();
-                            } else {
-                                var stringBuilder = new StringBuilder().append("```\n");
-                                int i = 1;
-                                for (var g : guilds) {
-                                    stringBuilder.append(String.format("%d: %s (%d) - Owner: %#s\n", i, g.getName(), g.getIdLong(), g.getOwner().getUser()));
-                                    i++;
-                                }
-                                stringBuilder.append("```");
-                                int finalI = i - 1;
-                                sendMessage(channel, Type.SUCCESS, "Results:\n" + stringBuilder.toString()).queue((message) -> {
-                                    if (finalI <= 10) {
-                                        for (int j = 1; j <= finalI; j++)
-                                            message.addReaction(Reactions.getNumber(j)).queue();
-                                        Reactions.newMenu(event.getAuthor(), message, (emoji) -> {
-                                            Consumer<Message> ret = g -> {};
-                                            int select;
-                                            for (select = 1; select <= 11 && !emoji.equals(Reactions.getNumber(select)); select++);
-                                            if (select < 11) {
-                                                int finalSelect = select;
-                                                args[0] = guilds.get(finalSelect - 1).getId();
-                                                ret = (g) -> {
-                                                    message.delete().queue();
-                                                    this.onCommand(event, member, channel, args);
-                                                };
-                                            }
-                                        }, Collections.EMPTY_LIST);
-                                    } else {
-                                        sendMessage(channel, Type.WARNING, "Too many results! Please refer to the id manually and try again.").queue();
-                                    }
-                                });
-                            }
+                            List<String> preparedArgs = new ArrayList<>();
+                            preparedArgs.add("guild");
+                            preparedArgs.addAll(Arrays.asList(m.getContentRaw().split("\\s+")));
+                            searchCommand.onCommand(
+                                    new CommandEvent(event.getJDA(), event.getResponseNumber(), event.getMessage(), event.getCommand()),
+                                    member, channel, preparedArgs.toArray(new String[preparedArgs.size()])
+                            );
                         });
-                    }));
+                    });
                 }
             } else {
                 sendMessage(channel, Type.INFO, "Wrong usage. Command info\n\n" + this.info(member)).queue();

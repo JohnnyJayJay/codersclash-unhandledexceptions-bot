@@ -78,6 +78,7 @@ public class Bot {
 
         var xpCommand = new XPCommand(commandSettings, database);
         var voteCommand = new VoteCommand(database);
+        var searchCommand = new SearchCommand();
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
@@ -91,10 +92,10 @@ public class Bot {
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
-                .put(new MailCommand(database), "mail", "contact")
+                .put(new MailCommand(database, searchCommand), "mail", "contact")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
-                .put(new SearchCommand(), "search", "lookfor", "browse")
+                .put(searchCommand, "search", "lookfor", "browse")
                 .activate();
 
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),

@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class SearchCommand implements ICommand {
                     List<User> withDiscriminator = Collections.EMPTY_LIST;
                     List<User> users = new ArrayList<>();
                     if (name.matches(".+#\\d{4}")) {
-                        String newName = name.replaceAll("#\\d{4,5}", "");
+                        String newName = name.replaceAll("#\\d{4}", "");
                         String discriminator = name.replace(newName + "#", "");
                         name = newName;
                         String finalName = name;
@@ -56,13 +57,13 @@ public class SearchCommand implements ICommand {
                         sendMessage(channel, Type.SUCCESS, "Loading results...")
                                 .queue((m) -> {
                                             List<String> display = users.stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).collect(Collectors.toList());
-                                            display(display, m, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size());
+                                            display(display, m, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size(), pages(display));
                                         }, Messages.defaultFailure(channel));
                     }
                 });
 
             } else if (args[0].equalsIgnoreCase("guild")) {
-                String name = event.getCommand().getJoinedArgs(1);
+                String name = String.join(" ", Arrays.asList(args).subList(1, args.length));
                 List<Guild> guilds = new ArrayList<>();
                 for (var jda : shardmanager.getShardCache()) {
                     guilds.addAll(jda.getGuildsByName(name, true));
@@ -72,7 +73,7 @@ public class SearchCommand implements ICommand {
                 sendMessage(channel, Type.SUCCESS, "Loading results...")
                         .queue((m) -> {
                             List<String> display = guilds.stream().map((guild) -> String.format("%s (%d)", guild.getName(), guild.getIdLong())).collect(Collectors.toList());
-                            display(display, m, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size());
+                            display(display, m, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size(), pages(display));
                         }, Messages.defaultFailure(channel));
             } else if (args[0].equalsIgnoreCase("display") && args[1].matches("(?i)((guilds)|(users))")) {
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
@@ -80,7 +81,7 @@ public class SearchCommand implements ICommand {
                     List<String> display = args[1].equalsIgnoreCase("guilds")
                             ? shardmanager.getGuildCache().stream().map((guild) -> String.format("%s (%d)", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
                             : shardmanager.getUserCache().stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).collect(Collectors.toList());
-                    display(display, msg, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size());
+                    display(display, msg, event.getAuthor(), builder, 0, display.size() >= 10 ? 10 : display.size(), pages(display));
                 });
             } else {
                 wrongUsageMessage(channel, member, this);
@@ -90,29 +91,44 @@ public class SearchCommand implements ICommand {
         }
     }
 
-    private void display(List<String> list, Message message, User user, EmbedBuilder builder, int from, int to) {
-        builder.setDescription("**Results for your search:** " + list.size() + "\n");
+    private int pages(List list) {
+        return (list.size() % 10 == 0
+                ? list.size() / 10
+                : list.size() / 10 + 1);
+    }
+
+    private void display(List<String> list, Message message, User user, EmbedBuilder builder, int from, int to, int pages) {
+        builder.setDescription("**Results for your search: " + list.size() + "**\n");
         builder.appendDescription("```\n");
         for (int i = from; i < to; i++)
             builder.appendDescription((i + 1) + ": " + list.get(i) + "\n");
         builder.appendDescription("```");
+        int currentPage;
+        if (to < list.size()) {
+            currentPage = (list.size() % 10 == 0
+                    ? (list.size() + to) / 10
+                    : (list.size() + to) / 10 + 1) - pages;
+        } else
+            currentPage = pages;
+
+        builder.setFooter("Page " + currentPage + " of " + pages, null);
         message.editMessage(builder.build()).queue();
         Reactions.newMenu(user, message, (emoji) -> {
             if (emoji.equals(Reactions.ARROW_DOWN)) {
                 if (to == list.size()) {
-                    display(list, message, user, builder, from, to);
+                    display(list, message, user, builder, from, to, pages);
                 } else if (to + 10 <= list.size()) {
-                    display(list, message, user, builder, to, to + 10);
+                    display(list, message, user, builder, to, to + 10, pages);
                 } else {
-                    display(list, message, user, builder, to, list.size());
+                    display(list, message, user, builder, to, list.size(), pages);
                 }
             } else if (emoji.equals(Reactions.ARROW_UP)) {
                 if (from == 0) {
-                    display(list, message, user, builder, from, to);
+                    display(list, message, user, builder, from, to, pages);
                 } else if (from - 10 >= 0) {
-                    display(list, message, user, builder, from - 10, from);
+                    display(list, message, user, builder, from - 10, from, pages);
                 } else {
-                    display(list, message, user, builder, 0, from);
+                    display(list, message, user, builder, 0, from, pages);
                 }
             }
         }, List.of(Reactions.ARROW_UP, Reactions.ARROW_DOWN));

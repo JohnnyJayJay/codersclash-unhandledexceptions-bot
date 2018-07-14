@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.util;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -54,19 +55,27 @@ public class Reactions {
         return ret;
     }
 
-    public static void newYesNoMenu(User user, Message message, Consumer<String> yes, Consumer<String> no) {
+    public static void newYesNoMenu(User user, Message message, Consumer<Message> yes, Consumer<Message> no) {
         message.addReaction(YES_EMOTE).queue();
         message.addReaction(NO_EMOTE).queue();
         user.getJDA().addEventListener(new ReactionListener(Set.of(YES_EMOTE, NO_EMOTE), (emoji) -> {
             if (emoji.equals(YES_EMOTE))
-                yes.accept(emoji);
+                yes.accept(message);
             else
-                no.accept(emoji);
+                no.accept(message);
         }, user.getIdLong(), message.getIdLong(), 20, true));
     }
 
-    public static void newYesNoMenu(User user, Message message, Consumer<String> yes) {
+    public static void newYesNoMenu(User user, Message message, Consumer<Message> yes) {
         newYesNoMenu(user, message, yes, (s) -> {});
+    }
+
+    public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes, Consumer<Message> no) {
+        Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(user, msg, yes, no));
+    }
+
+    public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes) {
+        Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(user, msg, yes));
     }
 
     public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, int waitSeconds, boolean removeListener) {
@@ -146,6 +155,7 @@ public class Reactions {
 
             String raw = event.getMessage().getContentRaw();
             if (userId == event.getAuthor().getIdLong() && channelId == event.getChannel().getIdLong() && condition.test(raw)) {
+                event.getJDA().removeEventListener(this);
                 this.receivedMessage = true;
                 messageReceived.accept(event.getMessage());
             }
@@ -192,7 +202,6 @@ public class Reactions {
                 if (emoji.equals(NO_EMOTE)) {
                     event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> msg.delete().queue());
                     event.getJDA().removeEventListener(this);
-                    return;
                 }
                 if (emojis.contains(emoji)) {
                     reacted.accept(emoji);
