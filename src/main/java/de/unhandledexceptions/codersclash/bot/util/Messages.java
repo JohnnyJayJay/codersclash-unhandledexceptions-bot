@@ -46,6 +46,10 @@ public class Messages {
         return channel.sendMessage(buildMessage(type, content, title, timestamp, embedBuilder));
     }
 
+    public static MessageAction sendMessage(MessageChannel channel, Type type, String content, boolean timestamp, EmbedBuilder embedBuilder) {
+        return channel.sendMessage(buildMessage(type, content, null, timestamp, embedBuilder));
+    }
+
     public static Consumer<Throwable> defaultFailure(MessageChannel channel) {
         return (throwable) -> sendMessage(channel, Type.WARNING, String.format("Something went wrong (this may not be relevant):\n```\n%s```", throwable.getMessage())).queue();
     }
