@@ -44,6 +44,10 @@ public class Reactions {
     public static final String SATTELITE = "\uD83D\uDCE1";
     public static final String ARROW_UP = "\uD83D\uDD3C";
     public static final String ARROW_DOWN = "\uD83D\uDD3D";
+    public static final String DOUBLE_ARROW_DOWN = "⏬";
+    public static final String DOUBLE_ARROW_UP = "⏫";
+    public static final String ARROW_LEFT = "⬅";
+    public static final String ARROW_RIGHT = "➡";
 
     public static String getNumber(int number) {
         String ret = " ";
@@ -79,11 +83,6 @@ public class Reactions {
     }
 
     public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, int waitSeconds, boolean removeListener) {
-        for (String s : emojis) {
-            message.addReaction(s).queue();
-        }
-        if (!emojis.contains(NO_EMOTE))
-            message.addReaction(NO_EMOTE).queue();
         user.getJDA().addEventListener(new ReactionListener(emojis, reacted, user.getIdLong(), message.getIdLong(), waitSeconds, removeListener));
     }
 

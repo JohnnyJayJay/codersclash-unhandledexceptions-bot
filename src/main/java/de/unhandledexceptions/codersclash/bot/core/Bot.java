@@ -10,6 +10,7 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
@@ -98,6 +99,7 @@ public class Bot {
                 .put(searchCommand, "search", "lookfor", "browse")
                 .activate();
 
+        RestAction.setPassContext(true);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);

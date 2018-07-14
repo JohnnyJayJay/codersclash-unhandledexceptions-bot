@@ -306,6 +306,7 @@ public class SettingsCommand implements ICommand {
                         + Reactions.NO_EMOTE + " Exit");
                 break;
         }
+        layer.EMOJIS.forEach((emoji) -> message.addReaction(emoji).queue());
         message.editMessage(builder.build()).queue();
     }
 
@@ -328,12 +329,14 @@ public class SettingsCommand implements ICommand {
             this.EMOJIS.addAll(Arrays.asList(emojis));
             this.EMOJIS.add(Reactions.BACK);
             this.EMOJIS.add(Reactions.M);
+            this.EMOJIS.add(Reactions.NO_EMOTE);
         }
 
         Layer(List<String> emojis) {
             this.EMOJIS = emojis;
             this.EMOJIS.add(Reactions.BACK);
             this.EMOJIS.add(Reactions.M);
+            this.EMOJIS.add(Reactions.NO_EMOTE);
         }
     }
 

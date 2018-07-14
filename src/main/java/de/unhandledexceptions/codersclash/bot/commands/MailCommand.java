@@ -7,6 +7,7 @@ import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
+import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -14,8 +15,6 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,64 +46,89 @@ public class MailCommand implements ICommand {
             if (args.length > 1) {
                 var shardManager = event.getJDA().asBot().getShardManager();
                 Guild guild;
-                if (args[0].matches("\\d{1,18}") && (guild = shardManager.getGuildById(Long.parseLong(args[0]))) != null) {
-                    Long mailChannelId;
-                    if ((mailChannelId = database.getMailChannel(guild)) != null && mailChannelId != 0) {
-                        var mailChannel = guild.getTextChannelById(mailChannelId);
-                        if (mailChannel != null) {
-                            var builder = new EmbedBuilder();
-                            var author = event.getAuthor();
-                            String message = event.getCommand().getJoinedArgs(1);
-                            String topic = "No Topic";
-                            Matcher matcher = topicPattern.matcher(event.getCommand().getJoinedArgs());
-                            if (matcher.find()) {
-                                String found = matcher.group();
-                                message = message.replaceFirst(found, "");
-                                topic = found.replaceAll("##", "");
+                if (args[0].matches("\\d{1,18}")) {
+                    if ((guild = shardManager.getGuildById(Long.parseLong(args[0]))) != null) {
+                        Long mailChannelId;
+                        if ((mailChannelId = database.getMailChannel(guild)) != null && mailChannelId != 0) {
+                            var mailChannel = guild.getTextChannelById(mailChannelId);
+                            if (mailChannel != null) {
+                                var builder = new EmbedBuilder();
+                                var author = event.getAuthor();
+                                String message = event.getCommand().getJoinedArgs(1);
+                                String topic = "No Topic";
+                                Matcher matcher = topicPattern.matcher(event.getCommand().getJoinedArgs());
+                                if (matcher.find()) {
+                                    String found = matcher.group();
+                                    message = message.replaceFirst(found, "");
+                                    topic = found.replaceAll("##", "");
+                                }
+                                builder.setTitle("Via \"" + event.getGuild().getName() + "\" (" + event.getGuild().getId() + ")")
+                                        .setAuthor(String.format("%#s", author), null, author.getEffectiveAvatarUrl())
+                                        .setColor(member.getColor())
+                                        .setFooter("Inbox", null)
+                                        .setTimestamp(Instant.now())
+                                        .addField(topic, message, false);
+                                mailChannel.sendMessage(builder.build()).queue(
+                                        (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(),
+                                        Messages.defaultFailure(channel));
+                            } else {
+                                sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild.getName() + "`, it seems like they deleted their mail channel!").queue();
                             }
-                            builder.setTitle("Via \"" + event.getGuild().getName() + "\" (" + event.getGuild().getId() + ")")
-                                    .setAuthor(String.format("%#s", author), null, author.getEffectiveAvatarUrl())
-                                    .setColor(member.getColor())
-                                    .setFooter("Inbox", null)
-                                    .setTimestamp(Instant.now())
-                                    .addField(topic, message, false);
-                            mailChannel.sendMessage(builder.build()).queue(
-                                    (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(Messages::deleteAfterFiveSec),
-                                    Messages.defaultFailure(channel));
                         } else {
-                            sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild.getName() + "`, it seems like they deleted their mail channel!").queue();
+                            sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
                         }
                     } else {
-                        sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
+                        search(event, member, channel, args);
                     }
+                } else if (args[0].equalsIgnoreCase("noid")) {
+                    search(event, member, channel, args);
                 } else {
-                    Reactions.newYesNoMenu(event.getAuthor(), channel, "No valid id detected. Do you want to try searching the guild by name?", (msg) -> {
-                        msg.delete().queue();
-                        sendMessage(channel, Type.DEFAULT, "Please type in the name of the guild you are looking for!"
-                                + " If you find the guild you are looking for in the results, copy their id and try sending the mail again like this:\n"
-                                + "`" + Bot.getPrefix(event.getGuild().getIdLong()) + "mail <id> <message>`").queue();
-                        Reactions.newMessageWaiter(event.getAuthor(), channel, 30, (m) -> {
-                            List<String> preparedArgs = new ArrayList<>();
-                            preparedArgs.add("guild");
-                            preparedArgs.addAll(Arrays.asList(m.getContentRaw().split("\\s+")));
-                            searchCommand.onCommand(
-                                    new CommandEvent(event.getJDA(), event.getResponseNumber(), event.getMessage(), event.getCommand()),
-                                    member, channel, preparedArgs.toArray(new String[preparedArgs.size()])
-                            );
-                        });
-                    });
+                    wrongUsageMessage(channel, member, this);
                 }
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info\n\n" + this.info(member)).queue();
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
         }
     }
 
-    // TODO
+    private void search(CommandEvent event, Member member, TextChannel channel, String[] args) {
+        ShardManager shardManager = event.getJDA().asBot().getShardManager();
+        Reactions.newYesNoMenu(event.getAuthor(), channel, "No valid id detected. Do you want to try searching the guild by name?", (msg) -> {
+            msg.delete().queue();
+            sendMessage(channel, Type.QUESTION, "Please type in the name of the guild you are looking for!").queue();
+            Reactions.newMessageWaiter(event.getAuthor(), channel, 30, (m) -> {
+                List<String> guilds = searchCommand.find(shardManager, m.getContentRaw(), false);
+                if (guilds.isEmpty()) {
+                    sendMessage(channel, Type.ERROR, "Sorry, no guilds were found for this search :(\nMaybe I'm not on the guild you're looking for?").queue(Messages::deleteAfterFiveSec);
+                } else {
+                    sendMessage(channel, Type.SUCCESS, "Loading results...").queue((message) -> {
+                        searchCommand.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
+                        searchCommand.selectionDisplay(guilds, message, event.getAuthor(), new EmbedBuilder(), 10, 0, guilds.size() >= 10 ? 10 : guilds.size(), searchCommand.pages(guilds, 10), 0, (selected) -> {
+                            message.delete().queue();
+                            var matcher = searchCommand.FIND_ID.matcher(selected);
+                            matcher.find();
+                            args[0] = matcher.group().replaceAll("\\(|\\)", "");
+                            this.onCommand(event, member, channel, args);
+                        });
+                    });
+                }
+            });
+        });
+    }
+
+
     @Override
     public String info(Member member) {
-        return " ";
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
+                "`3`\nYour permission level: `" + permLevel + "`"
+                : "**Description:** Send a \"mail\" to a guild the bot is also on!\n\n"
+                + "**Usage:** `" + Bot.getPrefix(member.getGuild().getIdLong()) + "[mail|contact] <Guild-ID> <Message>`\nIf you don't have an id, replace it with \"NOID\". "
+                + "You may then search a guild by name.\nTo add a topic to your mail, put `##your-topic##` somewhere "
+                + "(replace \"your-topic\" with the topic you want).\nThis *only* works if the other guild has set a mail channel.\n\n"
+                + "**Permission Level:** `4`";
+        return ret;
     }
 }

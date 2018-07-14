@@ -81,7 +81,7 @@ public class ClearCommand implements ICommand {
     public String info(Member member) {
         int permLevel = Permissions.getPermissionLevel(member);
         String ret = permLevel < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
-                "`3`\nYour permission level: `" + permLevel + "`"
+                "`4`\nYour permission level: `" + permLevel + "`"
                 : format("**Description**: Clears up to 9999 messages at a time. Though it is recommended to use it carefully. Deleting might take a while.\n\n" +
                 "**Usage**: `%s[clear|clean|delete] <amount>` (amount must be a number between 1-9999)\n\n**Permission level**: `4`", Bot.getPrefix(member.getGuild().getIdLong()));
         return ret;
