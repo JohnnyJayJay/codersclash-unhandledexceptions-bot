@@ -97,6 +97,8 @@ public class Bot {
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
+                .put(new ScoreBoardCommand(database), "scoreboard", "sb")
+                .put(new ProfileCommand(), "profile")
                 .activate();
 
         RestAction.setPassContext(true);

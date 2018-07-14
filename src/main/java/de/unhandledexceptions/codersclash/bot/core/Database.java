@@ -211,6 +211,31 @@ public class Database {
         }
     }
 
+    public ArrayList<ScoreBoardUser> getScoreBoard(String table, String order) {
+        try (var connection = dataSource.getConnection();
+             var preparedstatement = connection.prepareStatement("SELECT * FROM "+table+" ORDER BY "+order+" DESC;")) {
+            var resultset = preparedstatement.executeQuery();
+            var list = new ArrayList<ScoreBoardUser>();
+            String prefix = "";
+            String guildid = "";
+            if (table.equals("discord_user")) {
+                prefix = "user";
+                guildid = "user_id";
+            } else {
+                prefix = "member";
+                guildid = "guild_id";
+            }
+            while (resultset.next()) {
+                list.add(new ScoreBoardUser(resultset.getString("user_id"), resultset.getString(guildid),
+                        resultset.getLong(prefix+"_xp"), resultset.getLong(prefix+"_lvl")));
+            }
+            return list;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void setUserXp(User user, long xp) {
         this.executeUpdate(updateUserXp, xp, user.getIdLong());
     }
