@@ -13,6 +13,7 @@ import java.util.Set;
  */
 public class GameFactory {
 
+    // TODO
     public static boolean createSideGame(TextChannel channel) {
         return true;
     }

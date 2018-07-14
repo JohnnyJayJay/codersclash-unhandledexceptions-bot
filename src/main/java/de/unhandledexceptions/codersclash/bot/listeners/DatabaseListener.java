@@ -3,6 +3,8 @@ package de.unhandledexceptions.codersclash.bot.listeners;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.ShardManager;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.DisconnectEvent;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.ReconnectedEvent;
@@ -14,6 +16,10 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Johnny_JayJay
@@ -84,7 +90,17 @@ public class DatabaseListener extends ListenerAdapter {
 
     private synchronized void refreshDatabase() {
         logger.warn("Database is being refreshed...");
-        // TODO verlassene Guilds entfernen
+        List<Long> expectedGuilds = database.getIds("discord_guild");
+        List<Long> actualGuilds =  shardManager.getGuildCache().stream().map(Guild::getIdLong).collect(Collectors.toList());
+        expectedGuilds.stream().filter((id) -> !actualGuilds.contains(id)).forEach(database::deleteGuild);
+        List<Long> expectedUsers = database.getIds("discord_user");
+        List<Long> actualUsers = shardManager.getUserCache().stream().map(User::getIdLong).collect(Collectors.toList());
+        expectedUsers.stream().filter((id) -> !actualUsers.contains(id)).forEach(database::deleteUser);
+        Map<Long, Long> expectedMembers = database.getMembers();
+        expectedMembers.forEach((guildId, userId) -> {
+            if (shardManager.getGuildById(guildId).getMemberById(userId) == null)
+                database.deleteMember(guildId, userId);
+        });
         shardManager.getGuildCache().forEach((guild) ->
                 guild.getMemberCache().forEach((member) ->
                         database.createMemberIfNotExists(guild.getIdLong(), member.getUser().getIdLong())));

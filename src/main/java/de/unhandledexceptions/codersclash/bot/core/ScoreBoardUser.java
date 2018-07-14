@@ -1,10 +1,12 @@
 package de.unhandledexceptions.codersclash.bot.core;
 
+// Eventuell könnte man das als Memberklasse von ScoreBoard machen
 public class ScoreBoardUser {
-    String userid;
-    String guildid;
-    long xp;
-    long lvl;
+
+    private String userid;
+    private String guildid;
+    private long xp;
+    private long lvl;
     public ScoreBoardUser(String userid, long user_xp, long user_lvl) {
         this.userid = userid;
         this.xp = user_xp;
