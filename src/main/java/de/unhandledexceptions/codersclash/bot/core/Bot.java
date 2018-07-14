@@ -88,7 +88,7 @@ public class Bot {
                 .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
-                .put(new ReportCommand(database), "report", "rep")
+                .put(new ReportCommand(database), "report", "rep", "reports")
                 .put(voteCommand, "vote")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")

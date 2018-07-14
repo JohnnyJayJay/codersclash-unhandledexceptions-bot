@@ -9,10 +9,7 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -118,8 +115,7 @@ public class SearchCommand implements ICommand {
     }
 
     public void selectionDisplay(List<String> list, Message message, User user, EmbedBuilder builder, int interval, int from, int to, int pages, int current, Consumer<String> selected) {
-        builder.setDescription("**Results for your search: " + list.size() + "**\n"
-                + "");
+        builder.setDescription("**Results for your search: " + list.size() + "**\n");
         for (int i = from; i < to; i++)
             builder.appendDescription((i + 1) + ": `" + list.get(i) + "` " + (i == current ? Reactions.ARROW_LEFT : "") + "\n");
         int currentPage;
@@ -187,8 +183,10 @@ public class SearchCommand implements ICommand {
 
     private void display(List<String> list, Message message, User user, EmbedBuilder builder, int interval, int from, int to, int pages) {
         builder.setDescription("**Results for your search: " + list.size() + "**\n");
+        builder.appendDescription("```\n");
         for (int i = from; i < to; i++)
-            builder.appendDescription((i + 1) + ": `" + list.get(i) + "`\n");
+            builder.appendDescription((i + 1) + ": " + list.get(i) + "\n");
+        builder.appendDescription("```");
         int currentPage;
         if (to < list.size()) {
             currentPage = (list.size() % interval == 0
