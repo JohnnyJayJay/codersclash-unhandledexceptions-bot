@@ -94,6 +94,7 @@ public class Bot {
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
+                .put(new ProfileCommand(), "profile")
                 .activate();
 
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),

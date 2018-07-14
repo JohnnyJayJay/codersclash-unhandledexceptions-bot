@@ -22,10 +22,9 @@ public class ProfileCommand implements ICommand {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         var nickname = ((member.getNickname()!=null) ? member.getNickname() : "none" );
         var game = ((member.getGame().getName()!=null)? member.getGame().getName() : "none" );
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss dd.MM.yyyy");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("kk:mm:ss dd.MM.yyyy");
         embedBuilder.addField("Name", member.getUser().getName(), true)
                 .addField("Nickname", nickname, true)
-                .addField("Mention", member.getAsMention(), true)
                 .addField("ID", member.getUser().getId(), true)
                 .addField("Game", game, true)
                 .addField("Joined DiscordServer", member.getJoinDate().format(dateTimeFormatter), true)

@@ -144,7 +144,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 					
 					
             sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> { 
-                Reactions.newMenu(msg, event.getAuthor(), ; 
+                // Reactions.newMenu(msg, event.getAuthor(), ;
             }); 
  
         }
