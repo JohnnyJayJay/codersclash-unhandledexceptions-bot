@@ -53,6 +53,15 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         if (!database.xpSystemActivated(event.getGuild().getIdLong()) || !event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
             return;
 
+        if (event.getMessage().getMentionedMembers().size()==1) {
+            member = event.getMessage().getMentionedMembers().get(0);
+        }
+
+        if (member.getUser().isBot()) {
+            sendMessage(channel, Type.INFO, "Bots aren't invited to the super XP Command!").queue();
+            return;
+        }
+
         long memberXp = database.getGuildXp(member);
         long userXp = database.getUserXp(member.getUser());
         long memberLevel = database.getGuildLvl(member);

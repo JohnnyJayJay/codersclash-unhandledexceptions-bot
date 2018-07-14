@@ -41,12 +41,13 @@ public class ScoreBoardCommand implements ICommand {
             int i =0;
             int i2 = 10;
             for (ScoreBoardUser user : list) {
-                System.out.println("HELLO");
                 if (i2>i) {
-                    System.out.println("AJAJA");
                     if (shardManager.getUserById(user.getUserid()).isBot()) {
                         i2++;
                     } else {
+                        if (type.equals("member")&&!member.getGuild().getId().equals(user.getGuildid())) {
+                            i2++;
+                        }
                         builder.append(shardManager.getUserById(user.getUserid()).getName() + "#" +
                                 shardManager.getUserById(user.getUserid()).getDiscriminator() + "   " +
                                 "\tLevel: " + user.getLvl() + "   " + "\tXP: " + user.getXp() + "\n");
@@ -59,11 +60,9 @@ public class ScoreBoardCommand implements ICommand {
                 var user = list.get(i3);
                 if (user.getUserid().equals(member.getUser().getId())) {
                     if (!builder.toString().contains(":arrow_right: **Your place**\n")) {
-                        System.out.println("lol: " + user.getUserid());
                         builder.append(":arrow_right: **Your place**\n" + String.valueOf(i3+1));
                     }
                 }
-                System.out.println("asdf");
             }
             embedBuilder.addField(((type.equals("member")) ? "Guild" : "User"), builder.toString(), true);
         }
