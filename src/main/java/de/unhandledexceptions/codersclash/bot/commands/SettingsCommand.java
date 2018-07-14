@@ -129,15 +129,13 @@ public class SettingsCommand implements ICommand {
                                 String prefix = msg.getContentRaw();
                                 msg.delete().queue();
                                 if (prefix.matches(CommandSettings.VALID_PREFIX) && prefix.length() <= 40) {
-                                    sendMessage(channel, Type.QUESTION, "Would you like to set `" + msg.getContentRaw() + "` as your new prefix?").queue((m) -> {
-                                        Reactions.newYesNoMenu(user, m, (reaction) -> {
-                                            m.delete().queue();
-                                            settings.setCustomPrefix(channel.getGuild().getIdLong(), prefix);
-                                            database.setPrefix(channel.getGuild().getIdLong(), prefix);
-                                            sendMessage(channel, Type.SUCCESS, "Successfully set `" + prefix + "` as the new prefix!").queue(Messages::deleteAfterFiveSec);
-                                            menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
-                                        }, (reaction) -> menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder));
-                                    });
+                                    Reactions.newYesNoMenu(user, message.getTextChannel(), "Would you like to set `" + msg.getContentRaw() + "` as your new prefix?", (m) -> {
+                                        m.delete().queue();
+                                        settings.setCustomPrefix(channel.getGuild().getIdLong(), prefix);
+                                        database.setPrefix(channel.getGuild().getIdLong(), prefix);
+                                        sendMessage(channel, Type.SUCCESS, "Successfully set `" + prefix + "` as the new prefix!").queue(Messages::deleteAfterFiveSec);
+                                        menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
+                                    }, (reaction) -> menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder));
                                 } else {
                                     sendMessage(channel, Type.ERROR, "Your prefix `" + prefix + "` is not valid. Remember that a valid prefix cannot contain "
                                             + "any of these: `? * + ^ \\ $`\nAlso, it cannot be longer than 40 characters.").queue(Messages::deleteAfterFiveSec);
@@ -182,14 +180,12 @@ public class SettingsCommand implements ICommand {
                             message.editMessage(builder.build()).queue();
                             Reactions.newMessageWaiter(user, message.getChannel(), 30, (string) -> string.matches(Regex.CHANNEL_MENTION), (msg) -> {
                                 msg.delete().queue();
-                                sendMessage(message.getTextChannel(), Type.QUESTION, "Do you want to set " + msg.getContentRaw() + " as the new mail channel?").queue((m) -> {
-                                    Reactions.newYesNoMenu(user, m, (reaction) -> {
-                                        m.delete().queue();
-                                        database.setMailChannel(message.getGuild().getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
-                                        sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
-                                        menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
-                                    }, (v3) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
-                                });
+                                Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set " + msg.getContentRaw() + " as the new mail channel?", (m) -> {
+                                    m.delete().queue();
+                                    database.setMailChannel(message.getGuild().getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
+                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
+                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
+                                }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
                             }, (v3) -> {
                                 sendMessage(message.getChannel(), Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
                                 menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
@@ -216,18 +212,16 @@ public class SettingsCommand implements ICommand {
                                 }
                             });
                         } else if (emoji.equals(Reactions.CLOSED_INBOX)) {
-                            sendMessage(message.getTextChannel(), Type.QUESTION, "Do you want to reset your mail channel and therefore deactivate the mail function?").queue((msg) -> {
-                                Reactions.newYesNoMenu(user, msg, (reaction) -> {
-                                    msg.delete().queue();
-                                    database.setMailChannel(message.getGuild().getIdLong(), 0);
-                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
-                                    menu(user, message, Layer.MAIN_MENU, current, builder);
-                                }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
-                            });
+                            Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to reset your mail channel and therefore deactivate the mail function?", (msg) -> {
+                                msg.delete().queue();
+                                database.setMailChannel(message.getGuild().getIdLong(), 0);
+                                sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
+                                menu(user, message, Layer.MAIN_MENU, current, builder);
+                            }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                         }
                         break;
                 }
-            }, current.EMOJIS, true);
+            }, current.EMOJIS);
         });
     }
 
@@ -305,6 +299,8 @@ public class SettingsCommand implements ICommand {
                         + Reactions.M + " Main Menu\n"
                         + Reactions.NO_EMOTE + " Exit");
                 break;
+            case AUTO_CHANNEL:
+                builder.setDescription("Autochannel").setDescription(""); // TODO
         }
         layer.EMOJIS.forEach((emoji) -> message.addReaction(emoji).queue());
         message.editMessage(builder.build()).queue();
