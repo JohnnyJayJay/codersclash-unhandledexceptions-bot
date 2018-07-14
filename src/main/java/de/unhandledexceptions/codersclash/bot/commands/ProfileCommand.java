@@ -38,18 +38,12 @@ public class ProfileCommand implements ICommand {
         if (commandEvent.getMessage().getMentionedMembers().size() == 1) {
             target = commandEvent.getMessage().getMentionedMembers().get(0);
         }
+        commandEvent.getMessage().delete().queue();
         String nickname = ((target.getNickname() != null) ? target.getNickname() : "none");
-        String image = ((target.getGame().isRich()) ? target.getGame().asRichPresence().getLargeImage().getUrl() : null);
         String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
         String gametype = "Using Discord";
-        String status = null;
-        if (target.getGame().isRich() && target.getGame().getType() == Game.GameType.LISTENING) {
-            game = "**" + target.getGame().asRichPresence().getDetails() + "** by *" + target.getGame().asRichPresence().getState() + "*";
-        } else if (target.getGame().isRich() && target.getGame().getType() == Game.GameType.STREAMING) {
-            game = "**" + target.getGame().asRichPresence().getName() + "** playing *" + target.getGame().asRichPresence().getDetails() + "*";
-        } else if (target.getGame().isRich()) {
-            game = target.getGame().asRichPresence().getDetails();
-        }
+        String image = null;
+        String status;
         if (target.getGame() != null) {
             if (target.getGame().getType() == Game.GameType.DEFAULT) {
                 gametype = "Playing";
@@ -59,6 +53,14 @@ public class ProfileCommand implements ICommand {
                 gametype = "Streaming";
             } else if (target.getGame().getType() == Game.GameType.WATCHING) {
                 gametype = "Watching";
+            }
+            image = ((target.getGame().isRich()) ? target.getGame().asRichPresence().getLargeImage().getUrl() : null);
+            if (target.getGame().isRich() && target.getGame().getType() == Game.GameType.LISTENING) {
+                game = "**" + target.getGame().asRichPresence().getDetails() + "** by *" + target.getGame().asRichPresence().getState() + "*";
+            } else if (target.getGame().isRich() && target.getGame().getType() == Game.GameType.STREAMING) {
+                game = "**" + target.getGame().asRichPresence().getName() + "** playing *" + target.getGame().asRichPresence().getDetails() + "*";
+            } else if (target.getGame().isRich()) {
+                game = "**" + target.getGame().asRichPresence().getName() + "** :arrow_right: " + target.getGame().asRichPresence().getDetails();
             }
         }
 
