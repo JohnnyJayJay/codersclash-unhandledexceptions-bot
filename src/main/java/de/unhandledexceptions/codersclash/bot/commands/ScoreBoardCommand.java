@@ -10,14 +10,12 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.util.ArrayList;
-
 public class ScoreBoardCommand implements ICommand {
 
     Database database;
 
     public ScoreBoardCommand(Database database) {
-        this.database= database;
+        this.database = database;
     }
 
     @Override

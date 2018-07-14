@@ -187,10 +187,8 @@ public class SearchCommand implements ICommand {
 
     private void display(List<String> list, Message message, User user, EmbedBuilder builder, int interval, int from, int to, int pages) {
         builder.setDescription("**Results for your search: " + list.size() + "**\n");
-        builder.appendDescription("```\n");
         for (int i = from; i < to; i++)
             builder.appendDescription((i + 1) + ": `" + list.get(i) + "`\n");
-        builder.appendDescription("```");
         int currentPage;
         if (to < list.size()) {
             currentPage = (list.size() % interval == 0

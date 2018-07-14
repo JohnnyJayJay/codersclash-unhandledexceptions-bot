@@ -24,7 +24,7 @@ public class Database {
     private HikariConfig config;
     private HikariDataSource dataSource;
 
-    private String selectFromGuild, selectFromMember, selectFromUser,
+    private String selectFromGuild, selectFromMember, selectFromUser, selectAllGuilds, selectAllUsers, selectAllMembers,
             countUsers, countGuilds, countMembers,
             insertUser, insertGuild, insertMember,
             updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl, updatePrefix, updateMailChannel, updateMaxReports,
@@ -81,11 +81,11 @@ public class Database {
                 "CREATE TABLE IF NOT EXISTS discord_guild (reports_until_ban SMALLINT DEFAULT 3, xp_system_activated BIT(1) DEFAULT 1,prefix VARCHAR(30),guild_id BIGINT NOT " +
                         "NULL,mail_channel BIGINT,auto_channel BIGINT,PRIMARY KEY (guild_id));",
                 "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT DEFAULT 0,user_lvl INT DEFAULT 1, PRIMARY KEY (user_id));",
-                "CREATE TABLE IF NOT EXISTS discord_member (member_id BIGINT NOT NULL AUTO_INCREMENT, guild_id BIGINT NOT NULL REFERENCES discord_guild (guild_id) ON DELETE CASCADE," +
-                        "user_id BIGINT NOT NULL REFERENCES discord_user (user_id) ON DELETE CASCADE," +
-                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 1,PRIMARY KEY (user_id, guild_id), INDEX (member_id));",
-                "CREATE TABLE IF NOT EXISTS reports (member_id BIGINT NOT NULL PRIMARY KEY,report1 TEXT,report2 TEXT,report3 TEXT," +
-                        "report4 TEXT,report5 TEXT,report6 TEXT,report7 TEXT,report8 TEXT,report9 TEXT,report10 TEXT,CONSTRAINT FOREIGN KEY (member_id) REFERENCES discord_member (member_id) ON DELETE CASCADE);"
+                "CREATE TABLE IF NOT EXISTS discord_member (member_id BIGINT NOT NULL AUTO_INCREMENT, guild_id BIGINT NOT NULL,user_id BIGINT NOT NULL," +
+                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 1,PRIMARY KEY (user_id, guild_id),FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id) ON DELETE CASCADE,"
+                        + "FOREIGN KEY (user_id) REFERENCES discord_user (user_id), INDEX (member_id));",
+                "CREATE TABLE IF NOT EXISTS reports (member_id BIGINT NOT NULL,report1 TEXT,report2 TEXT,report3 TEXT," +
+                        "report4 TEXT,report5 TEXT,report6 TEXT,report7 TEXT,report8 TEXT,report9 TEXT,report10 TEXT,PRIMARY KEY (member_id), FOREIGN KEY (member_id) REFERENCES discord_member (member_id) ON DELETE CASCADE);"
         };
         this.selectFromGuild = "SELECT * FROM discord_guild WHERE guild_id = ?;";
         this.selectFromUser = "SELECT * FROM discord_user WHERE user_id = ?;";
@@ -106,6 +106,10 @@ public class Database {
         this.updateMailChannel = "UPDATE discord_guild SET mail_channel = ? WHERE guild_id = ?;";
         this.updateMaxReports = "UPDATE discord_guild SET reports_until_ban = ? WHERE guild_id = ?;";
         this.updateXpSystem = "UPDATE discord_guild SET xp_system_activated = ? WHERE guild_id = ?;";
+        this.selectAllGuilds = "SELECT guild_id FROM discord_guild;";
+        this.selectAllUsers = "SELECT user_id FROM discord_user";
+        this.selectAllMembers = "SELECT guild_id, user_id FROM discord_member";
+
         logger.info("Statement preparation successful.");
     }
 
@@ -145,6 +149,10 @@ public class Database {
 
     public void deleteGuild(long guildId) {
         this.executeUpdate("DELETE FROM discord_guild WHERE guild_id = ?;", guildId);
+    }
+
+    public void deleteUser(long userId) {
+        this.executeUpdate("DELETE FROM discord_user WHERE user_id = ?;", userId);
     }
 
     public void setPrefix(long guildId, String prefix) {
@@ -211,7 +219,39 @@ public class Database {
         }
     }
 
-    public ArrayList<ScoreBoardUser> getScoreBoard(String table, String order) {
+    public Map<Long, Long> getMembers() {
+        Map<Long, Long> ret = new HashMap<>();
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(selectAllMembers)) {
+            var resultSet = statement.executeQuery();
+            while (resultSet.next())
+                ret.put(resultSet.getLong(1), resultSet.getLong(2));
+        } catch (SQLException e) {
+            logger.error("An SQLException occurred while getting all members from datasource: ", e);
+        }
+        return ret;
+    }
+
+    public List<Long> getIds(String table) {
+        String statement = null;
+        if (table.equals("discord_guild"))
+            statement = selectAllGuilds;
+        else if (table.equals("discord_user"))
+            statement = selectAllUsers;
+
+        List<Long> ret = new ArrayList<>();
+        try (var connection = dataSource.getConnection();
+             var prepStatement = connection.prepareStatement(statement)) {
+            var resultSet = prepStatement.executeQuery();
+            while (resultSet.next())
+                ret.add(resultSet.getLong(1));
+        } catch (SQLException e) {
+            logger.error("An SQLException occurred while getting all " + table + " ids from datasource: ", e);
+        }
+        return ret;
+    }
+
+    public List<ScoreBoardUser> getScoreBoard(String table, String order) {
         try (var connection = dataSource.getConnection();
              var preparedstatement = connection.prepareStatement("SELECT * FROM "+table+" ORDER BY "+order+" DESC;")) {
             var resultset = preparedstatement.executeQuery();

@@ -37,8 +37,9 @@ public class ProfileCommand implements ICommand {
                 "Profile", true, embedBuilder).queue();
     }
 
+    // TODO
     @Override
     public String info(Member member) {
-        return null;
+        return " ";
     }
 }

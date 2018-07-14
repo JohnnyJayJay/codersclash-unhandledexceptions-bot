@@ -1,5 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.util;
 
+import de.unhandledexceptions.codersclash.bot.core.Main;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -9,17 +10,16 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
 public class Reactions {
-
     // weitere Emotes hier hinzufügen
     public static final String YES_EMOTE = "\u2705";
     public static final String NO_EMOTE = "\u274C";
@@ -116,7 +116,6 @@ public class Reactions {
         private static final long NO_CHANNEL = -1;
         private static final long NO_GUILD = -2;
 
-        private static final Timer timer = new Timer();
         // TODO mit einem Consumer für mehrere Nachrichten (andThen)
         //private final int howMany;
         private final long userId;
@@ -126,16 +125,12 @@ public class Reactions {
         private boolean receivedMessage;
 
         public MessageListener(JDA jda, long userId, long channelId, int waitSeconds, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (!receivedMessage) {
-                        jda.removeEventListener(this);
-                        afterExpiration.accept(null);
-                    }
-                    this.cancel();
+            Main.scheduleTask(() -> {
+                if (!receivedMessage) {
+                    jda.removeEventListener(this);
+                    afterExpiration.accept(null);
                 }
-            }, waitSeconds * 1000);
+            }, waitSeconds, TimeUnit.SECONDS);
             this.userId = userId;
             this.channelId = channelId;
             this.messageReceived = messageReceived;
