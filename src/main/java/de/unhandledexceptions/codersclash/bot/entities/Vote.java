@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author oskar
@@ -18,6 +19,18 @@ public class Vote {
     private VoteCreator voteCreator;
     private Guild guild;
     private TextChannel setupChannel, targetChannel;
+    private long time;
+    private TimeUnit timeUnit;
+
+    public Vote(Set<VoteAnswer> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel, long time)
+    {
+        this.voteAnswers = voteAnswers;
+        this.voteCreator = voteCreator;
+        this.guild = guild;
+        this.setupChannel = setupChannel;
+        this.targetChannel = targetChannel;
+        this.time = time;
+    }
 
     public Vote(Set<VoteAnswer> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
     {
@@ -62,6 +75,11 @@ public class Vote {
         return voteAnswers;
     }
 
+    public long getTime()
+    {
+        return time;
+    }
+
     public VoteCreator getVoteCreator()
     {
         return voteCreator;
@@ -102,5 +120,18 @@ public class Vote {
         this.setupChannel = setupChannel;
     }
 
+    public void setTime(long time)
+    {
+        this.time = time;
+    }
 
+    public TimeUnit getTimeUnit()
+    {
+        return timeUnit;
+    }
+
+    public void setTimeUnit(TimeUnit timeUnit)
+    {
+        this.timeUnit = timeUnit;
+    }
 }

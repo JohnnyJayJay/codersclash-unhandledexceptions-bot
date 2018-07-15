@@ -6,6 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.entities.Vote;
 import de.unhandledexceptions.codersclash.bot.entities.VoteCreator;
 import de.unhandledexceptions.codersclash.bot.entities.VoteState;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -30,6 +31,9 @@ import java.util.concurrent.TimeUnit;
 public class VoteClass extends ListenerAdapter implements ICommand {
 
     private Map<Guild, Vote> votes;
+    private GuildMessageReceivedEvent event;
+    private final String[] emojis = {Reactions.DAY, Reactions.HOUR, Reactions.MINUTE};
+    private final long MAX_TIME = 604800000;
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args)
@@ -60,41 +64,14 @@ public class VoteClass extends ListenerAdapter implements ICommand {
         
         votes.put(guild, vote);
 
-        final String[] emojis = {Reactions.DAY, Reactions.HOUR, Reactions.MINUTE};
+        sendTimeMessage(vote);
 
-        final String message =
-                "\u23F2 When should the vote end?\n\n" +
-                        emojis[0] + " Day\n" +
-                        emojis[1] + " Hour\n" +
-                        emojis[2] + " Minute";
-
-        sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
-            Reactions.newMenu(member.getUser(), msg, reaction -> {
-                    if (reaction.equals(emojis[0])){
-                        msg.delete().queue();
-                        timeSet(event, TimeUnit.DAYS, msg);
-                    }
-
-                    if (reaction.equals(emojis[1]))
-                    {
-                        msg.delete().queue();
-                        timeSet(event, TimeUnit.HOURS, msg);
-                    }
-
-                    if (reaction.equals(emojis[2]))
-                    {
-                        msg.delete().queue();
-                        timeSet(event, TimeUnit.MINUTES, msg);
-                    }
-
-                    }, Arrays.asList(emojis));
-        });
     }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event)
     {
-
+        this.event = event;
         Guild guild = event.getGuild();
         TextChannel channel = event.getChannel();
 
@@ -111,21 +88,41 @@ public class VoteClass extends ListenerAdapter implements ICommand {
 
         VoteCreator creator = vote.getVoteCreator();
 
+        if (creator.getState() == VoteState.TIME)
+        {
+
+            if (!event.getMessage().getContentRaw().matches("\\d{1,6}"))
+            {
+                sendMessage(channel, Type.ERROR, "Just insert digits please or your number is too long. (Max is 6 digits)!").queue();
+                return;
+            }
+
+            long time = Long.getLong(event.getMessage().getContentRaw());
+
+            if (convertTime(vote.getTimeUnit(), time) > MAX_TIME)
+            {
+                sendMessage(channel, Type.ERROR, "Votes can't go longer then 1 week!").queue();
+                return;
+            }
+
+        }
+
         if (creator.getState() == VoteState.CHANNEL)
         {
 
             if (event.getMessage().getMentionedChannels().isEmpty())
             {
-                sendMessage(channel, Type.ERROR, "You need to mention a channel! (#channel)").queue();
+                sendMessage(channel, Messages.Type.ERROR, "You need to mention a channel! (#channel)").queue();
                 return;
             }
 
+            TextChannel targetChannel = event.getMessage().getMentionedChannels().get(0);
 
+            vote.setTargetChannel(targetChannel);
+            sendMessage(channel, Messages.Type.SUCCESS, String.format("Successfully set <#%s> as channel!", targetChannel.getId())).queue();
 
-        }
-
-        if (creator.getState() == VoteState.TIME)
-        {
+            sendPossibilitieMessage();
+            vote.getVoteCreator().setState(VoteState.POSSIBILITIES);
 
         }
 
@@ -135,8 +132,9 @@ public class VoteClass extends ListenerAdapter implements ICommand {
         }
     }
 
-    private int time(TimeUnit timeUnit, int time)
+    private long convertTime(TimeUnit timeUnit, long time)
     {
+
         if (timeUnit == TimeUnit.MINUTES)
             return time * 60000;
 
@@ -149,10 +147,51 @@ public class VoteClass extends ListenerAdapter implements ICommand {
         return 0;
     }
 
-    private void timeSet(GuildMessageReceivedEvent event, TimeUnit timeUnit, Message msg)
+    private void sendPossibilitieMessage()
     {
-        msg.delete().queue();
-        event.getChannel().sendMessage(timeUnit  + " " + time(timeUnit, 1)).queue();
+
+    }
+
+    private void sendTimeMessage(Vote vote)
+    {
+        final String message =
+                "\u23F2 When should the vote end?\n\n" +
+                        emojis[0] + " Day\n" +
+                        emojis[1] + " Hour\n" +
+                        emojis[2] + " Minute";
+
+
+        sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
+            Reactions.newMenu(event.getMember().getUser(), msg, reaction -> {
+
+                msg.delete().queue();
+
+                switch (reaction)
+                {
+                    case Reactions.DAY:
+                        vote.setTimeUnit(TimeUnit.DAYS);
+                        break;
+
+                    case Reactions.HOUR:
+                        vote.setTimeUnit(TimeUnit.HOURS);
+                        break;
+
+                    case Reactions.MINUTE:
+                        vote.setTimeUnit(TimeUnit.MINUTES);
+                        break;
+                }
+            }, Arrays.asList(emojis));
+        });
+    }
+
+    private void sendChannelMessage()
+    {
+
+    }
+
+    private void sendFinishMessage()
+    {
+
     }
 
 }
