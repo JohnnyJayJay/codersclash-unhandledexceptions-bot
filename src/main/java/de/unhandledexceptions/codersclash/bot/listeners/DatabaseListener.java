@@ -98,8 +98,8 @@ public class DatabaseListener extends ListenerAdapter {
         expectedUsers.stream().filter((id) -> !actualUsers.contains(id)).forEach(database::deleteUser);
         Map<Long, Long> expectedMembers = database.getMembers();
         expectedMembers.forEach((guildId, userId) -> {
-            if (shardManager.getGuildById(guildId).getMemberById(userId) == null)
-                database.deleteMember(guildId, userId);
+          /*FIXME  if (shardManager.getGuildById(guildId).getMemberById(userId) == null)
+                database.deleteMember(guildId, userId);*/
         });
         shardManager.getGuildCache().forEach((guild) ->
                 guild.getMemberCache().forEach((member) ->
