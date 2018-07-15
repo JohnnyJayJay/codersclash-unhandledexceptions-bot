@@ -2,15 +2,20 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -19,9 +24,6 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMes
 
 public class SearchCommand implements ICommand {
 
-    public final List<String> SELECTION_DISPLAY_REACTIONS = List.of(Reactions.ARROW_UP, Reactions.ARROW_DOWN,
-            Reactions.DOUBLE_ARROW_UP, Reactions.DOUBLE_ARROW_DOWN, Reactions.YES_EMOTE, Reactions.NO_EMOTE);
-    public final List<String> DISPLAY_REACTIONS = List.of(Reactions.DOUBLE_ARROW_UP, Reactions.DOUBLE_ARROW_DOWN, Reactions.NO_EMOTE);
     public final Pattern FIND_ID = Pattern.compile("\\(\\d+\\)");
 
     @Override
@@ -41,8 +43,8 @@ public class SearchCommand implements ICommand {
                         builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                         sendMessage(channel, Type.SUCCESS, "Loading results...")
                                 .queue((m) -> {
-                                    DISPLAY_REACTIONS.forEach((reaction) -> m.addReaction(reaction).queue());
-                                    display(display, m, event.getAuthor(), builder, 10, 0, display.size() >= 10 ? 10 : display.size(), pages(display, 10));
+                                    ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> m.addReaction(reaction).queue());
+                                    ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
                                 }, Messages.defaultFailure(channel));
                     }
                 });
@@ -52,17 +54,17 @@ public class SearchCommand implements ICommand {
                 List<String> display = find(shardmanager, name.toLowerCase(), false);
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((m) -> {
-                    DISPLAY_REACTIONS.forEach((reaction) -> m.addReaction(reaction).queue());
-                    display(display, m, event.getAuthor(), builder, 10, 0, display.size() >= 10 ? 10 : display.size(), pages(display, 10));
+                    ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> m.addReaction(reaction).queue());
+                    ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
                 }, Messages.defaultFailure(channel));
             } else if (args[0].equalsIgnoreCase("display") && args[1].matches("(?i)((guilds)|(users))")) {
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((msg) -> {
                     List<String> display = args[1].equalsIgnoreCase("guilds")
-                            ? shardmanager.getGuildCache().stream().map((guild) -> String.format("%s (%d)", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
-                            : shardmanager.getUserCache().stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).collect(Collectors.toList());
-                    SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> msg.addReaction(reaction).queue());
-                    selectionDisplay(display, msg, event.getAuthor(), builder, 15, 0, display.size() >= 15 ? 15 : display.size(), pages(display, 15), 0, (id) -> {});
+                            ? shardmanager.getGuildCache().stream().map((guild) -> String.format("`%s (%d)`", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
+                            : shardmanager.getUserCache().stream().map((user) -> String.format("`%#s (%d)`", user, user.getIdLong())).collect(Collectors.toList());
+                    ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> msg.addReaction(reaction).queue());
+                    ListDisplay.displayList(display, msg, event.getAuthor(), 15, (v) -> msg.delete().queue());
                 });
             } else {
                 wrongUsageMessage(channel, member, this);
@@ -94,7 +96,7 @@ public class SearchCommand implements ICommand {
                 shardmanager.getUserCache().stream().filter((user) -> user.getName().toLowerCase().contains(finalName)).forEach(users::add);
                 users.addAll(withDiscriminator);
             }
-            users.stream().map((user) -> String.format("%#s (%d)", user, user.getIdLong())).forEach(ret::add);
+            users.stream().map((user) -> String.format("%d: `%#s (%d)`", (users.indexOf(user) + 1), user, user.getIdLong())).forEach(ret::add);
         } else {
             List<Guild> guilds = new ArrayList<>();
             for (var jda : shardmanager.getShardCache()) {
@@ -103,119 +105,9 @@ public class SearchCommand implements ICommand {
             String finalName = name;
             shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().startsWith(finalName) && !guild.getName().equalsIgnoreCase(finalName)).forEach(guilds::add);
             shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().contains(finalName) && !guild.getName().equalsIgnoreCase(finalName)).forEach(guilds::add);
-            guilds.stream().map((guild) -> String.format("%s (%d)", guild.getName(), guild.getIdLong())).forEach(ret::add);
+            guilds.stream().map((guild) -> String.format("%d: `%s (%d)` ", (guilds.indexOf(guild) + 1), guild.getName(), guild.getIdLong())).forEach(ret::add);
         }
         return ret;
-    }
-
-    public int pages(List list, int interval) {
-        return (list.size() % interval == 0
-                ? list.size() / interval
-                : list.size() / interval + 1);
-    }
-
-    public void selectionDisplay(List<String> list, Message message, User user, EmbedBuilder builder, int interval, int from, int to, int pages, int current, Consumer<String> selected) {
-        builder.setDescription("**Results for your search: " + list.size() + "**\n");
-        for (int i = from; i < to; i++)
-            builder.appendDescription((i + 1) + ": `" + list.get(i) + "` " + (i == current ? Reactions.ARROW_LEFT : "") + "\n");
-        int currentPage;
-        if (to < list.size()) {
-            currentPage = (list.size() % interval == 0
-                    ? (list.size() + to) / interval
-                    : (list.size() + to) / interval + 1) - pages;
-        } else
-            currentPage = pages;
-
-        builder.setFooter("Page " + currentPage + " of " + pages, null);
-        message.editMessage(builder.build()).queue();
-        Reactions.newMenu(user, message, (emoji) -> {
-            switch (emoji) {
-                case Reactions.ARROW_UP:
-                    if (current == from) {
-                        if (from == 0) {
-                            selectionDisplay(list, message, user, builder, interval, from, to, pages, current, selected);
-                        } else if (from - interval >= 0) {
-                            selectionDisplay(list, message, user, builder, interval, from - interval, from, pages, current - 1, selected);
-                        } else {
-                            selectionDisplay(list, message, user, builder, interval, 0, from, pages, current - 1, selected);
-                        }
-                    } else {
-                        selectionDisplay(list, message, user, builder, interval, from, to, pages, current - 1, selected);
-                    }
-                    break;
-                case Reactions.ARROW_DOWN:
-                    if (current == to - 1) {
-                        if (to == list.size()) {
-                            selectionDisplay(list, message, user, builder, interval, from, to, pages, current, selected);
-                        } else if (to + interval <= list.size()) {
-                            selectionDisplay(list, message, user, builder, interval, to, to + interval, pages, current + 1, selected);
-                        } else {
-                            selectionDisplay(list, message, user, builder, interval, to, list.size(), pages, current + 1, selected);
-                        }
-                    } else {
-                        selectionDisplay(list, message, user, builder, interval, from, to, pages, current + 1, selected);
-                    }
-                    break;
-                case Reactions.DOUBLE_ARROW_UP:
-                    if (from == 0) {
-                        selectionDisplay(list, message, user, builder, interval, from, to, pages, 0, selected);
-                    } else if (from - interval >= 0) {
-                        selectionDisplay(list, message, user, builder, interval, from - interval, from, pages, current - interval, selected);
-                    } else {
-                        selectionDisplay(list, message, user, builder, interval, 0, from, pages, (current - interval < 0 ? 0 : current - interval), selected);
-                    }
-                    break;
-                case Reactions.DOUBLE_ARROW_DOWN:
-                    if (to == list.size()) {
-                        selectionDisplay(list, message, user, builder, interval, from, to, pages, list.size() - 1, selected);
-                    } else if (to + interval <= list.size()) {
-                        selectionDisplay(list, message, user, builder, interval, to, to + interval, pages, current + interval, selected);
-                    } else {
-                        selectionDisplay(list, message, user, builder, interval, to, list.size(), pages, (current + interval >= list.size() ? list.size() - 1 : current + interval), selected);
-                    }
-                    break;
-                case Reactions.YES_EMOTE:
-                    selected.accept(list.get(current));
-                    break;
-            }
-        }, SELECTION_DISPLAY_REACTIONS);
-    }
-
-    private void display(List<String> list, Message message, User user, EmbedBuilder builder, int interval, int from, int to, int pages) {
-        builder.setDescription("**Results for your search: " + list.size() + "**\n");
-        builder.appendDescription("```\n");
-        for (int i = from; i < to; i++)
-            builder.appendDescription((i + 1) + ": " + list.get(i) + "\n");
-        builder.appendDescription("```");
-        int currentPage;
-        if (to < list.size()) {
-            currentPage = (list.size() % interval == 0
-                    ? (list.size() + to) / interval
-                    : (list.size() + to) / interval + 1) - pages;
-        } else
-            currentPage = pages;
-
-        builder.setFooter("Page " + currentPage + " of " + pages, null);
-        message.editMessage(builder.build()).queue();
-        Reactions.newMenu(user, message, (emoji) -> {
-            if (emoji.equals(Reactions.DOUBLE_ARROW_DOWN)) {
-                if (to == list.size()) {
-                    display(list, message, user, builder, interval, from, to, pages);
-                } else if (to + interval <= list.size()) {
-                    display(list, message, user, builder, interval, to, to + interval, pages);
-                } else {
-                    display(list, message, user, builder, interval, to, list.size(), pages);
-                }
-            } else if (emoji.equals(Reactions.DOUBLE_ARROW_UP)) {
-                if (from == 0) {
-                    display(list, message, user, builder, interval, from, to, pages);
-                } else if (from - interval >= 0) {
-                    display(list, message, user, builder, interval, from - interval, from, pages);
-                } else {
-                    display(list, message, user, builder, interval, 0, from, pages);
-                }
-            }
-        }, DISPLAY_REACTIONS);
     }
 
 

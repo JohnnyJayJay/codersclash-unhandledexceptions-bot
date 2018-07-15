@@ -1,30 +1,22 @@
 package de.unhandledexceptions.codersclash.bot.commands;
 
-import ch.qos.logback.core.util.TimeUtil;
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
-import static java.util.concurrent.TimeUnit.*;
 
 /**
  * @author oskar

@@ -82,8 +82,8 @@ public class Database {
                         "NULL,mail_channel BIGINT,auto_channel BIGINT,PRIMARY KEY (guild_id));",
                 "CREATE TABLE IF NOT EXISTS discord_user (user_id BIGINT NOT NULL,user_xp INT DEFAULT 0,user_lvl INT DEFAULT 1, PRIMARY KEY (user_id));",
                 "CREATE TABLE IF NOT EXISTS discord_member (member_id BIGINT NOT NULL AUTO_INCREMENT, guild_id BIGINT NOT NULL,user_id BIGINT NOT NULL," +
-                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 1,PRIMARY KEY (user_id, guild_id),FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id) ON DELETE CASCADE,"
-                        + "FOREIGN KEY (user_id) REFERENCES discord_user (user_id), INDEX (member_id));",
+                        "member_xp INT DEFAULT 0,member_lvl INT DEFAULT 1,permission_lvl SMALLINT DEFAULT 1,UNIQUE (user_id, guild_id),FOREIGN KEY (guild_id) REFERENCES discord_guild (guild_id) ON DELETE CASCADE,"
+                        + "FOREIGN KEY (user_id) REFERENCES discord_user (user_id), PRIMARY KEY (member_id));",
                 "CREATE TABLE IF NOT EXISTS reports (member_id BIGINT NOT NULL,report1 TEXT,report2 TEXT,report3 TEXT," +
                         "report4 TEXT,report5 TEXT,report6 TEXT,report7 TEXT,report8 TEXT,report9 TEXT,report10 TEXT,PRIMARY KEY (member_id), FOREIGN KEY (member_id) REFERENCES discord_member (member_id) ON DELETE CASCADE);"
         };
@@ -108,7 +108,7 @@ public class Database {
         this.updateXpSystem = "UPDATE discord_guild SET xp_system_activated = ? WHERE guild_id = ?;";
         this.selectAllGuilds = "SELECT guild_id FROM discord_guild;";
         this.selectAllUsers = "SELECT user_id FROM discord_user";
-        this.selectAllMembers = "SELECT guild_id, user_id FROM discord_member";
+        this.selectAllMembers = "SELECT guild_id, user_id FROM discord_member;";
 
         logger.info("Statement preparation successful.");
     }
@@ -219,13 +219,21 @@ public class Database {
         }
     }
 
-    public Map<Long, Long> getMembers() {
-        Map<Long, Long> ret = new HashMap<>();
+    public Map<Long, Set<Long>> getMembers() {
+        Map<Long, Set<Long>> ret = new HashMap<>();
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(selectAllMembers)) {
             var resultSet = statement.executeQuery();
-            while (resultSet.next())
-                ret.put(resultSet.getLong(1), resultSet.getLong(2));
+            long guildId;
+            while (resultSet.next()) {
+                guildId = resultSet.getLong(1);
+                if (ret.containsKey(guildId)) {
+                    ret.get(guildId).add(resultSet.getLong(2));
+                } else {
+                    ret.put(guildId, new HashSet<>());
+                    ret.get(guildId).add(resultSet.getLong(2));
+                }
+            }
         } catch (SQLException e) {
             logger.error("An SQLException occurred while getting all members from datasource: ", e);
         }
