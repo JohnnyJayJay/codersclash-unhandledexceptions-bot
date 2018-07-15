@@ -104,17 +104,17 @@ public class DatabaseListener extends ListenerAdapter {
         Map<Long, Set<Long>> expectedMembers = database.getMembers();
         logger.debug("Expected members: " + expectedMembers);
         expectedMembers.forEach((guildId, userIds) -> {
-            logger.debug("GuildID: " + guildId + " Users: " + userIds);
-            if (shardManager.getGuildById(guildId) == null) {
-                logger.debug("Guild wird gelöscht");
-                database.deleteGuild(guildId);
-            } else {
-                userIds.stream().filter((userId) -> shardManager.getGuildById(guildId).getMemberById(userId) == null).forEach((userId) -> {
-                    database.deleteMember(guildId, userId);
-                    logger.debug("Member mit id " + userId + " wird gelöscht");
+                    logger.debug("GuildID: " + guildId + " Users: " + userIds);
+                    if (shardManager.getGuildById(guildId) == null) {
+                        logger.debug("Guild wird gelöscht");
+                        database.deleteGuild(guildId);
+                    } else {
+                        userIds.stream().filter((userId) -> shardManager.getGuildById(guildId).getMemberById(userId) == null).forEach((userId) -> {
+                            database.deleteMember(guildId, userId);
+                            logger.debug("Member mit id " + userId + " wird gelöscht");
+                        });
+                    }
                 });
-            }
-        });
         logger.debug("Inserting new Guilds and members");
         shardManager.getGuildCache().forEach((guild) ->
                 guild.getMemberCache().forEach((member) ->

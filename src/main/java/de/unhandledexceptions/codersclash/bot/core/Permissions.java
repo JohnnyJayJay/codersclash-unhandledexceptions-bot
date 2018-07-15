@@ -35,7 +35,7 @@ public class Permissions implements ICommand {
 
         var role = Roles.getTryCatchRole(event.getGuild());
         if (role == null) {
-            guild.getController().createRole().setName("try-catch").setColor(Color.GREEN).setPermissions(Permission.EMPTY_PERMISSIONS).queue(
+            guild.getController().createRole().setName("try-catch").setColor(Color.RED).setMentionable(true).setPermissions(Permission.EMPTY_PERMISSIONS).queue(
                     (newRole) -> sendMessage(channel, Type.INFO, "A role \"try-catch\" has been created. Only members of this role can manage permissions concerning commands of " +
                             "try-catch-bot. Be careful, members with this role have full control about try-catch-permissions!").queue(), Messages.defaultFailure(channel));
         } else if (!member.getRoles().contains(role)) {

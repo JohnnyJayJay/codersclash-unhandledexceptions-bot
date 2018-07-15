@@ -21,7 +21,8 @@ public class Config {
     private final long[] BOT_OWNERS = {261083609148948488L,234343108773412864L,226011931935375360L,138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
-    private final String ICON_URL = "https://i.imgur.com/X7je2jH.png";
+    private final String ICON_URL = "https://i.imgur.com/h5eT1kd.png";
+    private final String DEFAULT_PREFIX = "tc!";
     private final long COMMAND_COOLDOWN = 0;
 
     private Path file; // config.json Datei
@@ -77,7 +78,7 @@ public class Config {
                 .key("NAME").value(BOT_NAME)
                 .key("ICON").value(ICON_URL).endObject()
                 .key("TOKEN").value(null)
-                .key("DEFAULT_PREFIX").value(null)
+                .key("DEFAULT_PREFIX").value(DEFAULT_PREFIX)
                 .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
                 .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
                 .key("DATABASE").object()
