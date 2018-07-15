@@ -78,7 +78,8 @@ public class Bot {
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
 
         var xpCommand = new XPCommand(commandSettings, database);
-        var voteCommand = new VoteCommand(database);
+
+        var voteCommand = new VoteClass();
         var searchCommand = new SearchCommand();
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
