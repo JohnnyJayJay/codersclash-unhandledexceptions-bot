@@ -99,6 +99,7 @@ public class Bot {
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
                 .put(new ProfileCommand(), "profile")
+                .put(new InfoCommand(), "info")
                 .activate();
 
         RestAction.setPassContext(true);
