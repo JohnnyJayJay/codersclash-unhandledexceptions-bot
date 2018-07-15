@@ -64,7 +64,7 @@ public class SearchCommand implements ICommand {
                             ? shardmanager.getGuildCache().stream().map((guild) -> String.format("`%s (%d)`", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
                             : shardmanager.getUserCache().stream().map((user) -> String.format("`%#s (%d)`", user, user.getIdLong())).collect(Collectors.toList());
                     ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> msg.addReaction(reaction).queue());
-                    ListDisplay.displayList(display, msg, event.getAuthor(), 15, (v) -> msg.delete().queue());
+                    ListDisplay.displayList(display, msg, event.getAuthor(), display.size() < 50 ? 10 : 20, (v) -> msg.delete().queue());
                 });
             } else {
                 wrongUsageMessage(channel, member, this);
