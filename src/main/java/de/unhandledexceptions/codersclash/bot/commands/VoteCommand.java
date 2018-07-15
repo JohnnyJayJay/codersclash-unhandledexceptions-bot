@@ -158,7 +158,10 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         {
 
             vote.getVoteAnswers().add(event.getMessage().getContentDisplay());
-            if ()
+            if (vote.getVoteAnswers().size() <= 10)
+            {
+                sendMessage(channel, Type.SUCCESS, "You finished your vote setup!").queue();
+            }
         }
     }
 
