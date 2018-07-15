@@ -48,6 +48,9 @@ public class Reactions {
     public static final String DOUBLE_ARROW_UP = "⏫";
     public static final String ARROW_LEFT = "⬅";
     public static final String ARROW_RIGHT = "➡";
+    public static final String DAY = "\uD83D\uDCC5";
+    public static final String HOUR = "\uD83D\uDD5B";
+    public static final String MINUTE = "\u231A";
 
     public static String getNumber(int number) {
         String ret = " ";
