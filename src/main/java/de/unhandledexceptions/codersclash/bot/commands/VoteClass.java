@@ -16,6 +16,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -54,12 +55,12 @@ public class VoteClass extends ListenerAdapter implements ICommand {
         sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!").queue();
 
         Vote vote = new Vote(guild, event.getChannel());
-        VoteCreator creator = new VoteCreator(member, guild, vote, VoteState.CHANNEL);
+        VoteCreator creator = new VoteCreator(member, guild, vote, VoteState.TIME);
         vote.setVoteCreator(creator);
         
         votes.put(guild, vote);
 
-        final String[] emojis = {"\uD83D\uDCC5", "\uD83D\uDD5B", "\u231A"};
+        final String[] emojis = {Reactions.DAY, Reactions.HOUR, Reactions.MINUTE};
 
         final String message =
                 "\u23F2 When should the vote end?\n\n" +
@@ -68,17 +69,25 @@ public class VoteClass extends ListenerAdapter implements ICommand {
                         emojis[2] + " Minute";
 
         sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
-            Reactions.newMenu(msg, member.getUser(), Map.of(
-                    emojis[0], v -> {
+            Reactions.newMenu(member.getUser(), msg, reaction -> {
+                    if (reaction.equals(emojis[0])){
+                        msg.delete().queue();
                         timeSet(event, TimeUnit.DAYS, msg);
-                    },
-                    emojis[1], v -> {
+                    }
+
+                    if (reaction.equals(emojis[1]))
+                    {
+                        msg.delete().queue();
                         timeSet(event, TimeUnit.HOURS, msg);
-                    },
-                    emojis[2], v -> {
+                    }
+
+                    if (reaction.equals(emojis[2]))
+                    {
+                        msg.delete().queue();
                         timeSet(event, TimeUnit.MINUTES, msg);
                     }
-            ));
+
+                    }, Arrays.asList(emojis));
         });
     }
 
@@ -87,6 +96,7 @@ public class VoteClass extends ListenerAdapter implements ICommand {
     {
 
         Guild guild = event.getGuild();
+        TextChannel channel = event.getChannel();
 
         if (!votes.containsKey(guild))
             return;
@@ -103,6 +113,14 @@ public class VoteClass extends ListenerAdapter implements ICommand {
 
         if (creator.getState() == VoteState.CHANNEL)
         {
+
+            if (event.getMessage().getMentionedChannels().isEmpty())
+            {
+                sendMessage(channel, Type.ERROR, "You need to mention a channel! (#channel)").queue();
+                return;
+            }
+
+
 
         }
 
