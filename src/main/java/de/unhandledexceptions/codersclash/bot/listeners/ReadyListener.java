@@ -38,8 +38,8 @@ public class ReadyListener extends ListenerAdapter {
 
         SelfUser selfUser = event.getJDA().getSelfUser();
         try {
-            Icon icon = Icon.from((iconURL).openStream());
             if (selfUser.getAvatarUrl() == null) {
+                Icon icon = Icon.from((iconURL).openStream());
                 selfUser.getManager().setAvatar(icon).queue();
             }
         } catch (IOException e) {

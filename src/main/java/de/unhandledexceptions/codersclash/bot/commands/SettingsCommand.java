@@ -6,8 +6,9 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -19,6 +20,7 @@ import net.dv8tion.jda.core.entities.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
@@ -76,6 +78,9 @@ public class SettingsCommand implements ICommand {
                     return;
                 } else if (emoji.equals(Reactions.M)) {
                     menu(user, message, Layer.MAIN_MENU, current, builder);
+                    return;
+                } else if (emoji.equals(Reactions.NO_EMOTE)) {
+                    message.delete().queue();
                     return;
                 }
 
@@ -174,50 +179,64 @@ public class SettingsCommand implements ICommand {
                     case AUTO_CHANNEL: // TODO
                         break;
                     case MAIL_CHANNEL:
-                        if (emoji.equals(Reactions.Y)) {
-                            message.clearReactions().queue();
-                            builder.setTitle("Change Mail Channel").setDescription("Mention the new Mail Channel now!");
-                            message.editMessage(builder.build()).queue();
-                            Reactions.newMessageWaiter(user, message.getChannel(), 30, (string) -> string.matches(Regex.CHANNEL_MENTION), (msg) -> {
-                                msg.delete().queue();
-                                Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set " + msg.getContentRaw() + " as the new mail channel?", (m) -> {
-                                    m.delete().queue();
-                                    database.setMailChannel(message.getGuild().getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
-                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
-                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
-                                }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
-                            }, (v3) -> {
-                                sendMessage(message.getChannel(), Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
-                                menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
-                            });
-                        } else if (emoji.equals(Reactions.BOT)) {
-                            sendMessage(message.getChannel(), Type.DEFAULT, "Creating the channel...").queue((msg) -> {
-                                if (message.getGuild().getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                                    message.getGuild().getController().createTextChannel("inbox").queue((channel) -> {
-                                        msg.delete().queue();
-                                        database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
-                                        sendMessage(message.getChannel(), Type.SUCCESS, "Success! Your new mail channel is "
-                                                + ((TextChannel) channel).getAsMention()).queue(Messages::deleteAfterFiveSec);
-                                        menu(user, message, Layer.MAIN_MENU, current, builder);
-                                    }, (t) -> {
-                                        msg.delete().queue();
-                                        Messages.defaultFailure(message.getChannel()).accept(t);
-                                        menu(user, message, Layer.MAIN_MENU, current, builder);
-                                    });
-                                } else {
+                        switch (emoji) {
+                            case Reactions.PENCIL:
+                                message.clearReactions().queue();
+                                builder.setTitle("Change Mail Channel").setDescription("Mention the new Mail Channel now!");
+                                message.editMessage(builder.build()).queue();
+                                Reactions.newMessageWaiter(user, message.getChannel(), 30, (string) -> string.matches(Regex.CHANNEL_MENTION), (msg) -> {
                                     msg.delete().queue();
-                                    sendMessage(message.getChannel(), Type.ERROR, "Woops. It seems like I don't have permission to do that!").queue(Messages::deleteAfterFiveSec);
-                                    message.editMessage(builder.setTitle("Please be patient").setDescription("Sending you back to main menu...").build())
-                                            .queue((m) -> menu(user, message, Layer.MAIN_MENU, current, builder), (t) -> menu(user, message, Layer.MAIN_MENU, current, builder));
-                                }
-                            });
-                        } else if (emoji.equals(Reactions.CLOSED_INBOX)) {
-                            Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to reset your mail channel and therefore deactivate the mail function?", (msg) -> {
-                                msg.delete().queue();
-                                database.setMailChannel(message.getGuild().getIdLong(), 0);
-                                sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
-                                menu(user, message, Layer.MAIN_MENU, current, builder);
-                            }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
+                                    Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set " + msg.getContentRaw() + " as the new mail channel?", (m) -> {
+                                        m.delete().queue();
+                                        database.setMailChannel(message.getGuild().getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
+                                        sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
+                                        menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
+                                    }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
+                                }, (v3) -> {
+                                    sendMessage(message.getChannel(), Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
+                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
+                                });
+                                break;
+                            case Reactions.CLIPBOARD:
+                                message.clearReactions().queue((aVoid) -> ListDisplay.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue()));
+                                List<String> channels = message.getGuild().getTextChannelCache().stream().map(TextChannel::getAsMention).collect(Collectors.toList());
+                                ListDisplay.displayListSelection(channels, message, user, channels.size() > 50 ? 20 : 10, (selected) -> {
+                                    var channel = message.getGuild().getTextChannelById(selected.replaceAll("[<>#]", ""));
+                                    database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
+                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + selected).queue(Messages::deleteAfterFiveSec);
+                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
+                                }, (aVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
+                                break;
+                            case Reactions.BOT:
+                                sendMessage(message.getChannel(), Type.DEFAULT, "Creating the channel...").queue((msg) -> {
+                                    if (message.getGuild().getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                                        message.getGuild().getController().createTextChannel("inbox").queue((channel) -> {
+                                            msg.delete().queue();
+                                            database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
+                                            sendMessage(message.getChannel(), Type.SUCCESS, "Success! Your new mail channel is "
+                                                    + ((TextChannel) channel).getAsMention()).queue(Messages::deleteAfterFiveSec);
+                                            menu(user, message, Layer.MAIN_MENU, current, builder);
+                                        }, (t) -> {
+                                            msg.delete().queue();
+                                            Messages.defaultFailure(message.getChannel()).accept(t);
+                                            menu(user, message, Layer.MAIN_MENU, current, builder);
+                                        });
+                                    } else {
+                                        msg.delete().queue();
+                                        sendMessage(message.getChannel(), Type.ERROR, "Woops. It seems like I don't have permission to do that!").queue(Messages::deleteAfterFiveSec);
+                                        message.editMessage(builder.setTitle("Please be patient").setDescription("Sending you back to main menu...").build())
+                                                .queue((m) -> menu(user, message, Layer.MAIN_MENU, current, builder), (t) -> menu(user, message, Layer.MAIN_MENU, current, builder));
+                                    }
+                                });
+                                break;
+                            case Reactions.CLOSED_INBOX:
+                                Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to reset your mail channel and therefore deactivate the mail function?", (msg) -> {
+                                    msg.delete().queue();
+                                    database.setMailChannel(message.getGuild().getIdLong(), 0);
+                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
+                                    menu(user, message, Layer.MAIN_MENU, current, builder);
+                                }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
+                                break;
                         }
                         break;
                 }
@@ -292,7 +311,8 @@ public class SettingsCommand implements ICommand {
                     currentChannel = "Not Set";
                 builder.setTitle("Mail Channel/Inbox").setDescription("Set this guild's inbox channel here! Current channel: " + currentChannel
                         + "\nDo you want to change that?\n"
-                        + Reactions.Y + " Yes, let me set a new channel\n"
+                        + Reactions.PENCIL + " Yes, let me set a new channel\n"
+                        + Reactions.CLIPBOARD + " Yes, let me select a new channel\n"
                         + Reactions.BOT + " Yes, create one for me\n"
                         + Reactions.CLOSED_INBOX + " Deactivate the mail function by deactivating current mail channel\n"
                         + Reactions.BACK + " Go Back\n"
@@ -315,8 +335,8 @@ public class SettingsCommand implements ICommand {
         XP_SYSTEM(Reactions.Y),
         PREFIX(Reactions.Y),
         GAME(),
-        MAIL_CHANNEL(Reactions.Y, Reactions.BOT, Reactions.CLOSED_INBOX),
-        AUTO_CHANNEL(Reactions.Y);
+        MAIL_CHANNEL(Reactions.PENCIL, Reactions.CLIPBOARD, Reactions.BOT, Reactions.CLOSED_INBOX),
+        AUTO_CHANNEL(Reactions.CLIPBOARD, Reactions.BOT);
 
         public final List<String> EMOJIS;
 

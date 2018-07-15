@@ -5,8 +5,9 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -104,8 +105,8 @@ public class MailCommand implements ICommand {
                     sendMessage(channel, Type.ERROR, "Sorry, no guilds were found for this search :(\nMaybe I'm not on the guild you're looking for?").queue(Messages::deleteAfterFiveSec);
                 } else {
                     sendMessage(channel, Type.SUCCESS, "Loading results...").queue((message) -> {
-                        searchCommand.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
-                        searchCommand.selectionDisplay(guilds, message, event.getAuthor(), new EmbedBuilder(), 10, 0, guilds.size() >= 10 ? 10 : guilds.size(), searchCommand.pages(guilds, 10), 0, (selected) -> {
+                        ListDisplay.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
+                        ListDisplay.displayListSelection(guilds, message, event.getAuthor(), 10, (selected) -> {
                             message.delete().queue();
                             var matcher = searchCommand.FIND_ID.matcher(selected);
                             matcher.find();

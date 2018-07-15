@@ -6,7 +6,7 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.util.Roles;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;

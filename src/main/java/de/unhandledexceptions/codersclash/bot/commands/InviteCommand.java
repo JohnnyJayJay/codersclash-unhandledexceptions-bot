@@ -6,7 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.Config;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -35,18 +35,23 @@ public class InviteCommand implements ICommand {
 
         if (Permissions.getPermissionLevel(member) >= 1) {
             Messages.sendMessage(channel, Type.QUESTION, "What invite do you wish to get?\n\n\uD83E\uDD16 Give me the bot's invite!\n\uD83D\uDCE1 The invite for this guild!").queue((msg) -> {
+                List.of(Reactions.BOT, Reactions.SATTELITE, Reactions.NO_EMOTE).forEach((reaction) -> msg.addReaction(reaction).queue());
                 Reactions.newMenu(member.getUser(), msg, (reaction) -> {
                     if (reaction.equals(Reactions.BOT)) {
-                        msg.delete().queue();
+                        msg.clearReactions().queue();
                         String botInvite = "[Click here!](" + event.getJDA().asBot().getInviteUrl(Permission.ADMINISTRATOR) + ")";
-                        var builder = new EmbedBuilder().addField("Invite me to your guild as well!\n", botInvite, true).setThumbnail(event.getJDA().getSelfUser().getAvatarUrl()).setColor(event.getGuild().getSelfMember().getColor());
-                        Messages.sendMessage(channel, Type.NO_TYPE, "\uD83E\uDD16  **" + config.getBotName() + "**", "Bot Invite", false, builder).queue();
+                        var builder = new EmbedBuilder().addField("Invite me to your guild as well!\n", botInvite, true).setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
+                                .setColor(event.getGuild().getSelfMember().getColor()).setDescription("\uD83E\uDD16  **" + config.getBotName() + "**").setTitle("Bot Invite");
+                        msg.editMessage(builder.build()).queue();
                     } else if (reaction.equals(Reactions.SATTELITE)) {
-                        msg.delete().queue();
+                        msg.clearReactions().queue();
                         channel.createInvite().queue((invite) -> {
-                            var builder = new EmbedBuilder().addField("Invite for this guild:", invite.getURL(), true).setThumbnail(event.getGuild().getIconUrl()).setColor(event.getGuild().getSelfMember().getColor());
-                            Messages.sendMessage(channel, Type.NO_TYPE, "\uD83D\uDCE1 **" + event.getGuild().getName() + "**", "Guild Invite", false, builder).queue();
+                            var builder = new EmbedBuilder().addField("Invite for this guild:", invite.getURL(), true).setThumbnail(event.getGuild().getIconUrl())
+                                    .setColor(event.getGuild().getSelfMember().getColor()).setDescription("\uD83D\uDCE1 **" + event.getGuild().getName() + "**").setTitle("Guild Invite");
+                            msg.editMessage(builder.build()).queue();
                         });
+                    } else if (reaction.equals(Reactions.NO_EMOTE)) {
+                        msg.delete().queue();
                     }
                 }, List.of(Reactions.BOT, Reactions.SATTELITE));
             });
