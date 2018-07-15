@@ -65,7 +65,7 @@ public class VoteClass extends ListenerAdapter implements ICommand {
         votes.put(guild, vote);
 
         sendTimeMessage(vote);
-
+        vote.getVoteCreator().setState(VoteState.TIME);
     }
 
     @Override
@@ -105,6 +105,9 @@ public class VoteClass extends ListenerAdapter implements ICommand {
                 return;
             }
 
+            vote.setTime(time);
+            vote.getVoteCreator().setState(VoteState.CHANNEL);
+            return;
         }
 
         if (creator.getState() == VoteState.CHANNEL)
@@ -123,12 +126,14 @@ public class VoteClass extends ListenerAdapter implements ICommand {
 
             sendPossibilitieMessage();
             vote.getVoteCreator().setState(VoteState.POSSIBILITIES);
-
+            return;
         }
 
         if (creator.getState() == VoteState.POSSIBILITIES)
         {
 
+
+            
         }
     }
 
