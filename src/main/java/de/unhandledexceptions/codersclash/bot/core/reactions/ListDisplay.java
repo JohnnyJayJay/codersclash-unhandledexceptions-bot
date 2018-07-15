@@ -45,7 +45,6 @@ public class ListDisplay {
                 : list.size() / interval + 1);
     }
 
-    // FIXME komische Sachen passieren hier
     private static void scrollableDisplay(List<String> list, Message message, User user, EmbedBuilder builder, int current, Consumer<String> selected, Consumer<Void> abort) {
         builder.setDescription(Reactions.ARROW_UP + "\n```\n" + list.get(current) + "```" + Reactions.ARROW_DOWN);
         message.editMessage(builder.build()).queue();
@@ -57,12 +56,14 @@ public class ListDisplay {
                     } else {
                         scrollableDisplay(list, message, user, builder, current - 1, selected, abort);
                     }
+                    break;
                 case Reactions.ARROW_DOWN:
                     if (current == list.size() - 1) {
                         scrollableDisplay(list, message, user, builder, 0, selected, abort);
                     } else {
                         scrollableDisplay(list, message, user, builder, current + 1, selected, abort);
                     }
+                    break;
                 case Reactions.YES_EMOTE:
                     selected.accept(list.get(current));
                     break;

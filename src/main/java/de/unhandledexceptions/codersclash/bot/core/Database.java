@@ -28,7 +28,7 @@ public class Database {
             countUsers, countGuilds, countMembers,
             insertUser, insertGuild, insertMember,
             updateUserXp, updateUserLvl, updateMemberXp, updateMemberLvl, updatePermissionLvl, updatePrefix, updateMailChannel, updateMaxReports,
-            selectReports, updateXpSystem;
+            selectReports, updateXpSystem, updateAutochannel;
 
     private String[] creationStatements;
 
@@ -109,6 +109,7 @@ public class Database {
         this.selectAllGuilds = "SELECT guild_id FROM discord_guild;";
         this.selectAllUsers = "SELECT user_id FROM discord_user";
         this.selectAllMembers = "SELECT guild_id, user_id FROM discord_member;";
+        this.updateAutochannel = "UPDATE discord_guild SET auto_channel = ? WHERE guild_id = ?;";
 
         logger.info("Statement preparation successful.");
     }
@@ -161,6 +162,10 @@ public class Database {
 
     public void setMailChannel(long guildId, long channelId) {
         this.executeUpdate(updateMailChannel, channelId, guildId);
+    }
+
+    public void setAutochannel(long guildId, long channelId) {
+        this.executeUpdate(updateAutochannel, channelId, guildId);
     }
 
     public void setReportsUntilBan(long guildId, int reportsUntilBan) {
@@ -387,6 +392,10 @@ public class Database {
 
     public Long getMailChannel(Guild guild) {
         return this.<Long>getFirst("mail_channel", selectFromGuild, Long.TYPE, guild.getIdLong());
+    }
+
+    public Long getAutochannel(Guild guild) {
+        return this.getFirst("auto_channel", selectFromGuild, Long.TYPE, guild.getIdLong());
     }
 
     public boolean isConnected() {
