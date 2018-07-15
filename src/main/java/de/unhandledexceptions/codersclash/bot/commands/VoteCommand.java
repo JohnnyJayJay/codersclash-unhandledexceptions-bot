@@ -4,10 +4,13 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.entities.Vote;
+import de.unhandledexceptions.codersclash.bot.entities.VoteAnswer;
 import de.unhandledexceptions.codersclash.bot.entities.VoteCreator;
 import de.unhandledexceptions.codersclash.bot.entities.VoteState;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -18,6 +21,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -28,16 +32,26 @@ import java.util.concurrent.TimeUnit;
  * 15.07.2018
  */
 
-public class VoteClass extends ListenerAdapter implements ICommand {
+public class VoteCommand extends ListenerAdapter implements ICommand {
 
     private Map<Guild, Vote> votes;
     private GuildMessageReceivedEvent event;
     private final String[] emojis = {Reactions.DAY, Reactions.HOUR, Reactions.MINUTE};
     private final long MAX_TIME = 604800000;
 
+    public VoteCommand()
+    {
+        votes = new HashMap<>();
+    }
+
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args)
     {
+
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
+        {
+            return;
+        }
 
         Guild guild = event.getGuild();
         
@@ -71,6 +85,12 @@ public class VoteClass extends ListenerAdapter implements ICommand {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event)
     {
+
+        if (!event.getGuild().getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE))
+        {
+            return;
+        }
+
         this.event = event;
         Guild guild = event.getGuild();
         TextChannel channel = event.getChannel();
@@ -121,6 +141,11 @@ public class VoteClass extends ListenerAdapter implements ICommand {
 
             TextChannel targetChannel = event.getMessage().getMentionedChannels().get(0);
 
+            if(guild.getSelfMember().hasPermission(targetChannel, Permission.MESSAGE_WRITE)){
+                sendMessage(channel, Type.ERROR, "I don't have permissions to write in this channel!").queue();
+                return;
+            }
+
             vote.setTargetChannel(targetChannel);
             sendMessage(channel, Messages.Type.SUCCESS, String.format("Successfully set <#%s> as channel!", targetChannel.getId())).queue();
 
@@ -132,8 +157,8 @@ public class VoteClass extends ListenerAdapter implements ICommand {
         if (creator.getState() == VoteState.POSSIBILITIES)
         {
 
-
-            
+            vote.getVoteAnswers().add(event.getMessage().getContentDisplay());
+            if ()
         }
     }
 

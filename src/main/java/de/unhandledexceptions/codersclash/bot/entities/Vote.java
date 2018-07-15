@@ -15,14 +15,14 @@ import java.util.concurrent.TimeUnit;
 
 public class Vote {
 
-    private Set<VoteAnswer> voteAnswers;
+    private Set<String> voteAnswers;
     private VoteCreator voteCreator;
     private Guild guild;
     private TextChannel setupChannel, targetChannel;
     private long time;
     private TimeUnit timeUnit;
 
-    public Vote(Set<VoteAnswer> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel, long time)
+    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel, long time)
     {
         this.voteAnswers = voteAnswers;
         this.voteCreator = voteCreator;
@@ -32,7 +32,7 @@ public class Vote {
         this.time = time;
     }
 
-    public Vote(Set<VoteAnswer> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
+    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
     {
         this.voteAnswers = voteAnswers;
         this.voteCreator = voteCreator;
@@ -69,9 +69,8 @@ public class Vote {
         this.targetChannel = targetChannel;
     }
 
-    public Set<VoteAnswer> getVoteAnswers()
+    public Set<String> getVoteAnswers()
     {
-
         return voteAnswers;
     }
 
@@ -100,7 +99,7 @@ public class Vote {
         return targetChannel;
     }
 
-    public void setVoteAnswers(Set<VoteAnswer> voteAnswers)
+    public void setVoteAnswers(Set<String> voteAnswers)
     {
         this.voteAnswers = voteAnswers;
     }
