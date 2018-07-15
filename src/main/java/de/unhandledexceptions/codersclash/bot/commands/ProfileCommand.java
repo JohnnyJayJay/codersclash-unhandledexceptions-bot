@@ -33,6 +33,7 @@ import static java.lang.String.format;
 
 public class ProfileCommand implements ICommand {
 
+    private ReportCommand reportCommand;
     private static final Map<String, String> urls = new HashMap<>() {{
         put("online", "https://i.imgur.com/JZwNdVZ.png");
         put("idle", "https://i.imgur.com/z4Noqb7.png");
@@ -40,6 +41,9 @@ public class ProfileCommand implements ICommand {
         put("offline", "https://i.imgur.com/fPB7iQm.png");
     }};
 
+    public ProfileCommand(ReportCommand reportCommand){
+        this.reportCommand = reportCommand;
+    }
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
@@ -53,12 +57,11 @@ public class ProfileCommand implements ICommand {
                 if (event.getMessage().getMentionedMembers().size() == 1) {
                     target = event.getMessage().getMentionedMembers().get(0);
                 }
-                event.getMessage().delete().queue();
                 String nickname = ((target.getNickname() != null) ? target.getNickname() : "none");
                 String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
                 String gametype = "Using Discord";
                 String perms = Reactions.getNumber(Permissions.getPermissionLevel(target));
-                String reports = String.valueOf(0);
+                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(reportCommand.getReportCount(target)));
                 String roles = ((!target.getRoles().isEmpty())) ? String.join(" ", target.getRoles().stream().map(Role::getAsMention).collect(Collectors.toList())) : "none";
                 String image = null;
                 String status;

@@ -29,6 +29,7 @@ public class Bot {
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
     private static CommandSettings commandSettings;
+    private static ReportCommand reportCommand;
 
     private static Logger logger = Logging.getLogger();
 
@@ -99,7 +100,7 @@ public class Bot {
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
-                .put(new ProfileCommand(), "profile")
+                .put(new ProfileCommand(reportCommand), "profile")
                 .put(new InfoCommand(), "info")
                 .activate();
 
