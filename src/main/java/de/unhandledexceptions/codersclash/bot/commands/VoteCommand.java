@@ -153,12 +153,26 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
         if (state.equals(State.TIME))
         {
-
             event.getChannel().sendMessage("time").queue();
 
         }
 
 
+            final String[] emoji = {"\u23F2", "\uD83D\uDCC5", "\uD83D\uDD5B", "\u231A"};
+
+            final String message =
+                    emoji[0] + " When should the vote end?\n\n" +
+                    emoji[1] + " Day\n" +
+                    emoji[2] + " Hour\n" +
+                    emoji[3] + " Minute";
+
+					
+					
+            sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> { 
+                // Reactions.newMenu(msg, event.getAuthor(), ;
+            }); 
+ 
+        }
 
         if (state.equals(State.POSSIBILITIES))
         {

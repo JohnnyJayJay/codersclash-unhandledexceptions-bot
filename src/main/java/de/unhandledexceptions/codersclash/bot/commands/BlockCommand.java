@@ -10,8 +10,6 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.managers.ChannelManager;
 
-import java.util.Arrays;
-
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
@@ -30,7 +28,7 @@ public class BlockCommand implements ICommand {
         if (Permissions.getPermissionLevel(member) >= 2) {
             if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("<@.\\d+> <#\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty() && !event.getMessage().getMentionedChannels().isEmpty()) {
                 Channel targetChannel = event.getMessage().getMentionedChannels().get(0);
-                var reason = String.join(" ", Arrays.asList(args).subList(2, args.length));
+                var reason = event.getCommand().getJoinedArgs(2);
                 var targetMember = event.getMessage().getMentionedMembers().get(0);
                 ChannelManager channelManager = new ChannelManager(targetChannel);
                 if (targetMember.hasPermission(targetChannel, Permission.VIEW_CHANNEL, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)) {

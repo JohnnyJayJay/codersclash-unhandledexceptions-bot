@@ -21,7 +21,7 @@ public class Config {
     private final long[] BOT_OWNERS = {261083609148948488L,234343108773412864L,226011931935375360L,138607604506165248L};
     private final String BOT_NAME = "try-catch";
     private final String VERSION = "Dev. Build";
-    private final String ICON_URL = "https://i.imgur.com/X7je2jH.png";
+    private final String ICON_URL = "https://i.imgur.com/eI7ROSz.png";
     private final long COMMAND_COOLDOWN = 0;
 
     private Path file; // config.json Datei
@@ -103,7 +103,7 @@ public class Config {
         return config.getJSONObject("BOTINFO").getString("NAME");
     }
 
-    public String getICONURL() {
+    public String getIconURL() {
         return config.getJSONObject("BOTINFO").getString("ICON");
     }
 

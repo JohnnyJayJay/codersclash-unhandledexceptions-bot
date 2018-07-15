@@ -3,10 +3,15 @@ package de.unhandledexceptions.codersclash.bot.core;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import org.slf4j.Logger;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 
 public class Main {
 
     private static Logger logger = Logging.getLogger();
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
 
     public static void main(String[] args) {
 
@@ -25,11 +30,15 @@ public class Main {
             logger.info("Database is being set up!");
             var database = new Database(config.getDBIp(), config.getDBPort(), config.getDBName(), config.getDBUsername(), config.getDBPassword());
             database.connect();
-            logger.warn("Connected to Database. Checking tables...");
+            logger.info("Connected to Database. Checking tables...");
             database.createTablesIfNotExist();
             Bot bot = new Bot(config, database);
             bot.start();
             logger.info("Bot has been started!");
         }
+    }
+
+    public static void scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
+        executorService.schedule(task, delay, timeUnit);
     }
 }
