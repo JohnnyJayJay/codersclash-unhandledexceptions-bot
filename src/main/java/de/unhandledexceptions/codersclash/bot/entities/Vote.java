@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author oskar
@@ -14,12 +15,24 @@ import java.util.Set;
 
 public class Vote {
 
-    private Set<VoteAnswer> voteAnswers;
+    private Set<String> voteAnswers;
     private VoteCreator voteCreator;
     private Guild guild;
     private TextChannel setupChannel, targetChannel;
+    private long time;
+    private TimeUnit timeUnit;
 
-    public Vote(Set<VoteAnswer> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
+    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel, long time)
+    {
+        this.voteAnswers = voteAnswers;
+        this.voteCreator = voteCreator;
+        this.guild = guild;
+        this.setupChannel = setupChannel;
+        this.targetChannel = targetChannel;
+        this.time = time;
+    }
+
+    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
     {
         this.voteAnswers = voteAnswers;
         this.voteCreator = voteCreator;
@@ -56,10 +69,14 @@ public class Vote {
         this.targetChannel = targetChannel;
     }
 
-    public Set<VoteAnswer> getVoteAnswers()
+    public Set<String> getVoteAnswers()
     {
-
         return voteAnswers;
+    }
+
+    public long getTime()
+    {
+        return time;
     }
 
     public VoteCreator getVoteCreator()
@@ -82,7 +99,7 @@ public class Vote {
         return targetChannel;
     }
 
-    public void setVoteAnswers(Set<VoteAnswer> voteAnswers)
+    public void setVoteAnswers(Set<String> voteAnswers)
     {
         this.voteAnswers = voteAnswers;
     }
@@ -102,5 +119,18 @@ public class Vote {
         this.setupChannel = setupChannel;
     }
 
+    public void setTime(long time)
+    {
+        this.time = time;
+    }
 
+    public TimeUnit getTimeUnit()
+    {
+        return timeUnit;
+    }
+
+    public void setTimeUnit(TimeUnit timeUnit)
+    {
+        this.timeUnit = timeUnit;
+    }
 }

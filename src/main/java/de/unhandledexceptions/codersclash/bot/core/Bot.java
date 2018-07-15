@@ -79,7 +79,7 @@ public class Bot {
 
         var xpCommand = new XPCommand(commandSettings, database);
 
-        var voteCommand = new VoteClass();
+        var voteCommand = new VoteCommand();
         var searchCommand = new SearchCommand();
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
