@@ -8,6 +8,7 @@ import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Reactions;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -35,21 +36,17 @@ import static java.util.concurrent.TimeUnit.*;
 
 public class VoteCommand extends ListenerAdapter implements ICommand {
 
-    private final Database database;
+    private HashMap<Member, Vote> votes;
     private Set<Answer> answers;
-    private Set<Member> members;
-    private Set<TextChannel> textChannels;
     private HashMap<Member, State> currentState;
     private static Logger logger = Logging.getLogger();
 
-    public VoteCommand(Database database)
-    {
-        this.database = database;
-        this.answers = new HashSet<>();
-        this.members = new HashSet<>();
-        this.textChannels = new HashSet<>();
-        this.currentState = new HashMap();
 
+    public VoteCommand()
+    {
+        this.votes = new HashMap<>();
+        this.answers = new HashSet<>();
+        this.currentState = new HashMap<>();
     }
 
     @Override
@@ -61,45 +58,76 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             return;
         }
 
-        if (!members.add(member))
+        if (votes.containsKey(member))
         {
             sendMessage(channel, Type.ERROR, "You are already in the voting setup. If you want to cancel the vote setup type: 'cancel'.").queue();
             return;
         }
 
-        textChannels.add(channel);
-        sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!\nWhen should the vote end?").queue();
+        answers.forEach(answer -> {
+            if (answer.getGuildID().equals(event.getGuild().getId()))
+            {
+                sendMessage(event.getChannel(), Type.ERROR, "There is already a vote running on this guild").queue();
+                return;
+            }
+
+    });
+
+        votes.put(member, new Vote(member, event.getGuild(), channel));
+        sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!").queue();
+
+        final String[] emojis = {"\uD83D\uDCC5", "\uD83D\uDD5B", "\u231A"};
+
+        final String message =
+                "\u23F2 When should the vote end?\n\n" +
+                        emojis[0] + " Day\n" +
+                        emojis[1] + " Hour\n" +
+                        emojis[2] + " Minute";
+
+        sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
+            Reactions.newMenu(msg, event.getAuthor(), Map.of(
+                    emojis[0], v -> {
+                        timeSet(event, "day", msg);
+                    },
+                    emojis[1], v -> {
+                        timeSet(event, "hour", msg);
+                    },
+                    emojis[2], v -> {
+                        timeSet(event, "minute", msg);
+                    }
+            ));
+        });
+
         currentState.put(member, State.TIME);
     }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event)
     {
-        if (!textChannels.contains(event.getChannel()))
+
+        event.getChannel().sendMessage("456").queue();
+
+        if (!votes.containsKey(event.getMember()))
         {
+            event.getChannel().sendMessage("member").queue();
             return;
         }
 
-        if (!members.contains(event.getMember()))
+        if (votes.get(event.getMember()).getSetupChan() != event.getChannel())
         {
+            event.getChannel().sendMessage("channel").queue();
             return;
         }
 
+        event.getChannel().sendMessage("123").queue();
         State state = currentState.get(event.getMember());
 
         if (event.getMessage().getContentRaw().equals("cancel"))
         {
-            members.remove(event.getMember());
-            textChannels.remove(event.getChannel());
-            answers.forEach(answer -> {
-                if (answer.getGuildID().equals(event.getGuild().getId()))
-                    answers.remove(answer);
-            });
+            clear(event.getMember());
             sendMessage(event.getChannel(), Type.SUCCESS, "Successfully canceled vote setup!").queue();
-            currentState.put(event.getMember(), State.DEFAULT);
             return;
         }
-
 
         int time = 0;
 
@@ -118,14 +146,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                     }
                     sendMessage(event.getChannel(), Type.SUCCESS, "Successfully completed vote setup with " + i + " vote possibilities!").queue();
 
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-
-
-
-                        }
-                    }, Date.from(Instant.now()), time);
+                    //TODO TIMER
                 }
             }
         }
@@ -133,26 +154,16 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         if (state.equals(State.TIME))
         {
 
-            final String[] emoji = {"\u23F2", "\uD83D\uDCC5", "\uD83D\uDD5B", "\u231A"};
-
-            final String message =
-                    emoji[0] + " When should the vote end?\n\n" +
-                    emoji[1] + " Day\n" +
-                    emoji[2] + " Hour\n" +
-                    emoji[3] + " Minute";
-
-
-
-            sendMessage(event.getChannel(), Type.QUESTION, message).queue(msg -> {
-                Reactions.newMenu(msg, event.getAuthor(), ;
-            });
+            event.getChannel().sendMessage("time").queue();
 
         }
+
+
 
         if (state.equals(State.POSSIBILITIES))
         {
             answers.add(new Answer(event.getGuild().getId(), event.getMessage().getContentRaw()));
-            event.getChannel().sendMessage("Next Answer").queue();
+            event.getChannel().sendMessage("Next VoteAnswer").queue();
         }
     }
 
@@ -179,24 +190,27 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     private enum State{
         DEFAULT(),
         TIME(),
-        POSSIBILITIES()
+
+
+        CHANNEL(),
+        POSSIBILITIES(
+        )
     }
 
     private int time(String timeUnit, int time)
     {
         timeUnit = timeUnit.toLowerCase();
 
-        if (timeUnit.matches("^sec"))
-            return time * 1000;
-
-        if (timeUnit.matches("^min"))
+        if (timeUnit.equals("minute"))
             return time * 60000;
 
-        if (timeUnit.matches("^hour"))
+        if (timeUnit.equals("hour"))
             return time * 3600000;
 
-        if (timeUnit.matches("^day"))
+        if (timeUnit.equals("day"))
             return time * 86400000;
+
+        long bla = 1;
 
         return 0;
     }
@@ -205,5 +219,92 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     {
         msg.delete().queue();
         event.getChannel().sendMessage(timeUnit  + " " + time(timeUnit, 1)).queue();
+    }
+
+    private class Vote
+    {
+
+        private Member member;
+        private Guild guild;
+        private TextChannel setupChan, targetChan;
+
+        private Vote(Member member, Guild guild, TextChannel setupChan, TextChannel targetChan)
+        {
+            this.member = member;
+            this.guild = guild;
+            this.setupChan = setupChan;
+            this.targetChan = targetChan;
+
+        }
+
+        private Vote(Member member, Guild guild, TextChannel setupChan)
+        {
+            this.member = member;
+            this.guild = guild;
+            this.setupChan = setupChan;
+        }
+
+        public void clear(Vote vote)
+        {
+            vote.setGuild(null);
+            vote.setMember(null);
+            vote.setTargetChan(null);
+            vote.setSetupChan(null);
+        }
+
+        public void setMember(Member member)
+        {
+            this.member = member;
+        }
+
+        public void setGuild(Guild guild)
+        {
+            this.guild = guild;
+        }
+
+        public void setSetupChan(TextChannel setupChan)
+        {
+            this.setupChan = setupChan;
+        }
+
+        public void setTargetChan(TextChannel targetChan)
+        {
+            this.targetChan = targetChan;
+        }
+
+        public Guild getGuild()
+        {
+
+            return guild;
+        }
+
+        public TextChannel getSetupChan()
+        {
+            return setupChan;
+        }
+
+        public TextChannel getTargetChan()
+        {
+            return targetChan;
+        }
+
+        public Member getMember()
+        {
+
+            return member;
+        }
+
+
+    }
+
+    public void clear(Member m)
+    {
+        currentState.put(m, State.DEFAULT);
+        votes.remove(m);
+        answers.forEach(answer -> {
+            if (answer.getGuildID().equals(m.getGuild().getId()))
+                answers.remove(answer);
+        });
+
     }
 }
