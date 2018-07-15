@@ -24,10 +24,10 @@ import static java.lang.String.format;
  */
 public class ReportCommand implements ICommand {
 
-    private Database database;
+    private static Database database;
 
     public ReportCommand(Database database) {
-        this.database = database;
+        ReportCommand.database = database;
     }
 
     @Override
@@ -111,6 +111,10 @@ public class ReportCommand implements ICommand {
             sendMessage(channel, Type.INFO, format("Reports of Member `%#s`:\n```\n%s```", target.getUser(), builder.toString()))
                     .queue(null, defaultFailure(channel));
         }
+    }
+
+    public static int getReportCount(Member member) {
+        return database.getReports(member).size();
     }
 
     @Override
