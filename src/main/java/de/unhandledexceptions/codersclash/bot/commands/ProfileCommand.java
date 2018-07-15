@@ -26,6 +26,11 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Regex.MEMBER_MENTION;
 import static java.lang.String.format;
 
+/**
+ * @author TheRealYann
+ * @version 1.0
+ */
+
 public class ProfileCommand implements ICommand {
 
     private static final Map<String, String> urls = new HashMap<>() {{
@@ -165,7 +170,8 @@ public class ProfileCommand implements ICommand {
                     ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                     "level: `" + permLevel + "`"
                     : format("**Description**: Provides you with Information about yourself or another member.\n\n" +
-                    "**Usage**: `%s[profile] (@Member)`\n\n**Permission level**: `1`", prefix, prefix);
+                    "**Usage**: `%s[profile]` to view your profile\n\t\t\t  `%s[profile] @Member` to view @Member's profile\n\n**Permission " +
+                    "level**: `1`", prefix, prefix);
             return ret;
         }
     }

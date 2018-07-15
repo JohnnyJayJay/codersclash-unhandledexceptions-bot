@@ -121,7 +121,7 @@ public class ReportCommand implements ICommand {
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Reports a given member. After `%d` reports, a member will be banned. To change this, make use of the settings command.\n\n" +
-                        "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t\t`%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
+                        "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t  `%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
                         "level**: `3`",
                 database.getReportsUntilBan(member.getGuild()), prefix, prefix);
         return ret;
