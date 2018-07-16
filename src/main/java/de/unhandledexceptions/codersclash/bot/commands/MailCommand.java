@@ -49,35 +49,7 @@ public class MailCommand implements ICommand {
                 Guild guild;
                 if (args[0].matches("\\d{1,18}")) {
                     if ((guild = shardManager.getGuildById(Long.parseLong(args[0]))) != null) {
-                        Long mailChannelId;
-                        if ((mailChannelId = database.getMailChannel(guild)) != null && mailChannelId != 0) {
-                            var mailChannel = guild.getTextChannelById(mailChannelId);
-                            if (mailChannel != null) {
-                                var builder = new EmbedBuilder();
-                                var author = event.getAuthor();
-                                String message = event.getCommand().getJoinedArgs(1);
-                                String topic = "No Topic";
-                                Matcher matcher = topicPattern.matcher(event.getCommand().getJoinedArgs());
-                                if (matcher.find()) {
-                                    String found = matcher.group();
-                                    message = message.replaceFirst(found, "");
-                                    topic = found.replaceAll("##", "");
-                                }
-                                builder.setTitle("Via \"" + event.getGuild().getName() + "\" (" + event.getGuild().getId() + ")")
-                                        .setAuthor(String.format("%#s", author), null, author.getEffectiveAvatarUrl())
-                                        .setColor(member.getColor())
-                                        .setFooter("Inbox", null)
-                                        .setTimestamp(Instant.now())
-                                        .addField(topic, message, false);
-                                mailChannel.sendMessage(builder.build()).queue(
-                                        (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(),
-                                        Messages.defaultFailure(channel));
-                            } else {
-                                sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild.getName() + "`, it seems like they deleted their mail channel!").queue();
-                            }
-                        } else {
-                            sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
-                        }
+                        sendMail(member, channel, guild, event.getCommand().getJoinedArgs(1));
                     } else {
                         search(event, member, channel, args);
                     }
@@ -94,29 +66,60 @@ public class MailCommand implements ICommand {
         }
     }
 
+    public void sendMail(Member member, TextChannel channel, Guild guild, String message) {
+        Long mailChannelId;
+        if ((mailChannelId = database.getMailChannel(guild)) != null && mailChannelId != 0) {
+            var mailChannel = guild.getTextChannelById(mailChannelId);
+            if (mailChannel != null) {
+                var builder = new EmbedBuilder();
+                var author = member.getUser();
+                String topic = "No Topic";
+                Matcher matcher = topicPattern.matcher(message);
+                if (matcher.find()) {
+                    String found = matcher.group();
+                    message = message.replaceFirst(found, "");
+                    topic = found.replaceAll("##", "");
+                }
+                builder.setTitle("Via \"" + member.getGuild().getName() + "\" (" + member.getGuild().getId() + ")")
+                        .setAuthor(String.format("%#s", author), null, author.getEffectiveAvatarUrl())
+                        .setColor(member.getColor())
+                        .setFooter("Inbox", null)
+                        .setTimestamp(Instant.now())
+                        .addField(topic, message, false);
+                mailChannel.sendMessage(builder.build()).queue(
+                        (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(),
+                        Messages.defaultFailure(channel));
+            } else {
+                sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild.getName() + "`, it seems like they deleted their mail channel!").queue();
+            }
+        } else {
+            sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
+        }
+    }
+
     private void search(CommandEvent event, Member member, TextChannel channel, String[] args) {
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
-        Reactions.newYesNoMenu(event.getAuthor(), channel, "No valid id detected. Do you want to try searching the guild by name?", (msg) -> {
+        Reactions.newYesNoMenu(member.getUser(), channel, "Do you want to search the guild by name?", (msg) -> {
             msg.delete().queue();
-            sendMessage(channel, Type.QUESTION, "Please type in the name of the guild you are looking for!").queue();
-            Reactions.newMessageWaiter(event.getAuthor(), channel, 30, (m) -> {
-                List<String> guilds = searchCommand.find(shardManager, m.getContentRaw(), false);
-                if (guilds.isEmpty()) {
-                    sendMessage(channel, Type.ERROR, "Sorry, no guilds were found for this search :(\nMaybe I'm not on the guild you're looking for?").queue(Messages::deleteAfterFiveSec);
-                } else {
-                    sendMessage(channel, Type.SUCCESS, "Loading results...").queue((message) -> {
-                        ListDisplay.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
-                        ListDisplay.displayListSelection(guilds, message, event.getAuthor(), 10, (selected) -> {
-                            message.delete().queue();
+            sendMessage(channel, Type.QUESTION, "Please type in the name of the guild you are looking for!").queue((msg2) -> {
+                Reactions.newMessageWaiter(member.getUser(), channel, 30, (m) -> {
+                    List<String> guilds = searchCommand.find(shardManager, m.getContentRaw(), false);
+                    if (guilds.isEmpty()) {
+                        sendMessage(channel, Type.ERROR, "Sorry, no guilds were found for this search :(\nMaybe I'm not on the guild you're looking for?").queue(Messages::deleteAfterFiveSec);
+                    } else {
+                        ListDisplay.displayListSelection(guilds, msg2, event.getAuthor(), 10, (selected) -> {
+                            msg2.delete().queue();
                             var matcher = searchCommand.FIND_ID.matcher(selected);
                             matcher.find();
                             args[0] = matcher.group().replaceAll("\\(|\\)", "");
                             this.onCommand(event, member, channel, args);
-                        });
-                    });
-                }
+                        }, (v) -> msg2.delete().queue());
+                    }
+                });
             });
         });
+
+
     }
 
 

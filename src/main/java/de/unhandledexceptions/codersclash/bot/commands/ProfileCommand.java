@@ -4,9 +4,9 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Regex.MEMBER_MENTION;
 import static java.lang.String.format;
 
 /**
@@ -61,7 +60,7 @@ public class ProfileCommand implements ICommand {
                 String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
                 String gametype = "Using Discord";
                 String perms = Reactions.getNumber(Permissions.getPermissionLevel(target));
-                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(reportCommand.getReportCount(target)));
+                String reports = ((Reactions.getNumber(ReportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(ReportCommand.getReportCount(target)));
                 String roles = ((!target.getRoles().isEmpty())) ? String.join(" ", target.getRoles().stream().map(Role::getAsMention).collect(Collectors.toList())) : "none";
                 String image = null;
                 String status;

@@ -61,7 +61,6 @@ public class RoleCommand implements ICommand {
                         }, (msg) -> {
                             msg.delete().queue();
                             sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
-                                ListDisplay.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> msg2.addReaction(reaction).queue());
                                 ListDisplay.displayListSelection(roles.stream().map((role1) -> String.format("%d: %s (%d)", roles.indexOf(role1) + 1, role1.getAsMention(), role1.getIdLong())).collect(Collectors.toList()),
                                         msg2, member.getUser(), 5, (selected) -> {
                                     msg2.delete().queue();

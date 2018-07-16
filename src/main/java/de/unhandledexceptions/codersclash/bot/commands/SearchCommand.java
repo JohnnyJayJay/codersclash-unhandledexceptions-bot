@@ -43,7 +43,6 @@ public class SearchCommand implements ICommand {
                         builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                         sendMessage(channel, Type.SUCCESS, "Loading results...")
                                 .queue((m) -> {
-                                    ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> m.addReaction(reaction).queue());
                                     ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
                                 }, Messages.defaultFailure(channel));
                     }
@@ -54,7 +53,6 @@ public class SearchCommand implements ICommand {
                 List<String> display = find(shardmanager, name.toLowerCase(), false);
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((m) -> {
-                    ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> m.addReaction(reaction).queue());
                     ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
                 }, Messages.defaultFailure(channel));
             } else if (args[0].equalsIgnoreCase("display") && args[1].matches("(?i)((guilds)|(users))")) {
@@ -63,7 +61,6 @@ public class SearchCommand implements ICommand {
                     List<String> display = args[1].equalsIgnoreCase("guilds")
                             ? shardmanager.getGuildCache().stream().map((guild) -> String.format("`%s (%d)`", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
                             : shardmanager.getUserCache().stream().map((user) -> String.format("`%#s (%d)`", user, user.getIdLong())).collect(Collectors.toList());
-                    ListDisplay.DISPLAY_REACTIONS.forEach((reaction) -> msg.addReaction(reaction).queue());
                     ListDisplay.displayList(display, msg, event.getAuthor(), display.size() < 50 ? 10 : 20, (v) -> msg.delete().queue());
                 });
             } else {
@@ -103,8 +100,8 @@ public class SearchCommand implements ICommand {
                 guilds.addAll(jda.getGuildsByName(name, true));
             }
             String finalName = name;
-            shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().startsWith(finalName) && !guild.getName().equalsIgnoreCase(finalName)).forEach(guilds::add);
-            shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().contains(finalName) && !guild.getName().equalsIgnoreCase(finalName)).forEach(guilds::add);
+            shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().startsWith(finalName) && !guilds.contains(guild)).forEach(guilds::add);
+            shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().contains(finalName) && !guilds.contains(guild)).forEach(guilds::add);
             guilds.stream().map((guild) -> String.format("%d: `%s (%d)` ", (guilds.indexOf(guild) + 1), guild.getName(), guild.getIdLong())).forEach(ret::add);
         }
         return ret;
