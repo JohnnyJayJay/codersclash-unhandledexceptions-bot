@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +31,7 @@ public class Bot {
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
     private static CommandSettings commandSettings;
+    private static ReportCommand reportCommand;
 
     private static Logger logger = Logging.getLogger();
 
@@ -81,6 +84,7 @@ public class Bot {
 
         var voteCommand = new VoteCommand();
         var searchCommand = new SearchCommand();
+        var mailCommand = new MailCommand(database, searchCommand);
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
@@ -94,19 +98,21 @@ public class Bot {
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
-                .put(new MailCommand(database, searchCommand), "mail", "contact")
+                .put(mailCommand, "mail", "contact")
+                .put(new ConnectionCommand(searchCommand, mailCommand), "connect")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
-                .put(new ProfileCommand(), "profile")
+                .put(new ProfileCommand(reportCommand), "profile")
                 .put(new InfoCommand(), "info")
                 .activate();
 
-        RestAction.setPassContext(true);
+        RestAction.setPassContext(false);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);
+
     }
 
     // FIXME geht noch nicht

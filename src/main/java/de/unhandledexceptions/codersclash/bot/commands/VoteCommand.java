@@ -4,28 +4,26 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.entities.Vote;
-import de.unhandledexceptions.codersclash.bot.entities.VoteAnswer;
 import de.unhandledexceptions.codersclash.bot.entities.VoteCreator;
 import de.unhandledexceptions.codersclash.bot.entities.VoteState;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-
-import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 /**
  * @author oskar

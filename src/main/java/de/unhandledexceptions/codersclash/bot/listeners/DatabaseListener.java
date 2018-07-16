@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -91,16 +92,30 @@ public class DatabaseListener extends ListenerAdapter {
     private synchronized void refreshDatabase() {
         logger.warn("Database is being refreshed...");
         List<Long> expectedGuilds = database.getIds("discord_guild");
+        logger.debug("Expected guilds: " + expectedGuilds);
         List<Long> actualGuilds =  shardManager.getGuildCache().stream().map(Guild::getIdLong).collect(Collectors.toList());
+        logger.debug("Actual guilds: " + actualGuilds);
         expectedGuilds.stream().filter((id) -> !actualGuilds.contains(id)).forEach(database::deleteGuild);
         List<Long> expectedUsers = database.getIds("discord_user");
+        logger.debug("Expected users: " + expectedUsers);
         List<Long> actualUsers = shardManager.getUserCache().stream().map(User::getIdLong).collect(Collectors.toList());
+        logger.debug("Actual users: " + actualUsers);
         expectedUsers.stream().filter((id) -> !actualUsers.contains(id)).forEach(database::deleteUser);
-        Map<Long, Long> expectedMembers = database.getMembers();
-        expectedMembers.forEach((guildId, userId) -> {
-          /*FIXME  if (shardManager.getGuildById(guildId).getMemberById(userId) == null)
-                database.deleteMember(guildId, userId);*/
-        });
+        Map<Long, Set<Long>> expectedMembers = database.getMembers();
+        logger.debug("Expected members: " + expectedMembers);
+        expectedMembers.forEach((guildId, userIds) -> {
+                    logger.debug("GuildID: " + guildId + " Users: " + userIds);
+                    if (shardManager.getGuildById(guildId) == null) {
+                        logger.debug("Guild wird gelöscht");
+                        database.deleteGuild(guildId);
+                    } else {
+                        userIds.stream().filter((userId) -> shardManager.getGuildById(guildId).getMemberById(userId) == null).forEach((userId) -> {
+                            database.deleteMember(guildId, userId);
+                            logger.debug("Member mit id " + userId + " wird gelöscht");
+                        });
+                    }
+                });
+        logger.debug("Inserting new Guilds and members");
         shardManager.getGuildCache().forEach((guild) ->
                 guild.getMemberCache().forEach((member) ->
                         database.createMemberIfNotExists(guild.getIdLong(), member.getUser().getIdLong())));

@@ -4,9 +4,9 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
+import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Reactions;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
@@ -23,11 +23,16 @@ import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Regex.MEMBER_MENTION;
 import static java.lang.String.format;
+
+/**
+ * @author TheRealYann
+ * @version 1.0
+ */
 
 public class ProfileCommand implements ICommand {
 
+    private ReportCommand reportCommand;
     private static final Map<String, String> urls = new HashMap<>() {{
         put("online", "https://i.imgur.com/JZwNdVZ.png");
         put("idle", "https://i.imgur.com/z4Noqb7.png");
@@ -35,6 +40,9 @@ public class ProfileCommand implements ICommand {
         put("offline", "https://i.imgur.com/fPB7iQm.png");
     }};
 
+    public ProfileCommand(ReportCommand reportCommand){
+        this.reportCommand = reportCommand;
+    }
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
@@ -48,12 +56,11 @@ public class ProfileCommand implements ICommand {
                 if (event.getMessage().getMentionedMembers().size() == 1) {
                     target = event.getMessage().getMentionedMembers().get(0);
                 }
-                event.getMessage().delete().queue();
                 String nickname = ((target.getNickname() != null) ? target.getNickname() : "none");
                 String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
                 String gametype = "Using Discord";
                 String perms = Reactions.getNumber(Permissions.getPermissionLevel(target));
-                String reports = String.valueOf(0);
+                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(reportCommand.getReportCount(target)));
                 String roles = ((!target.getRoles().isEmpty())) ? String.join(" ", target.getRoles().stream().map(Role::getAsMention).collect(Collectors.toList())) : "none";
                 String image = null;
                 String status;
@@ -90,7 +97,7 @@ public class ProfileCommand implements ICommand {
                 } else {
                     status = jda.getEmotesByName("offline", false).get(0).getAsMention();
                 }
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH);
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 if (target.getUser().getAvatarUrl() == null) {
                     embedBuilder.clear().setAuthor(target.getEffectiveName(), null, target.getUser().getAvatarUrl())
@@ -101,10 +108,10 @@ public class ProfileCommand implements ICommand {
                             .addField("Status", status, true)
                             .addBlankField(true)
                             .addField("Permission level", perms + " **of** :five:", true)
-                            .addField("Reports on this Guild", reports, true)
+                            .addField("Reports on this Server", reports, true)
                             .addBlankField(true)
-                            .addField("Joined this Server", target.getJoinDate().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
-                            .addField("Registered on Discord", target.getUser().getCreationTime().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
+                            .addField("Joined this Server", target.getJoinDate().format(dateTimeFormatter), true)
+                            .addField("Registered on Discord", target.getUser().getCreationTime().format(dateTimeFormatter), true)
                             .addField("Roles", roles, false);
                     if (getOnlineStatus == OnlineStatus.ONLINE || getOnlineStatus == OnlineStatus.IDLE || getOnlineStatus == OnlineStatus.DO_NOT_DISTURB) {
                         embedBuilder.addField(gametype, game, false);
@@ -119,9 +126,9 @@ public class ProfileCommand implements ICommand {
                             .addField("ID", target.getUser().getId(), true)
                             .addField("Status", status, true)
                             .addField("Permission level", perms + " **of** :five:", true)
-                            .addField("Reports on this Guild", reports, true)
-                            .addField("Joined this Server", target.getJoinDate().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
-                            .addField("Registered on Discord", target.getUser().getCreationTime().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
+                            .addField("Reports", reports, true)
+                            .addField("Joined this Server", target.getJoinDate().format(dateTimeFormatter), true)
+                            .addField("Registered on Discord", target.getUser().getCreationTime().format(dateTimeFormatter), true)
                             .addField("Roles", roles, false);
                     if (getOnlineStatus == OnlineStatus.ONLINE || getOnlineStatus == OnlineStatus.IDLE || getOnlineStatus == OnlineStatus.DO_NOT_DISTURB) {
                         embedBuilder.addField(gametype, game, false);
@@ -165,7 +172,8 @@ public class ProfileCommand implements ICommand {
                     ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                     "level: `" + permLevel + "`"
                     : format("**Description**: Provides you with Information about yourself or another member.\n\n" +
-                    "**Usage**: `%s[profile] (@Member)`\n\n**Permission level**: `1`", prefix, prefix);
+                    "**Usage**: `%s[profile]` to view your profile\n\t\t\t  `%s[profile] @Member` to view @Member's profile\n\n**Permission " +
+                    "level**: `1`", prefix, prefix);
             return ret;
         }
     }

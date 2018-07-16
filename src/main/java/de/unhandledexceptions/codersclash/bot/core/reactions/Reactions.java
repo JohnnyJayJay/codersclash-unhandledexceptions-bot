@@ -1,6 +1,7 @@
-package de.unhandledexceptions.codersclash.bot.util;
+package de.unhandledexceptions.codersclash.bot.core.reactions;
 
 import de.unhandledexceptions.codersclash.bot.core.Main;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -48,6 +49,8 @@ public class Reactions {
     public static final String DOUBLE_ARROW_UP = "⏫";
     public static final String ARROW_LEFT = "⬅";
     public static final String ARROW_RIGHT = "➡";
+    public static final String CLIPBOARD = "\uD83D\uDCCB";
+    public static final String PENCIL = "✏";
     public static final String DAY = "\uD83D\uDCC5";
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";
@@ -69,8 +72,10 @@ public class Reactions {
         user.getJDA().addEventListener(new ReactionListener(Set.of(YES_EMOTE, NO_EMOTE), (emoji) -> {
             if (emoji.equals(YES_EMOTE))
                 yes.accept(message);
-            else
+            else {
+                message.delete().queue();
                 no.accept(message);
+            }
         }, user.getIdLong(), message.getIdLong(), 20, true));
     }
 
@@ -102,7 +107,7 @@ public class Reactions {
         newMenu(user, message, reacted, emojis, 30, true);
     }
 
-    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Predicate<String> condition, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
+    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Predicate<Message> condition, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
         var listener = new MessageListener(user.getJDA(), user.getIdLong(), channel.getIdLong(), waitSeconds, messageReceived, afterExpiration);
         listener.setCondition(condition);
         user.getJDA().addEventListener(listener);
@@ -125,7 +130,7 @@ public class Reactions {
         private final long userId;
         private final long channelId;
         private final Consumer<Message> messageReceived;
-        private Predicate<String> condition;
+        private Predicate<Message> condition;
         private boolean receivedMessage;
 
         public MessageListener(JDA jda, long userId, long channelId, int waitSeconds, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
@@ -142,20 +147,20 @@ public class Reactions {
             this.condition = (s) -> true;
         }
 
-        public void setCondition(Predicate<String> condition) {
+        public void setCondition(Predicate<Message> condition) {
             this.condition = condition;
         }
 
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
-            if (event.getAuthor().getIdLong() != userId)
+            if (event.getAuthor().getIdLong() != userId || channelId != event.getChannel().getIdLong())
                 return;
 
-            String raw = event.getMessage().getContentRaw();
-            if (userId == event.getAuthor().getIdLong() && channelId == event.getChannel().getIdLong() && condition.test(raw)) {
+            Message message = event.getMessage();
+            if (condition.test(message)) {
                 event.getJDA().removeEventListener(this);
                 this.receivedMessage = true;
-                messageReceived.accept(event.getMessage());
+                messageReceived.accept(message);
             }
         }
     }
@@ -198,7 +203,6 @@ public class Reactions {
             String emoji = event.getReactionEmote().getName();
             if (user.getIdLong() == userId) {
                 if (emoji.equals(NO_EMOTE)) {
-                    event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> msg.delete().queue());
                     event.getJDA().removeEventListener(this);
                 }
                 if (emojis.contains(emoji)) {
@@ -209,6 +213,4 @@ public class Reactions {
             }
         }
     }
-
-
 }
