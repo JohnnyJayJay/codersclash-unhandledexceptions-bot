@@ -60,7 +60,7 @@ public class ProfileCommand implements ICommand {
                 String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
                 String gametype = "Using Discord";
                 String perms = Reactions.getNumber(Permissions.getPermissionLevel(target));
-                String reports = ((Reactions.getNumber(ReportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(ReportCommand.getReportCount(target)));
+                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(reportCommand.getReportCount(target)));
                 String roles = ((!target.getRoles().isEmpty())) ? String.join(" ", target.getRoles().stream().map(Role::getAsMention).collect(Collectors.toList())) : "none";
                 String image = null;
                 String status;
@@ -97,7 +97,7 @@ public class ProfileCommand implements ICommand {
                 } else {
                     status = jda.getEmotesByName("offline", false).get(0).getAsMention();
                 }
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH);
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 if (target.getUser().getAvatarUrl() == null) {
                     embedBuilder.clear().setAuthor(target.getEffectiveName(), null, target.getUser().getAvatarUrl())
@@ -108,10 +108,10 @@ public class ProfileCommand implements ICommand {
                             .addField("Status", status, true)
                             .addBlankField(true)
                             .addField("Permission level", perms + " **of** :five:", true)
-                            .addField("Reports on this Guild", reports, true)
+                            .addField("Reports on this Server", reports, true)
                             .addBlankField(true)
-                            .addField("Joined this Server", target.getJoinDate().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
-                            .addField("Registered on Discord", target.getUser().getCreationTime().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
+                            .addField("Joined this Server", target.getJoinDate().format(dateTimeFormatter), true)
+                            .addField("Registered on Discord", target.getUser().getCreationTime().format(dateTimeFormatter), true)
                             .addField("Roles", roles, false);
                     if (getOnlineStatus == OnlineStatus.ONLINE || getOnlineStatus == OnlineStatus.IDLE || getOnlineStatus == OnlineStatus.DO_NOT_DISTURB) {
                         embedBuilder.addField(gametype, game, false);
@@ -126,9 +126,9 @@ public class ProfileCommand implements ICommand {
                             .addField("ID", target.getUser().getId(), true)
                             .addField("Status", status, true)
                             .addField("Permission level", perms + " **of** :five:", true)
-                            .addField("Reports on this Guild", reports, true)
-                            .addField("Joined this Server", target.getJoinDate().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
-                            .addField("Registered on Discord", target.getUser().getCreationTime().atZoneSameInstant(ZoneId.of("Europe/Paris")).format(dateTimeFormatter), true)
+                            .addField("Reports", reports, true)
+                            .addField("Joined this Server", target.getJoinDate().format(dateTimeFormatter), true)
+                            .addField("Registered on Discord", target.getUser().getCreationTime().format(dateTimeFormatter), true)
                             .addField("Roles", roles, false);
                     if (getOnlineStatus == OnlineStatus.ONLINE || getOnlineStatus == OnlineStatus.IDLE || getOnlineStatus == OnlineStatus.DO_NOT_DISTURB) {
                         embedBuilder.addField(gametype, game, false);

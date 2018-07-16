@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +99,7 @@ public class Bot {
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(mailCommand, "mail", "contact")
-                .put(new ConnectionCommand(searchCommand, mailCommand), "connection")
+                .put(new ConnectionCommand(searchCommand, mailCommand), "connect")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
@@ -110,6 +112,7 @@ public class Bot {
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);
+
     }
 
     // FIXME geht noch nicht

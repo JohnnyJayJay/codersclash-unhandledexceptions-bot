@@ -25,7 +25,7 @@ import static java.lang.String.format;
  */
 
 public class RoleCommand implements ICommand {
-
+    //TODO emptyPerms
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
