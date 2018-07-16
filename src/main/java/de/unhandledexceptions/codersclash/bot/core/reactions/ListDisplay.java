@@ -10,9 +10,9 @@ import java.util.function.Consumer;
 
 public class ListDisplay {
 
-    public static final List<String> SELECTION_DISPLAY_REACTIONS = List.of(Reactions.ARROW_UP, Reactions.ARROW_DOWN,
-            Reactions.DOUBLE_ARROW_UP, Reactions.DOUBLE_ARROW_DOWN, Reactions.YES_EMOTE, Reactions.NO_EMOTE);
-    public static final List<String> DISPLAY_REACTIONS = List.of(Reactions.DOUBLE_ARROW_UP, Reactions.DOUBLE_ARROW_DOWN, Reactions.NO_EMOTE);
+    public static final List<String> SELECTION_DISPLAY_REACTIONS = List.of(Reactions.YES_EMOTE, Reactions.ARROW_LEFT, Reactions.ARROW_UP,
+            Reactions.ARROW_DOWN, Reactions.ARROW_RIGHT, Reactions.NO_EMOTE);
+    public static final List<String> DISPLAY_REACTIONS = List.of(Reactions.ARROW_LEFT, Reactions.ARROW_RIGHT, Reactions.NO_EMOTE);
     public static final List<String> SCROLL_DISPLAY_REACTIONS = List.of(Reactions.ARROW_UP, Reactions.ARROW_DOWN, Reactions.YES_EMOTE, Reactions.NO_EMOTE);
 
     public static void displayList(List<String> list, Message message, User user, int interval) {
@@ -123,7 +123,7 @@ public class ListDisplay {
                         selectionDisplay(list, message, user, builder, interval, from, to, pages, current + 1, selected, abort);
                     }
                     break;
-                case Reactions.DOUBLE_ARROW_UP:
+                case Reactions.ARROW_LEFT:
                     if (from == 0) {
                         selectionDisplay(list, message, user, builder, interval, from, to, pages, 0, selected, abort);
                     } else if (from - interval >= 0) {
@@ -132,7 +132,7 @@ public class ListDisplay {
                         selectionDisplay(list, message, user, builder, interval, 0, from, pages, (current - interval < 0 ? 0 : current - interval), selected, abort);
                     }
                     break;
-                case Reactions.DOUBLE_ARROW_DOWN:
+                case Reactions.ARROW_RIGHT:
                     if (to == list.size()) {
                         selectionDisplay(list, message, user, builder, interval, from, to, pages, list.size() - 1, selected, abort);
                     } else if (to + interval <= list.size()) {
@@ -166,7 +166,7 @@ public class ListDisplay {
         builder.setFooter("Page " + currentPage + " of " + pages, null);
         message.editMessage(builder.build()).queue();
         Reactions.newMenu(user, message, (emoji) -> {
-            if (emoji.equals(Reactions.DOUBLE_ARROW_DOWN)) {
+            if (emoji.equals(Reactions.ARROW_RIGHT)) {
                 if (to == list.size()) {
                     display(list, message, user, builder, interval, from, to, pages, abort);
                 } else if (to + interval <= list.size()) {
@@ -174,7 +174,7 @@ public class ListDisplay {
                 } else {
                     display(list, message, user, builder, interval, to, list.size(), pages, abort);
                 }
-            } else if (emoji.equals(Reactions.DOUBLE_ARROW_UP)) {
+            } else if (emoji.equals(Reactions.ARROW_LEFT)) {
                 if (from == 0) {
                     display(list, message, user, builder, interval, from, to, pages, abort);
                 } else if (from - interval >= 0) {
