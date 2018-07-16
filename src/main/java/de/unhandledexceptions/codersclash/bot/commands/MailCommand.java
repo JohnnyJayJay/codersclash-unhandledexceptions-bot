@@ -24,8 +24,8 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class MailCommand implements ICommand {
 
     private Database database;
@@ -56,10 +56,10 @@ public class MailCommand implements ICommand {
                 } else if (args[0].equalsIgnoreCase("noid")) {
                     search(event, member, channel, args);
                 } else {
-                    wrongUsageMessage(channel, member, this);
+                    wrongUsageMessage(event.getMessage(), channel, member, this);
                 }
             } else {
-                wrongUsageMessage(channel, member, this);
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

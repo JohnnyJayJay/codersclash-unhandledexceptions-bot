@@ -2,11 +2,13 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -19,8 +21,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
+
+/**
+ * @author Johnny_JayJay
+ */
 
 public class SearchCommand implements ICommand {
 
@@ -28,8 +35,11 @@ public class SearchCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
-        // TODO Permission level
-        if (args.length > 1) {
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
+            return;
+
+        if(Permissions.getPermissionLevel(member) >= 1) {
+            if (args.length > 1) {
             var shardmanager = event.getJDA().asBot().getShardManager();
             var builder = new EmbedBuilder();
             if (args[0].equalsIgnoreCase("user")){
@@ -56,18 +66,23 @@ public class SearchCommand implements ICommand {
                     ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
                 }, Messages.defaultFailure(channel));
             } else if (args[0].equalsIgnoreCase("display") && args[1].matches("(?i)((guilds)|(users))")) {
+                event.getMessage().delete().queue();
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((msg) -> {
                     List<String> display = args[1].equalsIgnoreCase("guilds")
                             ? shardmanager.getGuildCache().stream().map((guild) -> String.format("`%s (%d)`", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
                             : shardmanager.getUserCache().stream().map((user) -> String.format("`%#s (%d)`", user, user.getIdLong())).collect(Collectors.toList());
+                    display.sort(String.CASE_INSENSITIVE_ORDER);
                     ListDisplay.displayList(display, msg, event.getAuthor(), display.size() < 50 ? 10 : 20, (v) -> msg.delete().queue());
                 });
+                } else {
+                    wrongUsageMessage(event.getMessage(), channel, member, this);
+                }
             } else {
-                wrongUsageMessage(channel, member, this);
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else {
-            wrongUsageMessage(channel, member, this);
+            noPermissionsMessage(channel, member);
         }
     }
 
@@ -106,12 +121,9 @@ public class SearchCommand implements ICommand {
         }
         return ret;
     }
-
-
-
     // TODO
     @Override
     public String info(Member member) {
-        return " ";
+        return "TODO";
     }
 }

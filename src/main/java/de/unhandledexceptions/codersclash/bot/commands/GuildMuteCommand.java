@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
 
 /**
  * @author Johnny_JayJay
@@ -69,7 +70,7 @@ public class GuildMuteCommand implements ICommand {
                     });
                 }
             } else {
-                sendMessage(channel, Type.WARNING, "Wrong Usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

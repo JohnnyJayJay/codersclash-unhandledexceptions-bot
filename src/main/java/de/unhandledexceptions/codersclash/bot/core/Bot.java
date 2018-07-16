@@ -94,25 +94,24 @@ public class Bot {
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep", "reports")
-                .put(voteCommand, "vote", "v")
+                .put(voteCommand, "vote")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(mailCommand, "mail", "contact")
-                .put(new ConnectionCommand(searchCommand, mailCommand), "connect")
-                .put(new RoleCommand(), "role")
-                .put(new InviteCommand(config), "invite")
+                .put(new ConnectionCommand(searchCommand, mailCommand), "connect", "link")
+                .put(new RoleCommand(), "role", "manage")
+                .put(new InviteCommand(config), "invite", "request")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
-                .put(new ProfileCommand(reportCommand), "profile")
-                .put(new InfoCommand(), "info")
+                .put(new ProfileCommand(reportCommand), "profile", "userinfo")
+                .put(new InfoCommand(), "info", "shards")
                 .activate();
 
         RestAction.setPassContext(false);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);
-
     }
 
     // FIXME geht noch nicht

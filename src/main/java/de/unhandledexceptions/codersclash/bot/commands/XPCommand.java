@@ -44,7 +44,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         this.settings = settings;
         this.database = database;
     }
-
+    //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!database.xpSystemActivated(event.getGuild().getIdLong()) || !event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))

@@ -14,7 +14,6 @@ import java.net.URL;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class ReadyListener extends ListenerAdapter {

@@ -21,7 +21,6 @@ import static java.lang.String.format;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class RoleCommand implements ICommand {
@@ -82,7 +81,7 @@ public class RoleCommand implements ICommand {
                     sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member), true).queue();
                 }
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

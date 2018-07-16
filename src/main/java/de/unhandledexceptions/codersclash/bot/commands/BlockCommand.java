@@ -15,7 +15,6 @@ import static java.lang.String.format;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class BlockCommand implements ICommand {
@@ -43,11 +42,11 @@ public class BlockCommand implements ICommand {
                     sendMessage(channel, Type.SUCCESS, format("Successfully unblocked `%#s` in %s by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), member.getAsMention()), true).queue();
                 }
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
-            } else {
-                noPermissionsMessage(channel, member);
-            }
+        } else {
+            noPermissionsMessage(channel, member);
+        }
     }
 
     @Override

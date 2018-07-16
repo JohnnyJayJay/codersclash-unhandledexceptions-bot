@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 /**
  * @author Johnny_JayJay
  */
+
 public class Reactions {
     // weitere Emotes hier hinzufügen
     public static final String YES_EMOTE = "\u2705";
@@ -55,7 +56,7 @@ public class Reactions {
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";
     public static final String NEWSPAPER = "\uD83D\uDCF0";
-    
+
     public static String getNumber(int number) {
         String ret = " ";
         if (number == 10) {

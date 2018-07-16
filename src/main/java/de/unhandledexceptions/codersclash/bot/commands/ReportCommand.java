@@ -16,12 +16,13 @@ import java.util.List;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.defaultFailure;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
 import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class ReportCommand implements ICommand {
 
     private static Database database;
@@ -91,7 +92,7 @@ public class ReportCommand implements ICommand {
             }
             showReports(channel, member, reportList, index);
         } else {
-            sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+            wrongUsageMessage(event.getMessage(), channel, member, this);
         }
     }
 
@@ -121,13 +122,21 @@ public class ReportCommand implements ICommand {
     public String info(Member member) {
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 3
+        String retNoBan = permLevel < 3
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Reports a given member. A member will not be banned after a certain amount of report. To change this, make use of the settings command.\n\n" +
+                        "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t  `%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
+                        "level**: `3`",
+                prefix, prefix);
+        String retWithBan = permLevel < 3
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Reports a given member. After `%d` reports, a member will be banned. To change this, make use of the settings command.\n\n" +
                         "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t  `%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
                         "level**: `3`",
                 database.getReportsUntilBan(member.getGuild()), prefix, prefix);
+        String ret = (database.getReportsUntilBan(member.getGuild()) == (11)) ? retNoBan : retWithBan;
         return ret;
     }
 }

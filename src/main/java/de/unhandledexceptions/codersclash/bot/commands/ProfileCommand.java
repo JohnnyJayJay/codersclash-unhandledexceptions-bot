@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
 import static java.lang.String.format;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class ProfileCommand implements ICommand {
@@ -139,7 +139,7 @@ public class ProfileCommand implements ICommand {
                 }
                 sendMessage(channel, Messages.Type.NO_TYPE, "Information about " + target.getAsMention(), false, embedBuilder).queue();
             } else {
-                sendMessage(channel, Messages.Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -172,7 +172,7 @@ public class ProfileCommand implements ICommand {
                     ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                     "level: `" + permLevel + "`"
                     : format("**Description**: Provides you with Information about yourself or another member.\n\n" +
-                    "**Usage**: `%s[profile]` to view your profile\n\t\t\t  `%s[profile] @Member` to view @Member's profile\n\n**Permission " +
+                    "**Usage**: `%s[profile|userinfo]` to view your profile\n\t\t\t  `%s[profile|userinfo] @Member` to view @Member's profile\n\n**Permission " +
                     "level**: `1`", prefix, prefix);
             return ret;
         }

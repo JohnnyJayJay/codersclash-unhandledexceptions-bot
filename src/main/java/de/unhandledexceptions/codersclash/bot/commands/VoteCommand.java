@@ -54,7 +54,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         }
 
         Guild guild = event.getGuild();
-        
+
         if (Permissions.getPermissionLevel(member) < Permissions.getVotePermissionLevel())
         {
             channel.sendMessage("Your permission level is too low. (" + Permissions.getPermissionLevel(member) + "/" + Permissions.getVotePermissionLevel() + ")").queue();
@@ -77,11 +77,11 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         Vote vote = new Vote(guild, event.getChannel());
         VoteCreator creator = new VoteCreator(member, guild, vote, VoteState.TIME);
         vote.setVoteCreator(creator);
-        
+
         votes.put(guild, vote);
 
         sendTimeMessage(vote, event);
-        vote.getVoteCreator().setState(VoteState.REACTON);
+        vote.getVoteCreator().setState(VoteState.REACTION);
     }
 
     @Override

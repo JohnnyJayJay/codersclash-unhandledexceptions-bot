@@ -6,8 +6,8 @@ import net.dv8tion.jda.core.entities.Role;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class Roles {
 
     public static Role getTryCatchRole(Guild guild) {

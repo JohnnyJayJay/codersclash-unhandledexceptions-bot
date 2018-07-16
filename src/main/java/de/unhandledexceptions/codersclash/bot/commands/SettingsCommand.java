@@ -23,7 +23,6 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
 public class SettingsCommand implements ICommand {
 
@@ -52,7 +51,7 @@ public class SettingsCommand implements ICommand {
                 channel.sendMessage(builder.setDescription("Loading Main Menu...").build()).queue((msg) ->
                         menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU, builder), Messages.defaultFailure(channel));
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n" + this.info(member)).queue();
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

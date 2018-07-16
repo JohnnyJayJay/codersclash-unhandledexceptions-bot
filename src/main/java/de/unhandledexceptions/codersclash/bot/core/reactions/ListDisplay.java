@@ -8,6 +8,10 @@ import java.awt.Color;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * @author Johnny_JayJay
+ */
+
 public class ListDisplay {
 
     public static final List<String> SELECTION_DISPLAY_REACTIONS = List.of(Reactions.YES_EMOTE, Reactions.ARROW_LEFT, Reactions.ARROW_UP,

@@ -9,8 +9,8 @@ import java.util.Set;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class GameFactory {
 
     // TODO
