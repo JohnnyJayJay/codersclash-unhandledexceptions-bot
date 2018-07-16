@@ -10,6 +10,7 @@ package de.unhandledexceptions.codersclash.bot.entities;
 public enum VoteState {
 
     DEFAULT(),
+    REACTON(),
     TIME(),
     CHANNEL(),
     POSSIBILITIES(),
