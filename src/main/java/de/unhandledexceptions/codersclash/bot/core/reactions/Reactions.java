@@ -106,7 +106,7 @@ public class Reactions {
         newMenu(user, message, reacted, emojis, 30, true);
     }
 
-    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Predicate<String> condition, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
+    public static void newMessageWaiter(User user, MessageChannel channel, int waitSeconds, Predicate<Message> condition, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
         var listener = new MessageListener(user.getJDA(), user.getIdLong(), channel.getIdLong(), waitSeconds, messageReceived, afterExpiration);
         listener.setCondition(condition);
         user.getJDA().addEventListener(listener);
@@ -129,7 +129,7 @@ public class Reactions {
         private final long userId;
         private final long channelId;
         private final Consumer<Message> messageReceived;
-        private Predicate<String> condition;
+        private Predicate<Message> condition;
         private boolean receivedMessage;
 
         public MessageListener(JDA jda, long userId, long channelId, int waitSeconds, Consumer<Message> messageReceived, Consumer<Void> afterExpiration) {
@@ -146,20 +146,20 @@ public class Reactions {
             this.condition = (s) -> true;
         }
 
-        public void setCondition(Predicate<String> condition) {
+        public void setCondition(Predicate<Message> condition) {
             this.condition = condition;
         }
 
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
-            if (event.getAuthor().getIdLong() != userId)
+            if (event.getAuthor().getIdLong() != userId || channelId != event.getChannel().getIdLong())
                 return;
 
-            String raw = event.getMessage().getContentRaw();
-            if (userId == event.getAuthor().getIdLong() && channelId == event.getChannel().getIdLong() && condition.test(raw)) {
+            Message message = event.getMessage();
+            if (condition.test(message)) {
                 event.getJDA().removeEventListener(this);
                 this.receivedMessage = true;
-                messageReceived.accept(event.getMessage());
+                messageReceived.accept(message);
             }
         }
     }

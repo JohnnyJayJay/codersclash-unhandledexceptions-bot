@@ -82,6 +82,7 @@ public class Bot {
 
         var voteCommand = new VoteCommand();
         var searchCommand = new SearchCommand();
+        var mailCommand = new MailCommand(database, searchCommand);
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
@@ -95,7 +96,8 @@ public class Bot {
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
-                .put(new MailCommand(database, searchCommand), "mail", "contact")
+                .put(mailCommand, "mail", "contact")
+                .put(new ConnectionCommand(searchCommand, mailCommand), "connection")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")

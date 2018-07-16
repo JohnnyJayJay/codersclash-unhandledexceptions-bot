@@ -4,7 +4,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -20,6 +20,7 @@ public class ListDisplay {
     }
 
     public static void displayList(List<String> list, Message message, User user, int interval, Consumer<Void> abort) {
+        DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
         display(list, message, user, new EmbedBuilder(), interval, 0, list.size() < interval ? list.size() : interval, pages(list, interval), abort);
     }
 
@@ -28,15 +29,21 @@ public class ListDisplay {
     }
 
     public static void displayListSelection(List<String> list, Message message, User user, int interval, Consumer<String> selected, Consumer<Void> abort) {
+        SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
         selectionDisplay(list, message, user, new EmbedBuilder(), interval, 0, list.size() < interval ? list.size() : interval, pages(list, interval), 0, selected, abort);
     }
 
-    public static void displayScrollableListSelection(List<String> list, Message message, String title, Color color, User user, Consumer<String> selected, Consumer<Void> abort) {
-        scrollableDisplay(list, message, user, new EmbedBuilder().setTitle(title).setColor(color), 0, selected, abort);
+    public static void displayScrollableListSelection(List<String> list, Message message, String title, Color color, User user, int firstIndex, Consumer<String> selected, Consumer<Void> abort) {
+        SCROLL_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
+        scrollableDisplay(list, message, user, new EmbedBuilder().setTitle(title).setColor(color), firstIndex, selected, abort);
     }
 
     public static void displayScrollableListSelection(List<String> list, Message message, User user, Consumer<String> selected) {
-        displayScrollableListSelection(list, message, "Results: " + list.size(), Color.GREEN, user, selected, v -> {});
+        displayScrollableListSelection(list, message, user, 0, selected, v -> {});
+    }
+
+    public static void displayScrollableListSelection(List<String> list, Message message, User user, int firstIndex, Consumer<String> selected, Consumer<Void> abort) {
+        displayScrollableListSelection(list, message, "Please choose: " + list.size(), Color.GREEN, user, firstIndex, selected, v -> {});
     }
 
     private static int pages(List list, int interval) {

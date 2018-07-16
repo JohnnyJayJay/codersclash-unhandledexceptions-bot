@@ -7,15 +7,12 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,13 +27,7 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
  */
 public class SettingsCommand implements ICommand {
 
-    private static List<String> zeroToTenReactions;
-
-    static {
-        zeroToTenReactions = new ArrayList<>();
-        for (int i = 0; i <= 10; i++)
-            zeroToTenReactions.add(Reactions.getNumber(i));
-    }
+    private List<String> zeroToTen = List.of("10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0");
 
     private Database database;
     private CommandSettings settings;
@@ -84,6 +75,8 @@ public class SettingsCommand implements ICommand {
                     return;
                 }
 
+                TextChannel textChannel = message.getTextChannel();
+                Guild guild = message.getGuild();
                 switch (current) {
                     case MAIN_MENU:
                         switch (emoji) {
@@ -129,48 +122,46 @@ public class SettingsCommand implements ICommand {
                             message.clearReactions().queue();
                             builder.setTitle("Change your prefix").setDescription("Please type in the new prefix now!");
                             message.editMessage(builder.build()).queue();
-                            var channel = message.getTextChannel();
-                            Reactions.newMessageWaiter(user, channel, 30, (msg) -> {
+                            Reactions.newMessageWaiter(user, textChannel, 30, (msg) -> {
                                 String prefix = msg.getContentRaw();
                                 msg.delete().queue();
                                 if (prefix.matches(CommandSettings.VALID_PREFIX) && prefix.length() <= 40) {
-                                    Reactions.newYesNoMenu(user, message.getTextChannel(), "Would you like to set `" + msg.getContentRaw() + "` as your new prefix?", (m) -> {
+                                    Reactions.newYesNoMenu(user, textChannel, "Would you like to set `" + msg.getContentRaw() + "` as your new prefix?", (m) -> {
                                         m.delete().queue();
-                                        settings.setCustomPrefix(channel.getGuild().getIdLong(), prefix);
-                                        database.setPrefix(channel.getGuild().getIdLong(), prefix);
-                                        sendMessage(channel, Type.SUCCESS, "Successfully set `" + prefix + "` as the new prefix!").queue(Messages::deleteAfterFiveSec);
+                                        settings.setCustomPrefix(textChannel.getGuild().getIdLong(), prefix);
+                                        database.setPrefix(textChannel.getGuild().getIdLong(), prefix);
+                                        sendMessage(textChannel, Type.SUCCESS, "Successfully set `" + prefix + "` as the new prefix!").queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
                                     }, (reaction) -> menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder));
                                 } else {
-                                    sendMessage(channel, Type.ERROR, "Your prefix `" + prefix + "` is not valid. Remember that a valid prefix cannot contain "
+                                    sendMessage(textChannel, Type.ERROR, "Your prefix `" + prefix + "` is not valid. Remember that a valid prefix cannot contain "
                                             + "any of these: `? * + ^ \\ $`\nAlso, it cannot be longer than 40 characters.").queue(Messages::deleteAfterFiveSec);
                                     menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
                                 }
                             }, (v3) -> {
-                                sendMessage(message.getChannel(), Type.WARNING, "Your prefix change request expired.").queue(Messages::deleteAfterFiveSec);
+                                sendMessage(textChannel, Type.WARNING, "Your prefix change request expired.").queue(Messages::deleteAfterFiveSec);
                                 menu(user, message, Layer.MAIN_MENU, Layer.PREFIX, builder);
                             });
                         }
                         break;
                     case REPORTS:
-                        int newValue;
-                        for (newValue = 0; newValue < 12 && !emoji.equals(Reactions.getNumber(newValue)); newValue++) ;
-                        if (newValue == 0) {
-                            database.setReportsUntilBan(message.getGuild().getIdLong(), 11);
-                            sendMessage(message.getChannel(), Type.SUCCESS,
-                                    "Automatic ban for reports is now deactivated!").queue(Messages::deleteAfterFiveSec);
-                            menu(user, message, Layer.MAIN_MENU, Layer.REPORTS, builder);
-                        } else if (newValue < 11) {
-                            database.setReportsUntilBan(message.getGuild().getIdLong(), newValue);
-                            sendMessage(message.getChannel(), Type.SUCCESS,
-                                    String.format("Member are now being banned after `%d` reports!", newValue)).queue(Messages::deleteAfterFiveSec);
-                            menu(user, message, Layer.MAIN_MENU, Layer.REPORTS, builder);
+                        if (emoji.equals(Reactions.Y)) {
+                            message.clearReactions().queue((voit) -> {
+                                int currentValue = database.getReportsUntilBan(guild);
+                                ListDisplay.displayScrollableListSelection(zeroToTen, message, "When should a member be banned? (0 means never)",
+                                        guild.getSelfMember().getColor(), user, currentValue == 11 ? 10 : 10 - currentValue, (selected) -> {
+                                            int newValue = Integer.parseInt(selected);
+                                            database.setReportsUntilBan(guild.getIdLong(), newValue == 0 ? 11 : newValue);
+                                            sendMessage(textChannel, Type.SUCCESS, "Successfully changed reports until ban to `" + (newValue == 0 ? "NEVER" : newValue) + "`!").queue(Messages::deleteAfterFiveSec);
+                                            menu(user, message, Layer.MAIN_MENU, Layer.FEATURES, builder);
+                                        }, (aVoid -> menu(user, message, Layer.MAIN_MENU, Layer.FEATURES, builder)));
+                            });
                         }
                         break;
                     case XP_SYSTEM:
                         if (emoji.equals(Reactions.Y)) {
-                            database.setUseXpSystem(message.getGuild().getIdLong(), !database.xpSystemActivated(message.getGuild().getIdLong()));
-                            sendMessage(message.getChannel(), Type.SUCCESS, "Changes were successful!").queue(Messages::deleteAfterFiveSec);
+                            database.setUseXpSystem(guild.getIdLong(), !database.xpSystemActivated(guild.getIdLong()));
+                            sendMessage(textChannel, Type.SUCCESS, "Changes were successful!").queue(Messages::deleteAfterFiveSec);
                             menu(user, message, Layer.MAIN_MENU, Layer.XP_SYSTEM, builder);
                         }
                         break;
@@ -184,56 +175,57 @@ public class SettingsCommand implements ICommand {
                                 message.clearReactions().queue();
                                 builder.setTitle("Change Mail Channel").setDescription("Mention the new Mail Channel now!");
                                 message.editMessage(builder.build()).queue();
-                                Reactions.newMessageWaiter(user, message.getChannel(), 30, (string) -> string.matches(Regex.CHANNEL_MENTION), (msg) -> {
+                                Reactions.newMessageWaiter(user, textChannel, 30, (msg) -> msg.getContentRaw().matches(Regex.CHANNEL_MENTION), (msg) -> {
                                     msg.delete().queue();
                                     Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set " + msg.getContentRaw() + " as the new mail channel?", (m) -> {
                                         m.delete().queue();
-                                        database.setMailChannel(message.getGuild().getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
-                                        sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
+                                        database.setMailChannel(guild.getIdLong(), msg.getMentionedChannels().get(0).getIdLong());
+                                        sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
                                     }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
                                 }, (v3) -> {
-                                    sendMessage(message.getChannel(), Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
+                                    sendMessage(textChannel, Type.WARNING, "Your channel change request expired.").queue(Messages::deleteAfterFiveSec);
                                     menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
                                 });
                                 break;
                             case Reactions.CLIPBOARD:
-                                message.clearReactions().queue((aVoid) -> ListDisplay.SELECTION_DISPLAY_REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue()));
-                                List<String> channels = message.getGuild().getTextChannelCache().stream().map(TextChannel::getAsMention).collect(Collectors.toList());
-                                ListDisplay.displayListSelection(channels, message, user, channels.size() > 50 ? 20 : 10, (selected) -> {
-                                    var channel = message.getGuild().getTextChannelById(selected.replaceAll("[<>#]", ""));
-                                    database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
-                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully set to " + selected).queue(Messages::deleteAfterFiveSec);
-                                    menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
-                                }, (aVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
+                                List<String> channels = guild.getTextChannelCache().stream().map(TextChannel::getAsMention).collect(Collectors.toList());
+                                message.clearReactions().queue((aVoid) -> {
+                                    ListDisplay.displayListSelection(channels, message, user, channels.size() > 50 ? 20 : 10, (selected) -> {
+                                        var channel = guild.getTextChannelById(selected.replaceAll("[<>#]", ""));
+                                        database.setMailChannel(guild.getIdLong(), channel.getIdLong());
+                                        sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully set to " + selected).queue(Messages::deleteAfterFiveSec);
+                                        menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
+                                    }, (anotherVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
+                                }, Messages.defaultFailure(textChannel));
                                 break;
                             case Reactions.BOT:
-                                sendMessage(message.getChannel(), Type.DEFAULT, "Creating the channel...").queue((msg) -> {
-                                    if (message.getGuild().getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                                        message.getGuild().getController().createTextChannel("inbox").queue((channel) -> {
+                                sendMessage(textChannel, Type.DEFAULT, "Creating the channel...").queue((msg) -> {
+                                    if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                                        guild.getController().createTextChannel("inbox").queue((channel) -> {
                                             msg.delete().queue();
-                                            database.setMailChannel(message.getGuild().getIdLong(), channel.getIdLong());
-                                            sendMessage(message.getChannel(), Type.SUCCESS, "Success! Your new mail channel is "
+                                            database.setMailChannel(guild.getIdLong(), channel.getIdLong());
+                                            sendMessage(textChannel, Type.SUCCESS, "Success! Your new mail channel is "
                                                     + ((TextChannel) channel).getAsMention()).queue(Messages::deleteAfterFiveSec);
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         }, (t) -> {
                                             msg.delete().queue();
-                                            Messages.defaultFailure(message.getChannel()).accept(t);
+                                            Messages.defaultFailure(textChannel).accept(t);
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         });
                                     } else {
                                         msg.delete().queue();
-                                        sendMessage(message.getChannel(), Type.ERROR, "Woops. It seems like I don't have permission to do that!").queue(Messages::deleteAfterFiveSec);
+                                        sendMessage(textChannel, Type.ERROR, "Woops. It seems like I don't have permission to do that!").queue(Messages::deleteAfterFiveSec);
                                         message.editMessage(builder.setTitle("Please be patient").setDescription("Sending you back to main menu...").build())
                                                 .queue((m) -> menu(user, message, Layer.MAIN_MENU, current, builder), (t) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                                     }
                                 });
                                 break;
                             case Reactions.CLOSED_INBOX:
-                                Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to reset your mail channel and therefore deactivate the mail function?", (msg) -> {
+                                Reactions.newYesNoMenu(user, textChannel, "Do you want to reset your mail channel and therefore deactivate the mail function?", (msg) -> {
                                     msg.delete().queue();
-                                    database.setMailChannel(message.getGuild().getIdLong(), 0);
-                                    sendMessage(message.getChannel(), Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
+                                    database.setMailChannel(guild.getIdLong(), 0);
+                                    sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
                                     menu(user, message, Layer.MAIN_MENU, current, builder);
                                 }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                                 break;
@@ -280,10 +272,13 @@ public class SettingsCommand implements ICommand {
                 int currentValue = database.getReportsUntilBan(message.getGuild());
                 builder.setTitle("Report System");
                 builder.appendDescription(currentValue == 11
-                        ? "Currently, members will not be banned for reports.\n"
+                        ? "Currently, members will not be banned for reports."
                         : "Currently, a member will be banned after `" + currentValue + "` reports.");
-                builder.appendDescription("After how many reports should a member be banned?\n("
-                        + Reactions.getNumber(0) + " means never)");
+                builder.appendDescription("\nWould you like to change that?\n"
+                        + Reactions.Y + " Yes, let me change that.\n"
+                        + Reactions.BACK + " Go Back\n"
+                        + Reactions.M + " Main Menu\n"
+                        + Reactions.NO_EMOTE + " Exit");
                 break;
             case HELP:
                 builder.setTitle("Help")
@@ -331,7 +326,7 @@ public class SettingsCommand implements ICommand {
         CHANNEL_MANAGEMENT(Reactions.MAIL, Reactions.REPEAT),
         FEATURES(Reactions.STAR, Reactions.EXCLAMATION_MARK, Reactions.P),
         HELP(),
-        REPORTS(zeroToTenReactions),
+        REPORTS(Reactions.Y),
         XP_SYSTEM(Reactions.Y),
         PREFIX(Reactions.Y),
         GAME(),
