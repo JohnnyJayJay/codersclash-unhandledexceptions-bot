@@ -37,7 +37,7 @@ public class MentionListener extends ListenerAdapter {
 
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
             config.getBotOwners().forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
-            builder.clear().setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
+            builder.clear().setThumbnail("https://i.imgur.com/L1RgtJb.gif")
                     .addField("Name", config.getBotName(), true)
                     .addField("Version", config.getVersion(),true)
                     .addField("Default Prefix", "`" + config.getPrefix() + "`", true)
