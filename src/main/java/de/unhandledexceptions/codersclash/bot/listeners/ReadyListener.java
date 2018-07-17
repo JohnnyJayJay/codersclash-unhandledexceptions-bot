@@ -42,7 +42,7 @@ public class ReadyListener extends ListenerAdapter {
                 selfUser.getManager().setAvatar(icon).queue();
             }
         } catch (IOException e) {
-            logger.error("An IOException occurred while creating Icon/changing avatar", e);
+            logger.error("An IOException occurred while creating icon/changing avatar", e);
         }
 
         if (!selfUser.getName().equals(config.getBotName())) {

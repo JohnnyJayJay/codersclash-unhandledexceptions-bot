@@ -60,7 +60,7 @@ public class ProfileCommand implements ICommand {
                 String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
                 String gametype = "Using Discord";
                 String perms = Reactions.getNumber(Permissions.getPermissionLevel(target));
-                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(reportCommand.getReportCount(target)));
+                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **clean af**" : Reactions.getNumber(reportCommand.getReportCount(target)));
                 String roles = ((!target.getRoles().isEmpty())) ? String.join(" ", target.getRoles().stream().map(Role::getAsMention).collect(Collectors.toList())) : "none";
                 String image = null;
                 String status;
