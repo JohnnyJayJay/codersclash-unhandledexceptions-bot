@@ -1,5 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.commands.connection;
 
+import net.dv8tion.jda.bot.sharding.ShardManager;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -13,21 +15,42 @@ import java.util.Set;
  */
 public class LinkListener extends ListenerAdapter {
 
-    private Set<Link> links = new HashSet<>();
+    private Set<Link> links;
+    private ShardManager shardManager;
+
+    public LinkListener(ShardManager shardManager) {
+        this.shardManager = shardManager;
+        this.links = new HashSet<>();
+    }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getAuthor().isBot())
             return;
 
-        if (links.stream().anyMatch((link) -> link.isLinked(event.getChannel()))) {
-            links.stream().filter((link) -> link.isLinked(event.getChannel())).forEach((link) -> link.distributeMessage(event.getMessage()));
+        String raw = event.getMessage().getContentRaw().toLowerCase();
+        switch (raw) {
+            case "link:abort":
+            case "link:invite":
         }
+
+        Guild guild = event.getGuild();
+        links.stream().filter((link) -> link.getGuilds().contains(guild.getIdLong())).forEach((link) -> link.distributeMessage(event.getMessage()));
     }
 
     @Override
     public void onTextChannelDelete(TextChannelDeleteEvent event) {
-        links.stream().filter((link) -> link.isLinked(event.getChannel())).forEach((link) -> link.removeChannel(event.getChannel()));
+        Guild guild = event.getGuild();
+        links.stream().filter((link) -> link.getGuilds().contains(guild.getIdLong())).forEach((link) -> {
+            if (link.remove(guild)) {
+                var leftGuild = link.getGuilds().stream().findFirst();
+                leftGuild.ifPresent(id -> {
+                    var guild1 = shardManager.getGuildById(id);
+                    guild1.getTextChannelById(link.getLinkedChannel(guild1)).sendMessage("Guild `" + guild + "` has left the link. You are the last guild in this link, so it will be closed.").queue();
+                });
+                links.remove(link);
+            }
+        });
     }
 
     public void addLink(Link link) {

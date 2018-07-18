@@ -1,15 +1,16 @@
 package de.unhandledexceptions.codersclash.bot.commands.connection;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import net.dv8tion.jda.bot.sharding.ShardManager;
+import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Johnny_JayJay
@@ -17,47 +18,90 @@ import java.util.stream.Collectors;
  */
 public class LinkManager {
 
-    public Link createLink(ShardManager shardManager, Guild... guilds) {
-        Set<Long> channelIds = new HashSet<>();
-        for (Guild guild : guilds) {
-            guild.getController().createTextChannel("connection")
-                    .setTopic("The following guilds are connected: " + String.join(", ", Arrays.stream(guilds).map(Guild::getName).collect(Collectors.toList())))
-                    .queue((channel) -> channelIds.add(channel.getIdLong()));
+    private ShardManager shardManager;
+
+    public LinkManager(ShardManager shardManager) {
+        this.shardManager = shardManager;
+    }
+
+    public Link createLink(Set<Long> guilds) {
+        return new LinkImpl(guilds);
+    }
+
+    public void createChannels(Link link) {
+        Guild guild;
+        for (long id : link.getGuilds()) {
+            guild = shardManager.getGuildById(id);
+            if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                guild.getController().createTextChannel("connection").setTopic("Connection to " + link.getGuilds()).queue(
+                        (channel) -> link.addChannel((TextChannel) channel));
+            }
         }
-        return new LinkImpl(shardManager, channelIds);
+    }
+
+    public void addGuild(Link link, Guild guild) {
+        if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+            guild.getController().createTextChannel("connection").setTopic("Connection to " + link.getGuilds()).queue(
+                    (channel) -> link.addChannel((TextChannel) channel));
+        }
     }
 
     private class LinkImpl implements Link {
 
-        private Set<Long> channelIds;
-        private ShardManager shardManager;
+        private MessageBuilder builder;
+        private BiMap<Long, Long> channelIds; // K: Guild id, V: Channel id
+        private Set<Long> guilds;
 
-        private LinkImpl(ShardManager shardManager, Collection<Long> channels) {
-            this.shardManager = shardManager;
-            this.channelIds = new HashSet<>();
-            channelIds.addAll(channels);
+        private LinkImpl(Set<Long> guilds) {
+            this.builder = new MessageBuilder();
+            this.guilds = guilds;
+            this.channelIds = HashBiMap.create();
         }
 
         @Override
         public void distributeMessage(Message message) {
-            channelIds.stream().filter((id) -> message.getChannel().getIdLong() != id).map(shardManager::getTextChannelById).forEach(
-                    (channel) -> channel.sendMessage(message).queue());
+            if (message.getAuthor().isBot())
+                return;
+
+            TextChannel channel;
+            send(message.getGuild(), String.format("**%#s from %s:** %s", message.getAuthor(), message.getGuild(), message.getContentDisplay()));
         }
 
         @Override
-        public boolean isLinked(TextChannel channel) {
-            return channelIds.contains(channel.getIdLong());
+        public Collection<Long> getGuilds() {
+            return guilds;
+        }
+
+        @Override
+        public long getLinkedChannel(Guild guild) {
+            return channelIds.get(guild.getIdLong());
+        }
+
+        @Override
+        public long getLinkedGuild(TextChannel channel) {
+            return channelIds.inverse().get(channel.getIdLong());
         }
 
         @Override
         public void addChannel(TextChannel channel) {
-            channelIds.add(channel.getIdLong());
+            guilds.add(channel.getGuild().getIdLong());
+            channelIds.put(channel.getGuild().getIdLong(), channel.getIdLong());
         }
 
         @Override
-        public boolean removeChannel(TextChannel channel) {
-            channelIds.remove(channel.getIdLong());
-            return !channelIds.isEmpty();
+        public boolean remove(Guild guild) {
+            send(guild, "Guild `" + guild + "` has left the link.");
+            guilds.remove(guild.getIdLong());
+            channelIds.remove(guild.getIdLong(), this.getLinkedChannel(guild));
+            return channelIds.size() < 2;
+        }
+
+        private void send(Guild source, String text) {
+            channelIds.forEach((guildId, channelId) -> {
+                if (source.getIdLong() != guildId) {
+                    shardManager.getTextChannelById(channelIds.get(guildId)).sendMessage(text).queue();
+                }
+            });
         }
     }
 

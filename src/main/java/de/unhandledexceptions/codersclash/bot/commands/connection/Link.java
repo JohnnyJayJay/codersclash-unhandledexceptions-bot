@@ -1,15 +1,22 @@
 package de.unhandledexceptions.codersclash.bot.commands.connection;
 
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
+
+import java.util.Collection;
 
 public interface Link {
 
     void distributeMessage(Message message);
 
-    boolean isLinked(TextChannel channel);
+    Collection<Long> getGuilds();
+
+    long getLinkedChannel(Guild guild);
+
+    long getLinkedGuild(TextChannel channel);
 
     void addChannel(TextChannel channel);
 
-    boolean removeChannel(TextChannel channel);
+    boolean remove(Guild guild);
 }
