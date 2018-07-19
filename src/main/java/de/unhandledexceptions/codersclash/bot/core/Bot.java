@@ -100,7 +100,7 @@ public class Bot {
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(mailCommand, "mail", "contact")
                 .put(new ConnectionCommand(searchCommand, mailCommand), "connect", "link")
-                .put(new RoleCommand(), "role", "manage")
+                .put(new RoleCommand(), "role", "adjust")
                 .put(new InviteCommand(config), "invite", "request")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
@@ -109,9 +109,7 @@ public class Bot {
                 .activate();
 
         RestAction.setPassContext(false);
-        listeners.addAll(List.of(voteCommand,
-                xpCommand,
-                new DatabaseListener(database, shardManager), new MentionListener(config),
+        listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);
     }
@@ -166,6 +164,7 @@ public class Bot {
         listeners.forEach(shardManager::removeEventListener);
         commandSettings.deactivate();
         shardManager.shutdown();
+        Runtime.getRuntime().exit(0);
     }
 
     public void addListener(Object listener) {
