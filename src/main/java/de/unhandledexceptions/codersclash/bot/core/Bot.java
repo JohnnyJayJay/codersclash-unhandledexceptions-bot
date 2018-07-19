@@ -109,7 +109,9 @@ public class Bot {
                 .activate();
 
         RestAction.setPassContext(false);
-        listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
+        listeners.addAll(List.of(voteCommand,
+                xpCommand,
+                new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this)));
         listeners.forEach(shardManager::addEventListener);
     }

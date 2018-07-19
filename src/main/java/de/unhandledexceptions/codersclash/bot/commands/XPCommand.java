@@ -102,20 +102,20 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         if (origevent instanceof GuildMessageDeleteEvent || !database.xpSystemActivated(origevent.getGuild().getIdLong()))
             return;
-
+        System.out.println("Ja!");
         // FIXME errorresponseactions bei nachrichten, die beim reacten gelöscht werden
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
                 if (!msg.getAuthor().isBot())
                     database.addXp(msg.getMember(), 1);
-            });
+            }, null);
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
                 if (!msg.getAuthor().isBot())
                     database.removeXp(msg.getMember(), 1);
-            });
+            }, null);
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
             if (!event.getAuthor().isBot()) {
@@ -137,8 +137,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
             if (msg.getType() == MessageType.DEFAULT && msg.getMember() != null)
                 this.checkLvl(msg.getMember());
-        });
-
+        }, null);
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
