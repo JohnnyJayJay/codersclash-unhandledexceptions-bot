@@ -52,8 +52,8 @@ public class LinkManager {
             if (message.getAuthor().isBot())
                 return;
 
-            TextChannel channel;
-            send(message.getGuild(), String.format("*%#s (from %s):* %s", message.getAuthor(), message.getGuild().getName(), message.getContentDisplay()));
+            if (message.getChannel().getIdLong() == channelIds.get(message.getGuild().getIdLong()))
+                send(message.getGuild(), String.format("*%#s (from %s):* %s", message.getAuthor(), message.getGuild().getName(), message.getContentDisplay()));
         }
 
         @Override
@@ -88,7 +88,7 @@ public class LinkManager {
         private void send(Guild source, String text) {
             channelIds.forEach((guildId, channelId) -> {
                 if (source.getIdLong() != guildId) {
-                    shardManager.getTextChannelById(channelIds.get(guildId)).sendMessage(text).queue();
+                    shardManager.getTextChannelById(channelId).sendMessage(text).queue();
                 }
             });
         }

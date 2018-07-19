@@ -134,8 +134,7 @@ public class LinkCommand implements ICommand {
                         });
                         listener.removeLink(link);
                     } else {
-                        sendMessage(channel, Type.SUCCESS, "Successfully disconnected from this. link.").queue();
-                        sendMessage(guild.getTextChannelById(link.getLinkedChannel(guild)), Type.INFO, "This guild disconnected from this link.").queue();
+                        sendMessage(channel, Type.SUCCESS, "Successfully disconnected from this link.").queue();
                     }
                 }, true);
             }
