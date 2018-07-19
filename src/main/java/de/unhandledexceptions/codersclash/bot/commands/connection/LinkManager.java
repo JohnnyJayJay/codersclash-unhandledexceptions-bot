@@ -87,7 +87,7 @@ public class LinkManager {
 
         private void send(Guild source, String text) {
             channelIds.forEach((guildId, channelId) -> {
-                if (!channelIds.get(guildId).equals(channelId)) {
+                if (source.getIdLong() != guildId) {
                     shardManager.getTextChannelById(channelIds.get(guildId)).sendMessage(text).queue();
                 }
             });

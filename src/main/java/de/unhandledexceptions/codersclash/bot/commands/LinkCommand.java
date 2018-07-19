@@ -144,12 +144,13 @@ public class LinkCommand implements ICommand {
                 msg.delete().queue();
                 var link = requests.get(guild.getIdLong());
                 requests.remove(guild.getIdLong());
-                requesters.inverse().remove(link);
                 if (link.getGuilds().isEmpty()) {
                     sendMessage(channel, Type.ERROR, "It seems like no guild is in this link anymore. You may create an own request instead.").queue();
                 } else {
                     manager.addGuild(link, guild);
                     listener.addLink(link);
+                    if (!running.containsKey(requesters.inverse().get(link)))
+                        running.put(requesters.inverse().remove(link), link);
                     running.put(guild.getIdLong(), link);
                 }
             }, (no) -> msg.delete().queue()));
