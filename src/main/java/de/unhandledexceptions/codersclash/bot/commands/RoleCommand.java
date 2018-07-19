@@ -24,7 +24,7 @@ import static java.lang.String.format;
  */
 
 public class RoleCommand implements ICommand {
-    //TODO emptyPerms
+    //TODO if role above bot
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
@@ -95,7 +95,7 @@ public class RoleCommand implements ICommand {
         String ret = permLevel < 2
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
                 "level: `" + permLevel + "`"
-                : format("**Description**: Grants or removes a specific role from a member.\n\n**Usage**: `%s[role|manage] [add|remove] @Member <role>`\n\n**Permission level**: `5`", prefix);
+                : format("**Description**: Grants or removes a specific role from a member.\n\n**Usage**: `%s[role|adjust] [add|remove] @Member <role>`\n\n**Permission level**: `5`", prefix);
         return ret;
     }
 }
