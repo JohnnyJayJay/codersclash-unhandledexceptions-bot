@@ -9,7 +9,7 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
-
+//TODO
 public class ScoreBoardCommand implements ICommand {
 
     Database database;
@@ -17,7 +17,7 @@ public class ScoreBoardCommand implements ICommand {
     public ScoreBoardCommand(Database database) {
         this.database = database;
     }
-
+    //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
         String[] strings1 = "user,member".split(",");
@@ -69,6 +69,6 @@ public class ScoreBoardCommand implements ICommand {
 
     @Override
     public String info(Member member) {
-        return null;
+        return "TODO";
     }
 }

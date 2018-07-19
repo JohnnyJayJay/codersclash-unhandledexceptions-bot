@@ -14,7 +14,6 @@ import java.net.URL;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class ReadyListener extends ListenerAdapter {
@@ -38,12 +37,12 @@ public class ReadyListener extends ListenerAdapter {
 
         SelfUser selfUser = event.getJDA().getSelfUser();
         try {
-            Icon icon = Icon.from((iconURL).openStream());
             if (selfUser.getAvatarUrl() == null) {
+                Icon icon = Icon.from((iconURL).openStream());
                 selfUser.getManager().setAvatar(icon).queue();
             }
         } catch (IOException e) {
-            logger.error("An IOException occurred while creating Icon/changing avatar", e);
+            logger.error("An IOException occurred while creating icon/changing avatar", e);
         }
 
         if (!selfUser.getName().equals(config.getBotName())) {

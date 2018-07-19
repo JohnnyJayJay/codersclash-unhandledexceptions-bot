@@ -58,8 +58,9 @@ public class Messages {
         sendMessage(channel, Type.ERROR, "You do not have permission to execute this command. " + member.getAsMention()).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
     }
 
-    public static void wrongUsageMessage(MessageChannel channel, Member member, ICommand command) {
-        sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + command.info(member)).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
+    public static void wrongUsageMessage(Message message,MessageChannel channel, Member member, ICommand command) {
+        sendMessage(channel, Type.WARNING, "Wrong usage. Command Info:\n\n" + command.info(member)).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
+        message.delete().queue();
     }
 
     public static void deleteAfterFiveSec(Message message) {

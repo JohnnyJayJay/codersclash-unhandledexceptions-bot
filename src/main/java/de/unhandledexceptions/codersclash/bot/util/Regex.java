@@ -4,8 +4,8 @@ import net.dv8tion.jda.core.entities.Message;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class Regex {
 
     public static final String ONE_TO_TEN = "(10)|[1-9]";
