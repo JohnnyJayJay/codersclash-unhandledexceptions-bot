@@ -20,9 +20,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
  * @author Johnny_JayJay
@@ -79,6 +77,7 @@ public class LinkCommand implements ICommand {
 
         } else if (running.containsKey(guild.getIdLong())) {
             var shardManager = event.getJDA().asBot().getShardManager();
+            // FIXME Mail kommt zwar an, aber guild wird nicht zu den requests hinzugefügt (kann nicht annehmen)
             if (args.length > 1 && args[0].equalsIgnoreCase("invite")) {
                 final String message = "Hey, we've sent your guild a connection request - Use the link command to accept or decline it!\n\n";
                 if (args.length == 2 && args[0].matches("\\d{1,18}")) {
@@ -126,7 +125,7 @@ public class LinkCommand implements ICommand {
                 }
             } else if (args.length == 1 && args[0].equalsIgnoreCase("disconnect")) {
                 Reactions.newYesNoMenu(member.getUser(), channel, "Do you want to disconnect from your current link?", (msg) -> {
-                    var link = running.get(guild.getIdLong());
+                    var link = running.remove(guild.getIdLong());
                     if (link.remove(guild)) {
                         link.getGuilds().stream().findFirst().ifPresent((id) -> {
                             Guild last = shardManager.getGuildById(id);
@@ -137,6 +136,8 @@ public class LinkCommand implements ICommand {
                         sendMessage(channel, Type.SUCCESS, "Successfully disconnected from this link.").queue();
                     }
                 }, true);
+            } else {
+                wrongUsageMessage(channel, member, this);
             }
         } else if (requests.containsKey(guild.getIdLong())) {
             sendMessage(channel, Type.INFO, "There is a request for this guild. Would you like to accept it?").queue((msg) -> Reactions.newYesNoMenu(member.getUser(), msg, (yes) -> {

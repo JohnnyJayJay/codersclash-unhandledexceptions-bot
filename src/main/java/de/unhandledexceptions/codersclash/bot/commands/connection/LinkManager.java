@@ -52,7 +52,8 @@ public class LinkManager {
             if (message.getAuthor().isBot())
                 return;
 
-            if (message.getChannel().getIdLong() == channelIds.get(message.getGuild().getIdLong()))
+            Long linkedChannel = channelIds.get(message.getGuild().getIdLong());
+            if (linkedChannel != null && message.getChannel().getIdLong() == linkedChannel)
                 send(message.getGuild(), String.format("*%#s (from %s):* %s", message.getAuthor(), message.getGuild().getName(), message.getContentDisplay()));
         }
 
