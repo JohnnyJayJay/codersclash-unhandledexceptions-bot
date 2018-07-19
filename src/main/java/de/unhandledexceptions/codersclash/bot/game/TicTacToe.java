@@ -23,12 +23,12 @@ public class TicTacToe {
     private final String X = "\uD83C\uDDFD";
     private final String O = "\uD83D\uDD34";
 
-    public void start(Message message, Member player1, Member player2) {
+    public void start(Message message, Member player1, Member player2, int size) {
         REACTIONS.forEach((reaction) -> message.addReaction(reaction).queue());
         boolean first = ThreadLocalRandom.current().nextBoolean();
         var current = new SimpleEntry<Member, String>(first ? player1 : player2, first ? X : O);
         var next = new SimpleEntry<Member, String>(first ? player2 : player1, first ? O : X);
-        String[][] fields = new String[3][3]; // TODO dynamisch user entscheiden lassen
+        String[][] fields = new String[size][size]; // TODO dynamisch user entscheiden lassen
         for (String[] row : fields)
             Arrays.fill(row, BLANK_FIELD);
         game(new EmbedBuilder().setTitle(current.getKey().getEffectiveName() + " " + current.getValue() + " vs. " + next.getKey().getEffectiveName() + " " + next.getValue()), fields, message, current, next, 0, 0);
@@ -46,7 +46,7 @@ public class TicTacToe {
         Reactions.newMenu(current.getKey().getUser(), message, (emoji) -> {
             switch (emoji) {
                 case Reactions.ARROW_DOWN:
-                    game(builder, fields, message, current, next, currentRow == 2 ? currentRow : currentRow + 1, currentColumn);
+                    game(builder, fields, message, current, next, currentRow == fields.length - 1 ? currentRow : currentRow + 1, currentColumn);
                     break;
                 case Reactions.ARROW_UP:
                     game(builder, fields, message, current, next, currentRow == 0 ? currentRow : currentRow - 1, currentColumn);
@@ -55,26 +55,14 @@ public class TicTacToe {
                     game(builder, fields, message, current, next, currentRow, currentColumn == 0 ? currentColumn : currentColumn - 1);
                     break;
                 case Reactions.SMALL_ARROW_RIGHT:
-                    game(builder, fields, message, current, next, currentRow, currentColumn == 2 ? currentColumn : currentColumn + 1);
+                    game(builder, fields, message, current, next, currentRow, currentColumn == fields.length - 1 ? currentColumn : currentColumn + 1);
                     break;
                 case Reactions.YES_EMOTE:
                     if (fields[currentRow][currentColumn].equals(X) || fields[currentRow][currentColumn].equals(O)) {
                         game(builder, fields, message, current, next, currentRow, currentColumn);
                     } else {
-                        // TODO
                         fields[currentRow][currentColumn] = current.getValue();
-                        boolean won = false;
-                        for (String[] row : fields) {
-                            if (Arrays.stream(row).allMatch(current.getValue()::equals)) {
-                                won = true;
-                            }
-                        }
-                        if (!won) {
-                            boolean diagonal = (fields[0][0].equals(current.getValue()) && fields[1][1].equals(current.getValue()) && fields[2][2].equals(current.getValue())) ||
-                                    (fields[0][2].equals(current.getValue()) && fields[1][1].equals(current.getValue()) && fields[2][0].equals(current.getValue()));
-                            if (diagonal)
-                                won = true;
-                        }
+                        boolean won = checkColumns(fields, current.getValue()) || checkRows(fields, current.getValue()) || checkDiagonal(fields, current.getValue());
                         if (won) {
                             message.editMessage(builder.clear().setDescription(current.getKey().getEffectiveName() + " gewinnt!").setColor(current.getKey().getColor()).setFooter("Yay", null).build()).queue();
                         } else if (Arrays.stream(fields).allMatch((row) -> Arrays.stream(row).noneMatch(BLANK_FIELD::equals))) {
@@ -91,5 +79,37 @@ public class TicTacToe {
         }, REACTIONS);
     }
 
-    private boolean 
+    private boolean checkDiagonal(String[][] fields, String lookFor) {
+        int leftToRight = 0;
+        int rightToLeft = 0;
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i][i].equals(lookFor))
+                leftToRight++;
+            if (fields[i][(fields.length - 1) - i].equals(lookFor))
+                rightToLeft++;
+        }
+        return rightToLeft == fields.length || leftToRight == fields.length;
+    }
+
+    private boolean checkColumns(String[][] fields, String lookFor) {
+        int[] howMany = new int[fields.length];
+        Arrays.fill(howMany, 0);
+        for (String[] row : fields) {
+            for (int j = 0; j < row.length; j++) {
+                if (row[j].equals(lookFor))
+                    howMany[j]++;
+            }
+        }
+        return Arrays.stream(howMany).anyMatch((count) -> count == fields.length);
+    }
+
+    private boolean checkRows(String[][] fields, String lookFor) {
+        for (String[] row : fields) {
+            if (Arrays.stream(row).allMatch(lookFor::equals)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

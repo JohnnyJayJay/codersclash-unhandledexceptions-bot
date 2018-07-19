@@ -28,17 +28,6 @@ public class LinkManager {
         return new LinkImpl(guilds);
     }
 
-    public void createChannels(Link link) {
-        Guild guild;
-        for (long id : link.getGuilds()) {
-            guild = shardManager.getGuildById(id);
-            if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                guild.getController().createTextChannel("connection").setTopic("Connection to " + link.getGuilds()).queue(
-                        (channel) -> link.addChannel((TextChannel) channel));
-            }
-        }
-    }
-
     public void addGuild(Link link, Guild guild) {
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
             guild.getController().createTextChannel("connection").setTopic("Connection to " + link.getGuilds()).queue(
@@ -64,7 +53,7 @@ public class LinkManager {
                 return;
 
             TextChannel channel;
-            send(message.getGuild(), String.format("**%#s from %s:** %s", message.getAuthor(), message.getGuild(), message.getContentDisplay()));
+            send(message.getGuild(), String.format("*%#s (from %s):* %s", message.getAuthor(), message.getGuild().getName(), message.getContentDisplay()));
         }
 
         @Override
