@@ -108,9 +108,11 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
+            if (!event.getUser().isBot())
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.addXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
+            if (!event.getUser().isBot())
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> database.removeXp(msg.getMember(), 1));
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
