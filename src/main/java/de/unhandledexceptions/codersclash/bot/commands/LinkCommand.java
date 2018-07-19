@@ -149,7 +149,7 @@ public class LinkCommand implements ICommand {
                 } else {
                     manager.addGuild(link, guild);
                     listener.addLink(link);
-                    if (!running.containsKey(requesters.inverse().get(link)))
+                    if (requesters.inverse().get(link) != null)
                         running.put(requesters.inverse().remove(link), link);
                     running.put(guild.getIdLong(), link);
                 }
