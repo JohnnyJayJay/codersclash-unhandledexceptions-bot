@@ -4,6 +4,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.commands.connection.LinkListener;
 import de.unhandledexceptions.codersclash.bot.commands.connection.LinkManager;
+import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.listeners.Management;
 import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
@@ -83,6 +84,7 @@ public class Bot {
         var xpCommand = new XPCommand(commandSettings, database);
         var linkListener = new LinkListener(shardManager);
 
+        var ticTacToe = new TicTacToe();
         var voteCommand = new VoteCommand();
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
@@ -98,6 +100,7 @@ public class Bot {
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep", "reports")
                 .put(voteCommand, "vote", "v")
+                .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
