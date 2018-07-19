@@ -108,13 +108,13 @@ public class XPCommand extends ListenerAdapter implements ICommand {
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
                 if (!msg.getAuthor().isBot())
                     database.addXp(msg.getMember(), 1);
-            }, (msg) -> System.out.print(""));
+            }, (msg) -> {});
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
                 if (!msg.getAuthor().isBot())
                     database.removeXp(msg.getMember(), 1);
-            }, (msg) -> System.out.print(""));
+            }, (msg) -> {});
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
             if (!event.getAuthor().isBot()) {
@@ -136,9 +136,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
             if (msg.getType() == MessageType.DEFAULT && msg.getMember() != null)
                 this.checkLvl(msg.getMember());
-        }, (msg) -> {
-            System.out.print("");
-        });
+        }, (msg) -> {});
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
