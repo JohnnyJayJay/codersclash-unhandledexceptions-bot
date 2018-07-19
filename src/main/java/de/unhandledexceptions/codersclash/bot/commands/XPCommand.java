@@ -102,7 +102,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         if (origevent instanceof GuildMessageDeleteEvent || !database.xpSystemActivated(origevent.getGuild().getIdLong()))
             return;
-        System.out.println("Ja!");
         // FIXME errorresponseactions bei nachrichten, die beim reacten gelöscht werden
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
@@ -137,7 +136,9 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
             if (msg.getType() == MessageType.DEFAULT && msg.getMember() != null)
                 this.checkLvl(msg.getMember());
-        }, null);
+        }, (msg) -> {
+            System.out.print("");
+        });
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {
