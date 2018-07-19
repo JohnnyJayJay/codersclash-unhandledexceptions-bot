@@ -2,6 +2,9 @@ package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.*;
+import de.unhandledexceptions.codersclash.bot.commands.connection.LinkListener;
+import de.unhandledexceptions.codersclash.bot.commands.connection.LinkManager;
+import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.listeners.Management;
 import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
@@ -15,8 +18,6 @@ import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.awt.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,27 +82,32 @@ public class Bot {
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
 
         var xpCommand = new XPCommand(commandSettings, database);
+        var linkListener = new LinkListener(shardManager);
 
+        var ticTacToe = new TicTacToe();
         var voteCommand = new VoteCommand();
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
+        var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
                 .setCooldown(3000)
+                .put(linkCommand, "link")
                 .put(new ClearCommand(), "clear", "clean", "delete")
                 .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep", "reports")
-                .put(voteCommand, "vote")
+                .put(voteCommand, "vote", "v")
+                .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
                 .put(new BlockCommand(), "block", "deny")
                 .put(new MuteCommand(), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(mailCommand, "mail", "contact")
-                .put(new ConnectionCommand(searchCommand, mailCommand), "connect", "link")
-                .put(new RoleCommand(), "role", "adjust")
-                .put(new InviteCommand(config), "invite", "request")
+                //.put(new ConnectionCommand(searchCommand, mailCommand), "connect")
+                .put(new RoleCommand(), "role")
+                .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
@@ -110,7 +116,7 @@ public class Bot {
 
         RestAction.setPassContext(false);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
-                new ReadyListener(config), new Management(this)));
+                new ReadyListener(config), new Management(this), linkListener));
         listeners.forEach(shardManager::addEventListener);
     }
 

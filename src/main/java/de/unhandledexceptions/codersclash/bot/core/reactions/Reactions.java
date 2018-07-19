@@ -56,6 +56,10 @@ public class Reactions {
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";
     public static final String NEWSPAPER = "\uD83D\uDCF0";
+    public static final String SMALL_ARROW_LEFT = "◀";
+    public static final String SMALL_ARROW_RIGHT = "▶";
+
+    private static final Consumer<Message> deleteMsg = (msg) -> msg.delete().queue();
 
     public static String getNumber(int number) {
         String ret = " ";
@@ -88,8 +92,22 @@ public class Reactions {
         Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(user, msg, yes, no));
     }
 
+    public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes, Consumer<Message> no, boolean deleteAnyway) {
+        if (deleteAnyway)
+            newYesNoMenu(user, channel, question, deleteMsg.andThen(yes), deleteMsg.andThen(no));
+        else
+            newYesNoMenu(user, channel, question, yes, no);
+    }
+
     public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes) {
-        Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(user, msg, yes));
+        newYesNoMenu(user, channel, question, yes, (msg) -> {});
+    }
+
+    public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes, boolean deleteAnyway) {
+        if (deleteAnyway)
+            newYesNoMenu(user, channel, question, deleteMsg.andThen(yes), deleteMsg);
+        else
+            newYesNoMenu(user, channel, question, yes);
     }
 
     public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, int waitSeconds, boolean removeListener) {

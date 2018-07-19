@@ -60,7 +60,7 @@ public class SearchCommand implements ICommand {
 
             } else if (args[0].equalsIgnoreCase("guild")) {
                 String name = String.join(" ", Arrays.asList(args).subList(1, args.length));
-                List<String> display = find(shardmanager, name.toLowerCase(), false);
+                List<String> display = find(shardmanager, name, false);
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((m) -> {
                     ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
@@ -88,6 +88,7 @@ public class SearchCommand implements ICommand {
 
     public List<String> find(ShardManager shardmanager, String name, boolean searchUser) {
         List<String> ret = new ArrayList<>();
+        name = name.toLowerCase();
         if (searchUser) {
             List<User> withDiscriminator = Collections.EMPTY_LIST;
             List<User> users = new ArrayList<>();

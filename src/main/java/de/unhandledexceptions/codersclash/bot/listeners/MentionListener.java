@@ -3,7 +3,6 @@ package de.unhandledexceptions.codersclash.bot.listeners;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Config;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -17,7 +16,7 @@ import java.util.Locale;
 
 public class MentionListener extends ListenerAdapter {
 
-    private EmbedBuilder builder = new EmbedBuilder();
+    private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
     private Config config;
 
     public MentionListener(Config config) {
@@ -26,8 +25,7 @@ public class MentionListener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event.getMessage().getContentRaw().matches(Regex.MEMBER_MENTION) && event.getMessage().getMentionedMembers().size() == 1
-                && event.getMessage().getMentionedUsers().get(0).getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
+        if (event.getMessage().getContentRaw().equals(event.getGuild().getSelfMember().getAsMention())) {
             String prefix = Bot.getPrefix(event.getGuild().getIdLong());
             var shardManager = event.getJDA().asBot().getShardManager();
             var stringBuilder = new StringBuilder();
@@ -35,8 +33,8 @@ public class MentionListener extends ListenerAdapter {
             for (Guild guild : shardManager.getGuildCache())
                 members += guild.getMemberCache().size();
 
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
             config.getBotOwners().forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
+            var builder = new EmbedBuilder();
             builder.clear().setThumbnail("https://i.imgur.com/L1RgtJb.gif")
                     .addField("Name", config.getBotName(), true)
                     .addField("Version", config.getVersion(),true)
