@@ -55,6 +55,8 @@ public class Reactions {
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";
     public static final String NEWSPAPER = "\uD83D\uDCF0";
+    public static final String SMALL_ARROW_LEFT = "◀";
+    public static final String SMALL_ARROW_RIGHT = "▶";
 
     private static final Consumer<Message> deleteMsg = (msg) -> msg.delete().queue();
     

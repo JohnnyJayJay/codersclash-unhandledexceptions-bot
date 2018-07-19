@@ -71,7 +71,7 @@ public class LinkCommand implements ICommand {
             }, true);
 
         } else if (running.containsKey(guild.getIdLong())) {
-            sendMessage(channel, Type.INFO, "This guild is currently linked! Please refer to the commands in the linked channel. command help").queue();
+            // TODO commands abort und invite
         } else if (requests.containsKey(guild.getIdLong())) {
             sendMessage(channel, Type.INFO, "There is a request for this guild. Would you like to accept it?").queue((msg) -> Reactions.newYesNoMenu(member.getUser(), msg, (yes) -> {
                 msg.delete().queue();

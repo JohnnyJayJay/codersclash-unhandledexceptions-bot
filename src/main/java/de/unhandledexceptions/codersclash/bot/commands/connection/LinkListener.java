@@ -28,12 +28,6 @@ public class LinkListener extends ListenerAdapter {
         if (event.getAuthor().isBot())
             return;
 
-        String raw = event.getMessage().getContentRaw().toLowerCase();
-        switch (raw) {
-            case "link:abort":
-            case "link:invite":
-        }
-
         Guild guild = event.getGuild();
         links.stream().filter((link) -> link.getGuilds().contains(guild.getIdLong())).forEach((link) -> link.distributeMessage(event.getMessage()));
     }
