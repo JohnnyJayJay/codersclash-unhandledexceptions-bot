@@ -45,7 +45,7 @@ public class TicTacToeCommand implements ICommand {
             });
 
         } else {
-            Messages.wrongUsageMessage(channel, member, this);
+            Messages.wrongUsageMessage(event.getMessage(), channel, member, this);
         }
     }
 
