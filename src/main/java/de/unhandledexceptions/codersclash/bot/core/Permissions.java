@@ -16,6 +16,7 @@ import java.awt.*;
 import java.util.Arrays;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static java.lang.String.format;
 
 public class Permissions implements ICommand {
 
@@ -35,7 +36,7 @@ public class Permissions implements ICommand {
 
         var role = Roles.getTryCatchRole(event.getGuild());
         if (role == null) {
-            guild.getController().createRole().setName("try-catch").setColor(Color.RED).setMentionable(true).setPermissions(Permission.EMPTY_PERMISSIONS).queue(
+            guild.getController().createRole().setName("try-catch").setColor(Color.RED).setMentionable(true).queue(
                     (newRole) -> sendMessage(channel, Type.INFO, "A role \"try-catch\" has been created. Only members of this role can manage permissions concerning commands of " +
                             "try-catch-bot. Be careful, members with this role have full control about try-catch-permissions!").queue(), Messages.defaultFailure(channel));
         } else if (!member.getRoles().contains(role)) {
@@ -48,11 +49,11 @@ public class Permissions implements ICommand {
             if (event.getMessage().getMentionedMembers().isEmpty()) {
                 var targetRole = event.getMessage().getMentionedRoles().get(0);
                 guild.getMemberCache().stream().filter((m) -> m.getRoles().contains(targetRole)).forEach((m) -> database.changePermissionLevel(m, level));
-                sendMessage(channel, Type.SUCCESS, String.format("Permission level of role `%s` successfully set to `%d`.", targetRole.getName(), level)).queue();
+                sendMessage(channel, Type.SUCCESS, format("Permission level of role `%s` successfully set to `%d`.", targetRole.getName(), level)).queue();
             } else {
                 var targetMember = guild.getMember(event.getMessage().getMentionedUsers().get(0));
                 database.changePermissionLevel(targetMember, level);
-                sendMessage(channel, Type.SUCCESS, String.format("Permission level of member `%#s` successfully set to `%d`.", targetMember.getUser(), level)).queue();
+                sendMessage(channel, Type.SUCCESS, format("Permission level of member `%#s` successfully set to `%d`.", targetMember.getUser(), level)).queue();
             }
         }
     }
@@ -64,7 +65,7 @@ public class Permissions implements ICommand {
         String[] prefixArr = new String[10];
         Arrays.fill(prefixArr, prefix);
         String ret = member.getRoles().stream().map(Role::getName).anyMatch((role) -> role.equals("try-catch"))
-                ? String.format("Manage try-catch permissions and configure the different permission levels.\n```\nLevel 0: %shelp\nLevel 1: %suserinfo\nLevel 2: " +
+                ? format("Manage try-catch permissions and configure the different permission levels.\n```\nLevel 0: %shelp\nLevel 1: %suserinfo\nLevel 2: " +
                 "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote and %smail\nLevel 5: %ssettings and %srole```\n\nUsage: `%s[permission|perms|perm] [<@Member>|<@Role>] " +
                 "<level>` (level may be 0-5)\n\nTo execute this command, the member needs to have a role named \"try-catch\".", prefixArr)
                 : "This command is not available for you.\n **Permissions needed**: `try-catch` role.";

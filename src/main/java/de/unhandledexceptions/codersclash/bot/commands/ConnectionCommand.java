@@ -6,6 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -18,6 +19,11 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import java.util.*;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static java.lang.String.format;
+
+/**
+ * @author Johnny_JayJay
+ */
 
 public class ConnectionCommand implements ICommand {
 
@@ -32,7 +38,7 @@ public class ConnectionCommand implements ICommand {
         this.searchCommand = searchCommand;
         this.mailCommand = mailCommand;
     }
-
+    //TODO wenn die request abgelehnt wird der anderen Guild bescheid geben und "noid" wird in die message mit reingenommen (fehler im mailcommand)
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         Guild thisGuild = event.getGuild();
@@ -42,7 +48,7 @@ public class ConnectionCommand implements ICommand {
         if (Permissions.getPermissionLevel(member) >= 4) {
             if (connected.contains(thisGuild.getIdLong())) {
                 sendMessage(channel, Type.INFO, "This guild is already connected. To abort the current connection, " +
-                        "go to the connected channel and type `" + Bot.getPrefix(thisGuild.getIdLong()) + "abort connection` there.").queue();
+                        "go to the connected channel and type `" + Bot.getPrefix(thisGuild.getIdLong()) + "abort [connection|link]` there.").queue();
                 return;
             }
             if (args.length < 1 || !args[0].equalsIgnoreCase("request")) {
@@ -56,12 +62,13 @@ public class ConnectionCommand implements ICommand {
                     Reactions.newYesNoMenu(event.getAuthor(), channel, String.format("This guild has been requested to open a connection to " +
                             "`%s - Owner: %#s`. Would you like to accept it?", guild, guild.getOwner().getUser()), (msg) -> {
                         msg.delete().queue();
+                        event.getMessage().delete().queue();
                         if (thisGuild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL) && guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
                             String prefix = Bot.getPrefix(thisGuild.getIdLong());
                             String prefix2 = Bot.getPrefix(guild.getIdLong());
                             thisGuild.getController().createTextChannel("Connection to " + guild.getName()).queue((channelA) -> guild.getController().createTextChannel("Connection to " + thisGuild.getName()).queue((channelB) -> {
-                                sendMessage((TextChannel) channelA, Type.SUCCESS, "Connection successfully opened! You can now chat with the people on the other side! To disconnect, please use `" + prefix + "abort connection`.").queue();
-                                sendMessage((TextChannel) channelB, Type.INFO, thisGuild.getName() + " accepted your request. You can now chat with the others! To disconnect, please use `" + prefix2 + "abort connection`.").queue();
+                                sendMessage((TextChannel) channelA, Type.SUCCESS, "Connection successfully opened! You can now chat with the people on the other side! To disconnect, please use `" + prefix + "abort [connection|link]`.").queue();
+                                sendMessage((TextChannel) channelB, Type.INFO, thisGuild.getName() + " accepted your request. You can now chat with the others! To disconnect, please use `" + prefix2 + "abort [connection|link]`.").queue();
                                 shardManager.addEventListener(new TransferListener(channelA.getIdLong(), channelB.getIdLong(), shardManager));
                                 pendingRequests.remove(thisGuild.getIdLong());
                                 connected.add(thisGuild.getIdLong());
@@ -79,7 +86,7 @@ public class ConnectionCommand implements ICommand {
                     });
                 } else {
                     sendMessage(channel, Type.INFO, "There is currently no request for this guild. Use `"
-                            + Bot.getPrefix(thisGuild.getIdLong()) + "connection request send [NOID|<ID>]` to connect with another guild.").queue();
+                            + Bot.getPrefix(thisGuild.getIdLong()) + "[connect|link] request send [NOID|<ID>]` to connect with another guild.").queue();
                 }
             } else if (args[1].equalsIgnoreCase("send") && args.length > 2) {
                 var shardManager = event.getJDA().asBot().getShardManager();
@@ -106,6 +113,7 @@ public class ConnectionCommand implements ICommand {
                         sendMessage(channel, Type.QUESTION, "Please type in the name now!").queue((m2) -> {
                             Reactions.newMessageWaiter(member.getUser(), channel, 30, (m) -> {
                                 List<String> guilds = searchCommand.find(shardManager, m.getContentRaw(), false);
+                                event.getMessage().delete().queue();
                                 if (guilds.isEmpty()) {
                                     sendMessage(channel, Type.ERROR, "No results found. Maybe I am not on this guild?").queue();
                                 } else {
@@ -147,7 +155,7 @@ public class ConnectionCommand implements ICommand {
         } else {
             pendingRequests.put(guild.getIdLong(), thisGuild.getIdLong());
             String message = "Hey, we've sent your guild a connection request " +
-                    "- Use `" + Bot.getPrefix(guild.getIdLong()) + "connection request` to accept or decline it!\n\n";
+                    "- Use `" + Bot.getPrefix(guild.getIdLong()) + "[connect|link] request` to accept or decline it!\n\n";
             mailCommand.sendMail(member, channel, guild,
                     args.length > 3 ? message + event.getCommand().getJoinedArgs(2)
                             : "##Connection Request##" + message);
@@ -193,7 +201,9 @@ public class ConnectionCommand implements ICommand {
                 return;
 
             if (message.getContentRaw().equals(Bot.getPrefix(ownChannel.getGuild().getIdLong()) + "abort connection")
+                    && Permissions.getPermissionLevel(member) >= 4 || message.getContentRaw().equals(Bot.getPrefix(ownChannel.getGuild().getIdLong()) + "abort link")
                     && Permissions.getPermissionLevel(member) >= 4) {
+                message.delete().queue();
                 shardManager.removeEventListener(this);
                 connected.remove(targetChannel.getGuild().getIdLong());
                 connected.remove(ownChannel.getGuild().getIdLong());
@@ -203,15 +213,29 @@ public class ConnectionCommand implements ICommand {
                     Reactions.newYesNoMenu(member.getUser(), ownChannel, "Do you want to delete this channel?",
                             (msg) -> ownChannel.delete().queue(), (msg) -> msg.delete().queue());
                 }
+                if (targetChannel.getGuild().getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+                    Reactions.newYesNoMenu(member.getUser(), targetChannel, "Do you want to delete this channel?",
+                            (msg) -> targetChannel.delete().queue(), (msg) -> msg.delete().queue());
+                }
+            } else if (Permissions.getPermissionLevel(member) >= 4){
+                Messages.noPermissionsMessage(ownChannel, member);
             } else {
                 targetChannel.sendMessage(String.format("```\n%#s: %s```", member.getUser(), message)).queue();
             }
         }
     }
 
-    // TODO
     @Override
     public String info(Member member) {
-        return " ";
+        String prefix = Bot.getPrefix(member.getGuild().getIdLong());
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 4
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `4`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Connects two guilds with a live feed. The connection can be closed by both guilds.\n\n" +
+                        "**Usage**: `%s[connect|link] request send [NOID|<id>]`to send a normal connection request.\n`%s[connect|link] request send [NOID|<id>] <mail>` to send a connection request *with* an additional mail, use `%shelp mail` to get more information.\n" +
+                "`%sabort [connection|link]` to close to the connection.\n\n**Permission " +
+                        "level**: `4`", prefix, prefix, prefix, prefix);
+        return ret;
     }
 }

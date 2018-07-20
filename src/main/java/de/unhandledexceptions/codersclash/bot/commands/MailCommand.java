@@ -24,8 +24,8 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class MailCommand implements ICommand {
 
     private Database database;

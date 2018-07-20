@@ -59,7 +59,7 @@ public class Messages {
     }
 
     public static void wrongUsageMessage(MessageChannel channel, Member member, ICommand command) {
-        sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + command.info(member)).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
+        sendMessage(channel, Type.WARNING, "Wrong usage. Command Info:\n\n" + command.info(member)).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
     }
 
     public static void deleteAfterFiveSec(Message message) {

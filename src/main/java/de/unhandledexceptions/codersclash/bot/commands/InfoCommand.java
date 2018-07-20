@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-
+//TODO ganzer command
 public class InfoCommand implements ICommand {
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {

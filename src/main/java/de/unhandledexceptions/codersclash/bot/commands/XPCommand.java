@@ -44,7 +44,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         this.settings = settings;
         this.database = database;
     }
-
+    //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!database.xpSystemActivated(event.getGuild().getIdLong()) || !event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
@@ -102,20 +102,19 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         if (origevent instanceof GuildMessageDeleteEvent || !database.xpSystemActivated(origevent.getGuild().getIdLong()))
             return;
-
         // FIXME errorresponseactions bei nachrichten, die beim reacten gelöscht werden
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
                 if (!msg.getAuthor().isBot())
                     database.addXp(msg.getMember(), 1);
-            });
+            }, (msg) -> {});
         } else if (origevent instanceof GuildMessageReactionRemoveEvent) {
             GuildMessageReactionRemoveEvent event = (GuildMessageReactionRemoveEvent) origevent;
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
                 if (!msg.getAuthor().isBot())
                     database.removeXp(msg.getMember(), 1);
-            });
+            }, (msg) -> {});
         } else if (origevent instanceof GuildMessageReceivedEvent) {
             GuildMessageReceivedEvent event = (GuildMessageReceivedEvent) origevent;
             if (!event.getAuthor().isBot()) {
@@ -137,8 +136,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         origevent.getChannel().getMessageById(origevent.getMessageId()).queue((msg) -> {
             if (msg.getType() == MessageType.DEFAULT && msg.getMember() != null)
                 this.checkLvl(msg.getMember());
-        });
-
+        }, (msg) -> {});
     }
 
     private String getProgressBar(long xp, long maxxp, Member member) {

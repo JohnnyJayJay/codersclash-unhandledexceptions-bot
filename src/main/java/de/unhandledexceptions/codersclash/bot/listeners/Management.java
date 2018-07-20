@@ -41,7 +41,7 @@ public class Management extends ListenerAdapter {
                                     shardManager.getShardsRunning() + "\nInaktive Shards: " + shardManager.getShardsQueued()).queue();
                         } else {
                             channel.sendMessage("Shard " + args[1] + " wird restartet").complete();
-                            timer.schedule(timerTaskOf((v) -> bot.restart(Integer.parseInt(args[1]))), 5000);
+                            timer.schedule(timerTaskOf((v) -> bot.restart(Integer.parseInt(args[1])-1)), 5000);
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("status")) {
@@ -50,7 +50,7 @@ public class Management extends ListenerAdapter {
                         channel.sendMessage("Gesamtzahl Shards: " + shardManager.getShardsTotal() + "\nAktive Shards: " +
                                 shardManager.getShardsRunning() + "\nInaktive Shards: " + shardManager.getShardsQueued()).queue();
                     } else if (args[1].matches("\\d")) {
-                        channel.sendMessage("Ping von Shard " + args[1] + ": " + shardManager.getShardById(Integer.parseInt(args[1])).getPing() + "ms").queue();
+                        channel.sendMessage("Ping von Shard " + args[1] + ": " + shardManager.getShardById(Integer.parseInt(args[1])-1).getPing() + "ms").queue();
                     }
                 } else if (args[0].equalsIgnoreCase("shutdown")) {
                     if (args[1].equals("complete")) {
@@ -63,7 +63,7 @@ public class Management extends ListenerAdapter {
                                     shardManager.getShardsRunning() + "\nInaktive Shards: " + shardManager.getShardsQueued()).queue();
                         } else {
                             channel.sendMessage("Shard " + args[1] + " wird heruntergefahren").complete();
-                            timer.schedule(timerTaskOf((v) -> bot.shutdown(Integer.parseInt(args[1]))), 5000);
+                            timer.schedule(timerTaskOf((v) -> bot.shutdown(Integer.parseInt(args[1])-1)), 5000);
                         }
                     }
                 }

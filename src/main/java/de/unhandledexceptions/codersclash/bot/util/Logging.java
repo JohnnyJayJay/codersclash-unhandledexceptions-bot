@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class Logging {

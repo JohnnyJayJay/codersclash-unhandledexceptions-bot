@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
 import static java.lang.String.format;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class ProfileCommand implements ICommand {
@@ -60,7 +60,7 @@ public class ProfileCommand implements ICommand {
                 String game = ((target.getGame() != null) ? target.getGame().getName() : "like a good boy!");
                 String gametype = "Using Discord";
                 String perms = Reactions.getNumber(Permissions.getPermissionLevel(target));
-                String reports = ((Reactions.getNumber(ReportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **Mr. Clean**" : Reactions.getNumber(ReportCommand.getReportCount(target)));
+                String reports = ((Reactions.getNumber(reportCommand.getReportCount(target)).equals(Reactions.getNumber(0))) ? ":zero: aka. **clean af**" : Reactions.getNumber(reportCommand.getReportCount(target)));
                 String roles = ((!target.getRoles().isEmpty())) ? String.join(" ", target.getRoles().stream().map(Role::getAsMention).collect(Collectors.toList())) : "none";
                 String image = null;
                 String status;
@@ -100,8 +100,8 @@ public class ProfileCommand implements ICommand {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 if (target.getUser().getAvatarUrl() == null) {
-                    embedBuilder.clear().setAuthor(target.getEffectiveName(), null, target.getUser().getAvatarUrl())
-                            .addField("Usertag", target.getEffectiveName() + "#" + target.getUser().getDiscriminator(), true)
+                    embedBuilder.clear()
+                            .addField("Usertag", format("%#s", target.getUser()), true)
                             .addField("Nickname", nickname, true)
                             .addBlankField(true)
                             .addField("ID", target.getUser().getId(), true)
@@ -120,8 +120,8 @@ public class ProfileCommand implements ICommand {
                             .setColor(target.getColor())
                             .setThumbnail(target.getUser().getAvatarUrl());
                 } else {
-                    embedBuilder.clear().setAuthor(target.getEffectiveName(), null, target.getUser().getAvatarUrl())
-                            .addField("Usertag", target.getEffectiveName() + "#" + target.getUser().getDiscriminator(), true)
+                    embedBuilder.clear()
+                            .addField("Usertag", format("%#s", target.getUser()), true)
                             .addField("Nickname", nickname, true)
                             .addField("ID", target.getUser().getId(), true)
                             .addField("Status", status, true)
@@ -139,7 +139,7 @@ public class ProfileCommand implements ICommand {
                 }
                 sendMessage(channel, Messages.Type.NO_TYPE, "Information about " + target.getAsMention(), false, embedBuilder).queue();
             } else {
-                sendMessage(channel, Messages.Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -172,7 +172,7 @@ public class ProfileCommand implements ICommand {
                     ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                     "level: `" + permLevel + "`"
                     : format("**Description**: Provides you with Information about yourself or another member.\n\n" +
-                    "**Usage**: `%s[profile]` to view your profile\n\t\t\t  `%s[profile] @Member` to view @Member's profile\n\n**Permission " +
+                    "**Usage**: `%s[profile|userinfo]` to view your profile\n\t\t\t  `%s[profile|userinfo] @Member` to view @Member's profile\n\n**Permission " +
                     "level**: `1`", prefix, prefix);
             return ret;
         }

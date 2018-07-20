@@ -17,7 +17,6 @@ import static java.lang.String.format;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class MuteCommand implements ICommand {
@@ -64,7 +63,7 @@ public class MuteCommand implements ICommand {
                     }
                 }
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

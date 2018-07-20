@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
@@ -97,7 +98,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         }
 
         Guild guild = event.getGuild();
-        
+
         if (Permissions.getPermissionLevel(member) < Permissions.getVotePermissionLevel())
         {
             channel.sendMessage("Your permission level is too low. (" + Permissions.getPermissionLevel(member) + "/" + Permissions.getVotePermissionLevel() + ")").queue();
@@ -120,7 +121,6 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         Vote vote = new Vote(guild, event.getChannel(), shardManager);
         VoteCreator creator = new VoteCreator(member, guild, vote, VoteState.TIME, shardManager);
         vote.setVoteCreator(creator);
-        
         votes.put(guild.getIdLong(), vote);
 
         sendTimeReactionMessage(vote, event);

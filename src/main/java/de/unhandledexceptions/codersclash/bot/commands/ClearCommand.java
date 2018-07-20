@@ -18,10 +18,8 @@ import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
 
-// FIXME ErrorResponseActions (wahrscheinlich nicht fixbar)
 public class ClearCommand implements ICommand {
 
     @Override
@@ -37,7 +35,7 @@ public class ClearCommand implements ICommand {
             } else if (args.length == 1){
                 sendMessage(channel, Type.WARNING, format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + info(member)).queue();
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -45,7 +43,6 @@ public class ClearCommand implements ICommand {
     }
 
     private void clear(TextChannel channel, int amount) {
-        // TODO Buffer einbauen
         long twoWeeksAgo = (System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000)); // System der JDA, die Zeit zu messen
         channel.getHistory().retrievePast(amount > 100 ? 100 : amount).queue((messages) -> { // Wenn amount größer als 100 ist, retrieve 100, ansonsten amount
             // filter die messages, die man löschen kann, heraus

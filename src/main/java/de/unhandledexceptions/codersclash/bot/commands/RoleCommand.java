@@ -21,11 +21,10 @@ import static java.lang.String.format;
 
 /**
  * @author TheRealYann
- * @version 1.0
  */
 
 public class RoleCommand implements ICommand {
-    //TODO emptyPerms
+    //TODO if role above bot
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
@@ -82,7 +81,7 @@ public class RoleCommand implements ICommand {
                     sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member), true).queue();
                 }
             } else {
-                sendMessage(channel, Type.INFO, "Wrong usage. Command info:\n\n" + this.info(member)).queue();
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -96,7 +95,7 @@ public class RoleCommand implements ICommand {
         String ret = permLevel < 2
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
                 "level: `" + permLevel + "`"
-                : format("**Description**: Grants or removes a specific role from a member.\n\n**Usage**: `%s[role|manage] [add|remove] @Member <role>`\n\n**Permission level**: `5`", prefix);
+                : format("**Description**: Grants or removes a specific role from a member.\n\n**Usage**: `%srole [add|remove] @Member <role>`\n\n**Permission level**: `5`", prefix);
         return ret;
     }
 }

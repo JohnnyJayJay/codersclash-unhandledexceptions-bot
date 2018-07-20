@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
+
 public class DatabaseListener extends ListenerAdapter {
 
     private Database database;

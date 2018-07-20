@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 /**
  * @author Johnny_JayJay
  */
+@SuppressWarnings("unused")
 public class Reactions {
     // weitere Emotes hier hinzufügen
     public static final String YES_EMOTE = "\u2705";
@@ -37,6 +38,7 @@ public class Reactions {
     public static final String N = "\uD83C\uDDF3";
     public static final String P = "\uD83C\uDDF5";
     public static final String MAIL = "\uD83D\uDCE9";
+    public static final String MICROPHONE = "\uD83C\uDFA4";
     public static final String REPEAT = "\uD83D\uDD01";
     public static final String CONTROLLER = "\uD83C\uDFAE";
     public static final String NEW = "\uD83C\uDD95";
@@ -51,11 +53,16 @@ public class Reactions {
     public static final String ARROW_RIGHT = "➡";
     public static final String CLIPBOARD = "\uD83D\uDCCB";
     public static final String PENCIL = "✏";
+    public static final String PUT_LITTER_IN_ITS_PLACE = "\uD83D\uDEAE";
     public static final String DAY = "\uD83D\uDCC5";
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";
     public static final String NEWSPAPER = "\uD83D\uDCF0";
     public static final String[] DIGITS = {"1\u20E3", "2\u20E3", "3\u20E3", "4\u20E3", "5\u20E3", "6\u20E3", "7\u20E3", "8\u20E3", "9\u20E3", "\uD83D\uDD1F"};
+    public static final String SMALL_ARROW_LEFT = "◀";
+    public static final String SMALL_ARROW_RIGHT = "▶";
+
+    private static final Consumer<Message> deleteMsg = (msg) -> msg.delete().queue();
 
     public static String getNumber(int number) {
         String ret = " ";
@@ -88,8 +95,22 @@ public class Reactions {
         Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(user, msg, yes, no));
     }
 
+    public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes, Consumer<Message> no, boolean deleteAnyway) {
+        if (deleteAnyway)
+            newYesNoMenu(user, channel, question, deleteMsg.andThen(yes), deleteMsg.andThen(no));
+        else
+            newYesNoMenu(user, channel, question, yes, no);
+    }
+
     public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes) {
-        Messages.sendMessage(channel, Messages.Type.QUESTION, question).queue((msg) -> newYesNoMenu(user, msg, yes));
+        newYesNoMenu(user, channel, question, yes, (msg) -> {});
+    }
+
+    public static void newYesNoMenu(User user, TextChannel channel, String question, Consumer<Message> yes, boolean deleteAnyway) {
+        if (deleteAnyway)
+            newYesNoMenu(user, channel, question, deleteMsg.andThen(yes), deleteMsg);
+        else
+            newYesNoMenu(user, channel, question, yes);
     }
 
     public static void newMenu(User user, Message message, Consumer<String> reacted, Collection<String> emojis, int waitSeconds, boolean removeListener) {
