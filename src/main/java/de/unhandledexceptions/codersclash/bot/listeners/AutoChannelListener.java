@@ -55,7 +55,6 @@ public class AutoChannelListener extends ListenerAdapter {
         guild.getController().createVoiceChannel("Channel by " + member.getEffectiveName())
                 .setUserlimit(channelJoined.getUserLimit())
                 .setParent(channelJoined.getParent())
-                .setTopic("Channel created by " + member.getUser() + "#"+ member.getUser().getDiscriminator() + " using the AutoChannel feature. User Limit [" + channelJoined.getUserLimit() + "]")
                 .queue((channel) -> {
                     channels.add((VoiceChannel) channel);
                     guild.getController().moveVoiceMember(member, (VoiceChannel) channel).queue();

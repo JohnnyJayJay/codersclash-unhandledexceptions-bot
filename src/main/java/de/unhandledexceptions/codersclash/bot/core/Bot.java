@@ -5,10 +5,7 @@ import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.commands.connection.LinkListener;
 import de.unhandledexceptions.codersclash.bot.commands.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
-import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
-import de.unhandledexceptions.codersclash.bot.listeners.Management;
-import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
-import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
+import de.unhandledexceptions.codersclash.bot.listeners.*;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
@@ -116,7 +113,7 @@ public class Bot {
 
         RestAction.setPassContext(false);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
-                new ReadyListener(config), new Management(this), linkListener));
+                new ReadyListener(config), new Management(this), linkListener, new AutoChannelListener(database)));
         listeners.forEach(shardManager::addEventListener);
     }
 

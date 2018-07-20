@@ -180,7 +180,7 @@ public class SettingsCommand implements ICommand {
                                     Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set " + msg.getContentRaw() + " as the new AutoChannel?", (m) -> {
                                         m.delete().queue();
                                         database.setAutoChannel(guild.getIdLong(), guild.getVoiceChannelsByName(msg.getContentRaw() , false).get(0).getIdLong());
-                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to " + msg.getContentRaw()).queue(Messages::deleteAfterFiveSec);
+                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to `" + msg.getContentRaw() + "`").queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder);
                                     }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder));
                                 }, (v3) -> {
@@ -196,7 +196,7 @@ public class SettingsCommand implements ICommand {
                                         matcher.find();
                                         var channel = guild.getVoiceChannelById(matcher.group().replaceAll("[\\(\\)]", ""));
                                         database.setAutoChannel(guild.getIdLong(), channel.getIdLong());
-                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to " + selected).queue(Messages::deleteAfterFiveSec);
+                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to `" + selected + "`").queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder);
                                     }, (anotherVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder));
                                 }, Messages.defaultFailure(textChannel));
@@ -207,8 +207,8 @@ public class SettingsCommand implements ICommand {
                                         guild.getController().createVoiceChannel("Create Channel").queue((channel) -> {
                                             msg.delete().queue();
                                             database.setAutoChannel(guild.getIdLong(), channel.getIdLong());
-                                            sendMessage(textChannel, Type.SUCCESS, "Success! Your new AutoChannel is "
-                                                    + (channel).getName()).queue(Messages::deleteAfterFiveSec);
+                                            sendMessage(textChannel, Type.SUCCESS, "Success! Your new AutoChannel is `"
+                                                    + (channel).getName() + "`").queue(Messages::deleteAfterFiveSec);
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         }, (t) -> {
                                             msg.delete().queue();
@@ -223,10 +223,10 @@ public class SettingsCommand implements ICommand {
                                     }
                                 });
                                 break;
-                            case Reactions.REPEAT:
+                            case Reactions.PUT_LITTER_IN_ITS_PLACE:
                                 Reactions.newYesNoMenu(user, textChannel, "Do you want to reset your AutoChannel and therefore deactivate the AutoChannel function?", (msg) -> {
                                     msg.delete().queue();
-                                    database.setMailChannel(guild.getIdLong(), 0);
+                                    database.setAutoChannel(guild.getIdLong(), 0);
                                     sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully reset.").queue(Messages::deleteAfterFiveSec);
                                     menu(user, message, Layer.MAIN_MENU, current, builder);
                                 }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
