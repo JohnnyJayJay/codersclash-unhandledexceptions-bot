@@ -13,14 +13,16 @@ import java.util.Set;
 public class VoteAnswer {
 
     private final VoteCreator creator;
-    private Set<String> answers;
+    private String answer;
     private final Vote vote;
+    private int position;
 
-    public VoteAnswer(VoteCreator creator, Vote vote)
+    public VoteAnswer(String answer, VoteCreator creator, Vote vote, int position)
     {
-        this.vote = vote;
         this.creator = creator;
-        answers = new HashSet<>();
+        this.answer = answer;
+        this.position = position;
+        this.vote = vote;
     }
 
     public VoteCreator getCreator()
@@ -28,18 +30,28 @@ public class VoteAnswer {
         return creator;
     }
 
-    public Set<String> getAnswers()
-    {
-        return answers;
-    }
-
     public Vote getVote()
     {
         return vote;
     }
 
-    public boolean add(String answer)
+    public String getAnswer()
     {
-        return answers.add(answer);
+        return answer;
+    }
+
+    public void setAnswer(String answer)
+    {
+        this.answer = answer;
+    }
+
+    public int getPosition()
+    {
+        return position;
+    }
+
+    public void setPosition(int position)
+    {
+        this.position = position;
     }
 }

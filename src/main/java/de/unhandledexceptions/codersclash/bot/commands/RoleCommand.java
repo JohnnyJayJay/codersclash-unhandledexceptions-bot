@@ -54,7 +54,7 @@ public class RoleCommand implements ICommand {
                         Reactions.newYesNoMenu(member.getUser(), channel, "Multiple roles with this name detected. Do you want to add all of them?\n"
                                 + Reactions.YES_EMOTE + " Yes, add all of them.\n"
                                 + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
-                            msg.delete().queue();;
+                            msg.delete().queue();
                             event.getGuild().getController().addRolesToMember(target, roles).queue(
                                     (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully granted `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
                         }, (msg) -> {

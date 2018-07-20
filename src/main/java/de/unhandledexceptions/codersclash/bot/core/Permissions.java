@@ -25,7 +25,7 @@ public class Permissions implements ICommand {
 
     public Permissions(CommandSettings settings, Database database) {
         this.settings = settings;
-        this.database = database;
+        Permissions.database = database;
     }
 
     @Override
