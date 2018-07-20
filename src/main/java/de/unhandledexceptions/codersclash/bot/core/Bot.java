@@ -109,8 +109,8 @@ public class Bot {
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
-                .put(new ProfileCommand(reportCommand), "profile")
-                .put(new InfoCommand(), "info")
+                .put(new ProfileCommand(reportCommand), "profile", "userinfo")
+                .put(new InfoCommand(), "info", "status")
                 .put(new EvalCommand(config, shardManager, voteCommand), "eval")
 
                 .activate();

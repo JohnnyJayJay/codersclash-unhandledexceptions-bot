@@ -138,7 +138,7 @@ public class LinkCommand implements ICommand {
                     }
                 }, true);
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else if (requests.containsKey(guild.getIdLong())) {
             var shardManager = event.getJDA().asBot().getShardManager();

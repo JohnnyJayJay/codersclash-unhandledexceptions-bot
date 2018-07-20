@@ -43,7 +43,7 @@ public class Main {
         executorService.execute(task);
     }
 
-    public static void scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
-        executorService.schedule(task, delay, timeUnit);
+    public static ScheduledFuture<?> scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
+        return executorService.schedule(task, delay, timeUnit);
     }
 }
