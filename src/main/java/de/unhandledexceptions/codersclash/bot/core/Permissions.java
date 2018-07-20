@@ -3,7 +3,6 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import de.unhandledexceptions.codersclash.bot.util.Roles;
 import net.dv8tion.jda.core.Permission;
@@ -12,7 +11,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.awt.*;
 import java.util.Arrays;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
@@ -24,7 +22,7 @@ public class Permissions implements ICommand {
 
     public Permissions(CommandSettings settings, Database database) {
         this.settings = settings;
-        this.database = database;
+        Permissions.database = database;
     }
 
     @Override
@@ -33,28 +31,27 @@ public class Permissions implements ICommand {
         if (!guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES, Permission.MESSAGE_WRITE))
             return;
 
-        var role = Roles.getTryCatchRole(event.getGuild());
-        if (role == null) {
-            guild.getController().createRole().setName("try-catch").setColor(Color.RED).setMentionable(true).queue(
-                    (newRole) -> sendMessage(channel, Type.INFO, "A role \"try-catch\" has been created. Only members of this role can manage permissions concerning commands of " +
-                            "try-catch-bot. Be careful, members with this role have full control about try-catch-permissions!").queue(), Messages.defaultFailure(channel));
-        } else if (!member.getRoles().contains(role)) {
-            sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions. Request help for more. " + member.getAsMention()).queue();
-        } else if (!event.getCommand().getJoinedArgs().matches("((<@!?\\d+>)|(<@&\\d+>)) [0-5]") ||
-                event.getMessage().getMentions(Message.MentionType.ROLE, Message.MentionType.USER).isEmpty()) {
-            sendMessage(channel, Type.INFO, "Wrong usage. Command info: \n\n" + info(member)).queue();
-        } else {
-            short level = Short.parseShort(args[1]);
-            if (event.getMessage().getMentionedMembers().isEmpty()) {
-                var targetRole = event.getMessage().getMentionedRoles().get(0);
-                guild.getMemberCache().stream().filter((m) -> m.getRoles().contains(targetRole)).forEach((m) -> database.changePermissionLevel(m, level));
-                sendMessage(channel, Type.SUCCESS, String.format("Permission level of role `%s` successfully set to `%d`.", targetRole.getName(), level)).queue();
+        Roles.getTryCatchRole(event.getGuild(), (role) -> {
+            if (member.getRoles().contains(role)) {
+                if (!event.getCommand().getJoinedArgs().matches("((<@!?\\d+>)|(<@&\\d+>)) [0-5]") ||
+                        event.getMessage().getMentions(Message.MentionType.ROLE, Message.MentionType.USER).isEmpty()) {
+                    sendMessage(channel, Type.INFO, "Wrong usage. Command info: \n\n" + info(member)).queue();
+                } else {
+                    short level = Short.parseShort(args[1]);
+                    if (event.getMessage().getMentionedMembers().isEmpty()) {
+                        var targetRole = event.getMessage().getMentionedRoles().get(0);
+                        guild.getMemberCache().stream().filter((m) -> m.getRoles().contains(targetRole)).forEach((m) -> database.changePermissionLevel(m, level));
+                        sendMessage(channel, Type.SUCCESS, String.format("Permission level of role `%s` successfully set to `%d`.", targetRole.getName(), level)).queue();
+                    } else {
+                        var targetMember = guild.getMember(event.getMessage().getMentionedUsers().get(0));
+                        database.changePermissionLevel(targetMember, level);
+                        sendMessage(channel, Type.SUCCESS, String.format("Permission level of member `%#s` successfully set to `%d`.", targetMember.getUser(), level)).queue();
+                    }
+                }
             } else {
-                var targetMember = guild.getMember(event.getMessage().getMentionedUsers().get(0));
-                database.changePermissionLevel(targetMember, level);
-                sendMessage(channel, Type.SUCCESS, String.format("Permission level of member `%#s` successfully set to `%d`.", targetMember.getUser(), level)).queue();
+                sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions. Request help for more. " + member.getAsMention()).queue();
             }
-        }
+        }, (v) -> {});
     }
     
     @Override
