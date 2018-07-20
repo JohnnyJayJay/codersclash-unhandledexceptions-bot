@@ -21,9 +21,8 @@ public class Roles {
             success.accept(role);
         } else if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
             guild.getController().createRole().setName(Bot.getBotName()).setColor(guild.getSelfMember().getColor()).queue((role) ->
-                    guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(1).getPosition()).queue( (v) ->
-                            success.accept(role)
-                    ));
+                    guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(0).getPosition()-1).queue( (v) ->
+                            success.accept(role)));
         } else {
             failure.accept(null);
         }
@@ -40,8 +39,8 @@ public class Roles {
             muted = first.get();
             success.accept(muted);
         } else if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)){
-            guild.getController().createRole().setName(Bot.getBotName() + "-muted").setHoisted(true).setMentionable(true).queue((role) -> {
-                guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(1).getPosition()).queue();
+            guild.getController().createRole().setName(Bot.getBotName() + "-muted").setHoisted(true).setMentionable(true).setColor(Color.GRAY).queue((role) -> {
+                guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(0).getPosition()-2).queue();
                 role.getManager().revokePermissions(Permission.MESSAGE_WRITE, Permission.VOICE_SPEAK).queue();
                 guild.getTextChannelCache().forEach((channel) -> channel.putPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE).queue());
                 guild.getVoiceChannelCache().forEach((channel) -> channel.putPermissionOverride(role).setDeny(Permission.VOICE_SPEAK).queue());
