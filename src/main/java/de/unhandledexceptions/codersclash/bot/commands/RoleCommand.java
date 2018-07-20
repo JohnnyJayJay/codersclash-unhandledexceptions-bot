@@ -81,7 +81,7 @@ public class RoleCommand implements ICommand {
                     sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member), true).queue();
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

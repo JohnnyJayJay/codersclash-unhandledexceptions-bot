@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 /**
  * @author Johnny_JayJay
  */
-
+@SuppressWarnings("unused")
 public class Reactions {
     // weitere Emotes hier hinzufügen
     public static final String YES_EMOTE = "\u2705";
@@ -38,6 +38,7 @@ public class Reactions {
     public static final String N = "\uD83C\uDDF3";
     public static final String P = "\uD83C\uDDF5";
     public static final String MAIL = "\uD83D\uDCE9";
+    public static final String MICROPHONE = "\uD83C\uDFA4";
     public static final String REPEAT = "\uD83D\uDD01";
     public static final String CONTROLLER = "\uD83C\uDFAE";
     public static final String NEW = "\uD83C\uDD95";
@@ -52,6 +53,7 @@ public class Reactions {
     public static final String ARROW_RIGHT = "➡";
     public static final String CLIPBOARD = "\uD83D\uDCCB";
     public static final String PENCIL = "✏";
+    public static final String PUT_LITTER_IN_ITS_PLACE = "\uD83D\uDEAE";
     public static final String DAY = "\uD83D\uDCC5";
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";

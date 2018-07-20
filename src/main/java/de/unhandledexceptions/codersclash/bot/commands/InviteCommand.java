@@ -58,7 +58,7 @@ public class InviteCommand implements ICommand {
                 }, List.of(Reactions.BOT, Reactions.SATTELITE));
             });
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             Messages.noPermissionsMessage(channel, member);

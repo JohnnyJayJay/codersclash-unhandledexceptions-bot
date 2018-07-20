@@ -70,7 +70,7 @@ public class GuildMuteCommand implements ICommand {
                     });
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

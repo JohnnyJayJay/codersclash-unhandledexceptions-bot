@@ -137,7 +137,7 @@ public class LinkCommand implements ICommand {
                     }
                 }, true);
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else if (requests.containsKey(guild.getIdLong())) {
             sendMessage(channel, Type.INFO, "There is a request for this guild. Would you like to accept it?").queue((msg) -> Reactions.newYesNoMenu(member.getUser(), msg, (yes) -> {

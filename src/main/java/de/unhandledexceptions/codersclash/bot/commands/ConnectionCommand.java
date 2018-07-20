@@ -52,7 +52,7 @@ public class ConnectionCommand implements ICommand {
                 return;
             }
             if (args.length < 1 || !args[0].equalsIgnoreCase("request")) {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
                 return;
             }
             if (args.length == 1) {
@@ -138,10 +138,10 @@ public class ConnectionCommand implements ICommand {
                                 "to check if I am a member of this guild. Or try sending the request again, but use \"NOID\" instead of the id this time.").queue();
                     }
                 } else {
-                    wrongUsageMessage(event.getMessage(), channel, member, this);
+                    wrongUsageMessage(channel, member, this);
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

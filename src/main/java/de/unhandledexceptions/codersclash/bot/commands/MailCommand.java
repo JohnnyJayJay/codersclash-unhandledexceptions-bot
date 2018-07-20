@@ -56,10 +56,10 @@ public class MailCommand implements ICommand {
                 } else if (args[0].equalsIgnoreCase("noid")) {
                     search(event, member, channel, args);
                 } else {
-                    wrongUsageMessage(event.getMessage(), channel, member, this);
+                    wrongUsageMessage(channel, member, this);
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

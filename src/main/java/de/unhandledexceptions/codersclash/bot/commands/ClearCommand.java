@@ -36,7 +36,7 @@ public class ClearCommand implements ICommand {
             } else if (args.length == 1){
                 sendMessage(channel, Type.WARNING, format("`%s` is not a valid number!", args[0])).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
