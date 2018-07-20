@@ -46,7 +46,7 @@ public class Bot {
 
     public Bot(Config config, Database database) {
         this.failCount = 0;
-        this.config = config;
+        Bot.config = config;
         this.database = database;
         this.builder = new DefaultShardManagerBuilder();
         this.listeners = new ArrayList<>();
@@ -82,7 +82,7 @@ public class Bot {
 
         var xpCommand = new XPCommand(commandSettings, database);
 
-        var voteCommand = new VoteCommand();
+        var voteCommand = new VoteCommand(shardManager);
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
 
@@ -106,6 +106,7 @@ public class Bot {
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
                 .put(new ProfileCommand(reportCommand), "profile")
                 .put(new InfoCommand(), "info")
+                .put(new EvalCommand(config, shardManager, voteCommand), "eval")
                 .activate();
 
         RestAction.setPassContext(false);

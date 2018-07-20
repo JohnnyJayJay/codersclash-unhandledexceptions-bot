@@ -1,5 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.entities;
 
+import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 
@@ -12,23 +13,18 @@ import net.dv8tion.jda.core.entities.Member;
 
 public class VoteCreator {
 
-    private Member member;
-    private Guild guild;
-    private Vote vote;
+    private long memberId, guildId;
     private VoteState state;
+    private Vote vote;
+    private final ShardManager shardManager;
 
-    public VoteCreator(Member member, Guild guild, Vote vote, VoteState state)
+    public VoteCreator(Member member, Guild guild, Vote vote, VoteState state, ShardManager shardManager)
     {
-        this.member = member;
-        this.guild = guild;
+        this.memberId = member.getUser().getIdLong();
+        this.guildId = guild.getIdLong();
         this.vote = vote;
         this.state = state;
-    }
-    public VoteCreator(Member member, Guild guild, VoteState state)
-    {
-        this.member = member;
-        this.guild = guild;
-        this.state = state;
+        this.shardManager = shardManager;
     }
 
     public Vote getVote()
@@ -44,22 +40,22 @@ public class VoteCreator {
 
     public Guild getGuild()
     {
-        return guild;
+        return shardManager.getGuildById(guildId);
     }
 
     public Member getMember()
     {
-        return member;
+        return getGuild().getMemberById(memberId);
     }
 
     public void setMember(Member member)
     {
-        this.member = member;
+        this.memberId = member.getUser().getIdLong();
     }
 
     public void setGuild(Guild guild)
     {
-        this.guild = guild;
+        this.guildId = guild.getIdLong();
     }
 
     public void setVote(Vote vote)

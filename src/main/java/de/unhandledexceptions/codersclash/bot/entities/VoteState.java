@@ -13,6 +13,7 @@ public enum VoteState {
     REACTON(),
     TIME(),
     CHANNEL(),
+    TOPIC(),
     POSSIBILITIES(),
     FINISHED
 

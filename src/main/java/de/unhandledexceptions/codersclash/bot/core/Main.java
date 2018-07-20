@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
@@ -38,7 +39,7 @@ public class Main {
         }
     }
 
-    public static void scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
-        executorService.schedule(task, delay, timeUnit);
+    public static ScheduledFuture<?> scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
+        return executorService.schedule(task, delay, timeUnit);
     }
 }

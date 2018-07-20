@@ -1,11 +1,16 @@
 package de.unhandledexceptions.codersclash.bot.entities;
 
+import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.requests.RestAction;
 import org.apache.commons.collections4.set.ListOrderedSet;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,84 +22,31 @@ import java.util.concurrent.TimeUnit;
 
 public class Vote {
 
-    private Set<String> voteAnswers;
+    private List<VoteAnswer> voteAnswers;
     private VoteCreator voteCreator;
-    private Guild guild;
-    private TextChannel setupChannel, targetChannel;
+    private long setupChannelId, targetChannelId, guildId, messageId;
     private long time;
     private TimeUnit timeUnit;
-    private long messageID;
     private Set<String> emotes;
+    private String topic;
+    private final ShardManager shardManager;
+    private ScheduledFuture scheduledFuture;
 
-    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel, long time, TimeUnit timeUnit, long messageID, Set<String> emotes)
-    {
-        this.voteAnswers = voteAnswers;
-        this.voteCreator = voteCreator;
-        this.guild = guild;
-        this.setupChannel = setupChannel;
-        this.targetChannel = targetChannel;
-        this.time = time;
-        this.timeUnit = timeUnit;
-        this.messageID = messageID;
-        this.emotes = emotes;
-    }
-
-    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel, long time)
-    {
-        this.emotes = new HashSet<>();
-        this.voteAnswers = voteAnswers;
-        this.voteCreator = voteCreator;
-        this.guild = guild;
-        this.setupChannel = setupChannel;
-        this.targetChannel = targetChannel;
-        this.time = time;
-    }
-
-    public Vote(Set<String> voteAnswers, VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
-    {
-        this.emotes = new HashSet<>();
-        this.voteAnswers = voteAnswers;
-        this.voteCreator = voteCreator;
-        this.guild = guild;
-        this.setupChannel = setupChannel;
-        this.targetChannel = targetChannel;
-    }
-
-    public Vote(VoteCreator voteCreator, Guild guild, TextChannel setupChannel, TextChannel targetChannel)
-    {
-        this.emotes = new HashSet<>();
-        this.voteAnswers = new HashSet<>();
-        this.voteCreator = voteCreator;
-        this.guild = guild;
-        this.setupChannel = setupChannel;
-        this.targetChannel = targetChannel;
-    }
-
-    public Vote(VoteCreator voteCreator, Guild guild, TextChannel setupChannel)
-    {
-        this.emotes = new HashSet<>();
-        this.voteAnswers = new HashSet<>();
-        this.voteCreator = voteCreator;
-        this.guild = guild;
-        this.setupChannel = setupChannel;
-    }
-
-    public Vote(Guild guild, TextChannel setupChannel)
+    public Vote(Guild guild, TextChannel setupChannel, ShardManager shardManager)
     {
         this.emotes = new ListOrderedSet<>();
-        this.voteAnswers = new HashSet<>();
-        this.guild = guild;
-        this.setupChannel = setupChannel;
+        this.voteAnswers = new ArrayList<>();
+        this.guildId = guild.getIdLong();
+        this.setupChannelId = setupChannel.getIdLong();
+        this.shardManager = shardManager;
     }
-
-
 
     public void setTargetChannel(TextChannel targetChannel)
     {
-        this.targetChannel = targetChannel;
+        this.targetChannelId = targetChannel.getIdLong();
     }
 
-    public Set<String> getVoteAnswers()
+    public List<VoteAnswer> getVoteAnswers()
     {
         return voteAnswers;
     }
@@ -111,20 +63,20 @@ public class Vote {
 
     public Guild getGuild()
     {
-        return guild;
+        return shardManager.getGuildById(guildId);
     }
 
     public TextChannel getSetupChannel()
     {
-        return setupChannel;
+        return getGuild().getTextChannelById(setupChannelId);
     }
 
     public TextChannel getTargetChannel()
     {
-        return targetChannel;
+        return getGuild().getTextChannelById(targetChannelId);
     }
 
-    public void setVoteAnswers(Set<String> voteAnswers)
+    public void setVoteAnswers(List<VoteAnswer> voteAnswers)
     {
         this.voteAnswers = voteAnswers;
     }
@@ -136,12 +88,12 @@ public class Vote {
 
     public void setGuild(Guild guild)
     {
-        this.guild = guild;
+        this.guildId = guild.getIdLong();
     }
 
     public void setSetupChannel(TextChannel setupChannel)
     {
-        this.setupChannel = setupChannel;
+        this.setupChannelId = setupChannel.getIdLong();
     }
 
     public void setTime(long time)
@@ -159,16 +111,6 @@ public class Vote {
         this.timeUnit = timeUnit;
     }
 
-    public long getMessageID()
-    {
-        return messageID;
-    }
-
-    public void setMessageID(long messageID)
-    {
-        messageID = messageID;
-    }
-
     public Set<String> getEmotes()
     {
         return emotes;
@@ -177,5 +119,89 @@ public class Vote {
     public void setEmotes(Set<String> emotes)
     {
         this.emotes = emotes;
+    }
+
+    public String getTopic()
+    {
+        return topic;
+    }
+
+    public void setTopic(String topic)
+    {
+        this.topic = topic;
+    }
+
+    public RestAction<Message> getMessage()
+    {
+        return getTargetChannel().getMessageById(messageId);
+    }
+
+    public void setMessage(Message message)
+    {
+        this.messageId = message.getIdLong();
+    }
+
+    public long getSetupChannelId()
+    {
+        return setupChannelId;
+    }
+
+    public void setSetupChannelId(long setupChannelId)
+    {
+        this.setupChannelId = setupChannelId;
+    }
+
+    public long getTargetChannelId()
+    {
+        return targetChannelId;
+    }
+
+    public void setTargetChannelId(long targetChannelId)
+    {
+        this.targetChannelId = targetChannelId;
+    }
+
+    public long getGuildId()
+    {
+        return guildId;
+    }
+
+    public void setGuildId(long guildId)
+    {
+        this.guildId = guildId;
+    }
+
+    public long getMessageId()
+    {
+        return messageId;
+    }
+
+    public void setMessageId(long messageId)
+    {
+        this.messageId = messageId;
+    }
+
+    public ShardManager getShardManager()
+    {
+        return shardManager;
+    }
+
+    public ScheduledFuture getScheduledFuture()
+    {
+        return scheduledFuture;
+    }
+
+    public void setScheduledFuture(ScheduledFuture scheduledFuture)
+    {
+        this.scheduledFuture = scheduledFuture;
+    }
+
+    public boolean isRunning()
+    {
+
+        if (scheduledFuture == null)
+            return false;
+
+        return !scheduledFuture.isDone();
     }
 }

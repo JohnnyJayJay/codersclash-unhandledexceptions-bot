@@ -55,7 +55,8 @@ public class Reactions {
     public static final String HOUR = "\uD83D\uDD5B";
     public static final String MINUTE = "\u231A";
     public static final String NEWSPAPER = "\uD83D\uDCF0";
-    
+    public static final String[] DIGITS = {"1\u20E3", "2\u20E3", "3\u20E3", "4\u20E3", "5\u20E3", "6\u20E3", "7\u20E3", "8\u20E3", "9\u20E3", "\uD83D\uDD1F"};
+
     public static String getNumber(int number) {
         String ret = " ";
         if (number == 10) {
