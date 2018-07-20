@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
@@ -12,7 +13,6 @@ import java.util.List;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
 public class TicTacToeCommand implements ICommand {
 
@@ -28,7 +28,7 @@ public class TicTacToeCommand implements ICommand {
         List<Member> mentionedMembers = event.getMessage().getMentionedMembers();
         if (args.length > 0 && !mentionedMembers.isEmpty()) {
             var target = mentionedMembers.get(0);
-            Messages.sendMessage(channel, Messages.Type.QUESTION, "How big should the game be?").queue((msg) -> {
+            Main.otherThread(() -> Messages.sendMessage(channel, Messages.Type.QUESTION, "How big should the game be?").queue((msg) -> {
                 chooseGameList.forEach((reaction) -> msg.addReaction(reaction).queue());
                 Reactions.newMenu(member.getUser(), msg, (emoji) -> {
                     msg.delete().queue();
@@ -42,10 +42,9 @@ public class TicTacToeCommand implements ICommand {
                         msg.delete().queue();
                     }
                 }, chooseGameList);
-            });
-
+            }));
         } else {
-            Messages.wrongUsageMessage(channel, member, this);
+            Messages.wrongUsageMessage(event.getMessage(), channel, member, this);
         }
     }
 

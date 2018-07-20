@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 
     private static Logger logger = Logging.getLogger();
-    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(5);
 
     public static void main(String[] args) {
 
@@ -39,7 +39,11 @@ public class Main {
         }
     }
 
-    public static ScheduledFuture<?> scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
-        return executorService.schedule(task, delay, timeUnit);
+    public static void otherThread(Runnable task) {
+        executorService.execute(task);
+    }
+
+    public static void scheduleTask(Runnable task, long delay, TimeUnit timeUnit) {
+        executorService.schedule(task, delay, timeUnit);
     }
 }

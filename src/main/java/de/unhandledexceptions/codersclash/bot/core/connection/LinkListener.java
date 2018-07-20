@@ -1,4 +1,4 @@
-package de.unhandledexceptions.codersclash.bot.commands.connection;
+package de.unhandledexceptions.codersclash.bot.core.connection;
 
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Guild;

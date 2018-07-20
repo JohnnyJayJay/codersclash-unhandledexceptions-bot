@@ -4,9 +4,10 @@ import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import de.unhandledexceptions.codersclash.bot.commands.connection.Link;
-import de.unhandledexceptions.codersclash.bot.commands.connection.LinkListener;
-import de.unhandledexceptions.codersclash.bot.commands.connection.LinkManager;
+import de.unhandledexceptions.codersclash.bot.core.Main;
+import de.unhandledexceptions.codersclash.bot.core.connection.Link;
+import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
+import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
@@ -24,7 +25,6 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
 public class LinkCommand implements ICommand {
 
@@ -119,6 +119,7 @@ public class LinkCommand implements ICommand {
                                                 (msg3) -> Reactions.newMessageWaiter(member.getUser(), channel, 180, (msgReceived) -> {
                                                     msg3.delete().queue();
                                                     requests.put(selectedGuild.getIdLong(), running.get(guild.getIdLong()));
+                                                    System.out.println("Requests: " + requests);
                                                     mailCommand.sendMail(member, channel, selectedGuild, message + msgReceived.getContentDisplay());
                                                 }, (v) -> msg2.editMessage(expired).queue())), (msg) -> mailCommand.sendMail(member, channel, selectedGuild, "##Link Request## " + message), true);
                             }, (v) -> msg2.delete().queue()));
@@ -137,9 +138,10 @@ public class LinkCommand implements ICommand {
                     }
                 }, true);
             } else {
-                wrongUsageMessage(channel, member, this);
+                wrongUsageMessage(event.getMessage(), channel, member, this);
             }
         } else if (requests.containsKey(guild.getIdLong())) {
+            var shardManager = event.getJDA().asBot().getShardManager();
             sendMessage(channel, Type.INFO, "There is a request for this guild. Would you like to accept it?").queue((msg) -> Reactions.newYesNoMenu(member.getUser(), msg, (yes) -> {
                 msg.delete().queue();
                 var link = requests.get(guild.getIdLong());
@@ -149,13 +151,23 @@ public class LinkCommand implements ICommand {
                 } else {
                     manager.addGuild(link, guild);
                     listener.addLink(link);
-                    if (requesters.inverse().get(link) != null)
-                        running.put(requesters.inverse().remove(link), link);
+                    System.out.println("Alle requester " + requesters);
+                    System.out.println("Requester for for this link " + requesters.inverse().get(link));
+                    if (requesters.inverse().get(link) != null) {
+                        var requester = requesters.inverse().remove(link);
+                        System.out.println(requester);
+                        running.put(requester, link);
+                    }
                     running.put(guild.getIdLong(), link);
+                    /*link.getGuilds().stream().map((guilId) -> {
+                        var guildForId = shardManager.getGuildById(guilId);
+                        return guildForId.getTextChannelById(link.getLinkedChannel(guildForId));
+                    }).forEach((linkChannel) -> linkChannel.sendMessage("Guild `" + guild + "` has joined the link.").queue());*/
                 }
             }, (no) -> msg.delete().queue()));
         } else {
-            Reactions.newYesNoMenu(member.getUser(), channel, "There are no requests and no active links to this guild. Would you like to create one?", (msg) -> creationDialogue(new HashSet<>(), channel, member), true);
+            Main.otherThread(
+                    () -> Reactions.newYesNoMenu(member.getUser(), channel, "There are no requests and no active links to this guild. Would you like to create one?", (msg) -> creationDialogue(new HashSet<>(), channel, member), true));
         }
     }
 
@@ -249,11 +261,13 @@ public class LinkCommand implements ICommand {
             sendMessage((MessageChannel) newChannel, Type.INFO, "This is the channel to chat with the others. Currently, no request was accepted. You will be informed if so.").queue();
             ((MessageChannel) newChannel).sendMessage(commands).queue();
             link.addChannel((TextChannel) newChannel);
+            for (Guild guild : guilds) {
+                requests.put(guild.getIdLong(), link);
+                mailCommand.sendMail(requester, channel, guild, message);
+            }
+            System.out.println("Requests " + requests);
+            System.out.println("Requesters " + requesters);
+            sendMessage(channel, Type.SUCCESS, "Successfully sent a message to the following guilds: ```\n" + String.join("\n", guilds.stream().map(Guild::getName).collect(Collectors.toList())) + "```").queue();
         });
-        for (Guild guild : guilds) {
-            requests.put(guild.getIdLong(), link);
-            mailCommand.sendMail(requester, channel, guild, message);
-        }
-        sendMessage(channel, Type.SUCCESS, "Successfully sent a message to the following guilds: ```\n" + String.join("\n", guilds.stream().map(Guild::getName).collect(Collectors.toList())) + "```").queue();
     }
 }
