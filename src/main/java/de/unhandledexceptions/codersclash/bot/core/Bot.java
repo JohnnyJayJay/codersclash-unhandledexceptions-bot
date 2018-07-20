@@ -2,8 +2,8 @@ package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.*;
-import de.unhandledexceptions.codersclash.bot.commands.connection.LinkListener;
-import de.unhandledexceptions.codersclash.bot.commands.connection.LinkManager;
+import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
+import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
 import de.unhandledexceptions.codersclash.bot.listeners.Management;
