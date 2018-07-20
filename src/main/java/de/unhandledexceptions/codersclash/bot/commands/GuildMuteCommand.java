@@ -104,7 +104,7 @@ public class GuildMuteCommand implements ICommand {
 
     @Override
     public String info(Member member) {
-        // TODO
+        // TODO info
         return " ";
     }
 }

@@ -20,7 +20,6 @@ import static java.lang.String.format;
  * @author Johnny_JayJay
  */
 
-// FIXME ErrorResponseActions (wahrscheinlich nicht fixbar)
 public class ClearCommand implements ICommand {
 
     @Override
@@ -44,7 +43,6 @@ public class ClearCommand implements ICommand {
     }
 
     private void clear(TextChannel channel, int amount) {
-        // TODO Buffer einbauen und eventuell clear nur von einem bestimmten Member
         long twoWeeksAgo = (System.currentTimeMillis() - (14 * 24 * 60 * 60 * 1000)); // System der JDA, die Zeit zu messen
         channel.getHistory().retrievePast(amount > 100 ? 100 : amount).queue((messages) -> { // Wenn amount größer als 100 ist, retrieve 100, ansonsten amount
             // filter die messages, die man löschen kann, heraus
