@@ -2,8 +2,9 @@ package de.unhandledexceptions.codersclash.bot.core;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import de.unhandledexceptions.codersclash.bot.commands.*;
-import de.unhandledexceptions.codersclash.bot.commands.connection.LinkListener;
-import de.unhandledexceptions.codersclash.bot.commands.connection.LinkManager;
+import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
+import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
+import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.*;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -86,20 +87,21 @@ public class Bot {
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
         var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
+        var muteManager = new MuteManager(shardManager, commandSettings);
 
         commandSettings.addHelpLabels("help", "helpme", "commands")
                 .setHelpCommandColor(Color.CYAN)
                 .setCooldown(3000)
                 .put(linkCommand, "link")
                 .put(new ClearCommand(), "clear", "clean", "delete")
-                .put(new GuildMuteCommand(commandSettings), "muteguild", "guildmute", "lockdown")
+                .put(new GuildMuteCommand(muteManager), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(xpCommand, "xp", "level", "lvl")
                 .put(new ReportCommand(database), "report", "rep", "reports")
                 .put(voteCommand, "vote", "v")
                 .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
                 .put(new BlockCommand(), "block", "deny")
-                .put(new MuteCommand(), "mute", "silence")
+                .put(new MuteCommand(muteManager), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(mailCommand, "mail", "contact")
                 //.put(new ConnectionCommand(searchCommand, mailCommand), "connect")
@@ -107,8 +109,8 @@ public class Bot {
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
-                .put(new ProfileCommand(reportCommand), "profile")
-                .put(new InfoCommand(), "info")
+                .put(new ProfileCommand(reportCommand), "profile", "userinfo")
+                .put(new InfoCommand(), "info", "status")
                 .put(new EvalCommand(config, shardManager, voteCommand), "eval")
 
                 .activate();
@@ -192,4 +194,6 @@ public class Bot {
     public static List getBotOwners() {
         return config.getBotOwners();
     }
+
+    public static String getBotName(){return config.getBotName();}
 }

@@ -124,7 +124,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         votes.put(guild.getIdLong(), vote);
 
         sendTimeReactionMessage(vote, event);
-        vote.getVoteCreator().setState(VoteState.REACTON);
+        vote.getVoteCreator().setState(VoteState.REACTION);
     }
 
     @Override
