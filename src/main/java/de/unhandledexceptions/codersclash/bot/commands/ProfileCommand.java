@@ -100,8 +100,8 @@ public class ProfileCommand implements ICommand {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 if (target.getUser().getAvatarUrl() == null) {
-                    embedBuilder.clear().setAuthor(target.getEffectiveName(), null, target.getUser().getAvatarUrl())
-                            .addField("Usertag", target.getEffectiveName() + "#" + target.getUser().getDiscriminator(), true)
+                    embedBuilder.clear()
+                            .addField("Usertag", format("%#s", target.getUser()), true)
                             .addField("Nickname", nickname, true)
                             .addBlankField(true)
                             .addField("ID", target.getUser().getId(), true)
@@ -120,8 +120,8 @@ public class ProfileCommand implements ICommand {
                             .setColor(target.getColor())
                             .setThumbnail(target.getUser().getAvatarUrl());
                 } else {
-                    embedBuilder.clear().setAuthor(target.getEffectiveName(), null, target.getUser().getAvatarUrl())
-                            .addField("Usertag", target.getEffectiveName() + "#" + target.getUser().getDiscriminator(), true)
+                    embedBuilder.clear()
+                            .addField("Usertag", format("%#s", target.getUser()), true)
                             .addField("Nickname", nickname, true)
                             .addField("ID", target.getUser().getId(), true)
                             .addField("Status", status, true)
@@ -139,7 +139,7 @@ public class ProfileCommand implements ICommand {
                 }
                 sendMessage(channel, Messages.Type.NO_TYPE, "Information about " + target.getAsMention(), false, embedBuilder).queue();
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

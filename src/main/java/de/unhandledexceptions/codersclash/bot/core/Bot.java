@@ -6,10 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
-import de.unhandledexceptions.codersclash.bot.listeners.DatabaseListener;
-import de.unhandledexceptions.codersclash.bot.listeners.Management;
-import de.unhandledexceptions.codersclash.bot.listeners.MentionListener;
-import de.unhandledexceptions.codersclash.bot.listeners.ReadyListener;
+import de.unhandledexceptions.codersclash.bot.listeners.*;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
@@ -48,7 +45,7 @@ public class Bot {
 
     public Bot(Config config, Database database) {
         this.failCount = 0;
-        this.config = config;
+        Bot.config = config;
         this.database = database;
         this.builder = new DefaultShardManagerBuilder();
         this.listeners = new ArrayList<>();
@@ -85,8 +82,8 @@ public class Bot {
         var xpCommand = new XPCommand(commandSettings, database);
         var linkListener = new LinkListener(shardManager);
 
+        var voteCommand = new VoteCommand(shardManager);
         var ticTacToe = new TicTacToe();
-        var voteCommand = new VoteCommand();
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
         var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
@@ -112,13 +109,15 @@ public class Bot {
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database), "scoreboard", "sb")
-                .put(new ProfileCommand(reportCommand), "profile", "userinfo")
-                .put(new InfoCommand(), "info", "shards")
+                .put(new ProfileCommand(reportCommand), "profile")
+                .put(new InfoCommand(), "info")
+                .put(new EvalCommand(config, shardManager, voteCommand), "eval")
+
                 .activate();
 
         RestAction.setPassContext(false);
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
-                new ReadyListener(config), new Management(this), linkListener));
+                new ReadyListener(config), new Management(this), linkListener, new AutoChannelListener(database)));
         listeners.forEach(shardManager::addEventListener);
     }
 

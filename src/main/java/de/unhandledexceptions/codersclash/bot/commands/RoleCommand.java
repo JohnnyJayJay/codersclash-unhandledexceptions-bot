@@ -54,7 +54,7 @@ public class RoleCommand implements ICommand {
                         Reactions.newYesNoMenu(member.getUser(), channel, "Multiple roles with this name detected. Do you want to add all of them?\n"
                                 + Reactions.YES_EMOTE + " Yes, add all of them.\n"
                                 + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
-                            msg.delete().queue();;
+                            msg.delete().queue();
                             event.getGuild().getController().addRolesToMember(target, roles).queue(
                                     (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully granted `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
                         }, (msg) -> {
@@ -81,7 +81,7 @@ public class RoleCommand implements ICommand {
                     sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member), true).queue();
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -95,7 +95,7 @@ public class RoleCommand implements ICommand {
         String ret = permLevel < 2
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
                 "level: `" + permLevel + "`"
-                : format("**Description**: Grants or removes a specific role from a member.\n\n**Usage**: `%s[role|adjust] [add|remove] @Member <role>`\n\n**Permission level**: `5`", prefix);
+                : format("**Description**: Grants or removes a specific role from a member.\n\n**Usage**: `%srole [add|remove] @Member <role>`\n\n**Permission level**: `5`", prefix);
         return ret;
     }
 }

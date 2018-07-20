@@ -42,7 +42,7 @@ public class BlockCommand implements ICommand {
                     sendMessage(channel, Type.SUCCESS, format("Successfully unblocked `%#s` in %s by %s", targetMember.getUser(), ((TextChannel) targetChannel).getAsMention(), member.getAsMention()), true).queue();
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

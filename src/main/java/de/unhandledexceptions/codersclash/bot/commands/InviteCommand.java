@@ -58,7 +58,7 @@ public class InviteCommand implements ICommand {
                 }, List.of(Reactions.BOT, Reactions.SATTELITE));
             });
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             Messages.noPermissionsMessage(channel, member);
@@ -72,7 +72,7 @@ public class InviteCommand implements ICommand {
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : "**Description**: Opens the invite dialogue where you can choose between an invite for the bot or this guild.\n\n**Usage**: `" + Bot.getPrefix(member.getGuild().getIdLong())
-                + "[invite|request]`\n\n**Permission level**: `1`";
+                + "invite`\n\n**Permission level**: `1`";
         return ret;
     }
 }

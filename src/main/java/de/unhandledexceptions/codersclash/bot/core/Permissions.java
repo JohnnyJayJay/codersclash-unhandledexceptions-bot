@@ -57,7 +57,7 @@ public class Permissions implements ICommand {
     
     @Override
     public String info(Member member) {
-        // TODO endgültiges permissions system machen
+        // TODO endgültiges permissions system machen und prefixArray wieder benutzen!
         String prefix = settings.getPrefix(member.getGuild().getIdLong());
         String[] prefixArr = new String[10];
         Arrays.fill(prefixArr, prefix);

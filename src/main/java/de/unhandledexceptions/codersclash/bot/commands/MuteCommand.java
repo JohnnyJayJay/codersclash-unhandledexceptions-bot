@@ -47,7 +47,7 @@ public class MuteCommand implements ICommand {
                             : format("Successfully muted `%#s` for ```%n%s``` by %s", targetUser, reason, member.getAsMention()), true).queue();
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);

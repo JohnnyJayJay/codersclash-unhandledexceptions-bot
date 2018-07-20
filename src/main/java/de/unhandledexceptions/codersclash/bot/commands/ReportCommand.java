@@ -92,7 +92,7 @@ public class ReportCommand implements ICommand {
             }
             showReports(channel, member, reportList, index);
         } else {
-            wrongUsageMessage(event.getMessage(), channel, member, this);
+            wrongUsageMessage(channel, member, this);
         }
     }
 

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
+import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
@@ -31,7 +32,7 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMes
 
 public class SearchCommand implements ICommand {
 
-    public final Pattern FIND_ID = Pattern.compile("\\(\\d+\\)");
+    public static final Pattern FIND_ID = Pattern.compile("\\(\\d+\\)");
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
@@ -70,16 +71,16 @@ public class SearchCommand implements ICommand {
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((msg) -> {
                     List<String> display = args[1].equalsIgnoreCase("guilds")
-                            ? shardmanager.getGuildCache().stream().map((guild) -> String.format("`%s (%d)`", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
-                            : shardmanager.getUserCache().stream().map((user) -> String.format("`%#s (%d)`", user, user.getIdLong())).collect(Collectors.toList());
+                            ? shardmanager.getGuildCache().stream().map((guild) -> format("`%s (%d)`", guild.getName(), guild.getIdLong())).collect(Collectors.toList())
+                            : shardmanager.getUserCache().stream().map((user) -> format("`%#s (%d)`", user, user.getIdLong())).collect(Collectors.toList());
                     display.sort(String.CASE_INSENSITIVE_ORDER);
                     ListDisplay.displayList(display, msg, event.getAuthor(), display.size() < 50 ? 10 : 20, (v) -> msg.delete().queue());
                 });
                 } else {
-                    wrongUsageMessage(event.getMessage(), channel, member, this);
+                    wrongUsageMessage(channel, member, this);
                 }
             } else {
-                wrongUsageMessage(event.getMessage(), channel, member, this);
+                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
@@ -109,7 +110,7 @@ public class SearchCommand implements ICommand {
                 shardmanager.getUserCache().stream().filter((user) -> user.getName().toLowerCase().contains(finalName)).forEach(users::add);
                 users.addAll(withDiscriminator);
             }
-            users.stream().map((user) -> String.format("%d: `%#s (%d)`", (users.indexOf(user) + 1), user, user.getIdLong())).forEach(ret::add);
+            users.stream().map((user) -> format("%d: `%#s (%d)`", (users.indexOf(user) + 1), user, user.getIdLong())).forEach(ret::add);
         } else {
             List<Guild> guilds = new ArrayList<>();
             for (var jda : shardmanager.getShardCache()) {
@@ -118,7 +119,7 @@ public class SearchCommand implements ICommand {
             String finalName = name;
             shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().startsWith(finalName) && !guilds.contains(guild)).forEach(guilds::add);
             shardmanager.getGuildCache().stream().filter((guild) -> guild.getName().toLowerCase().contains(finalName) && !guilds.contains(guild)).forEach(guilds::add);
-            guilds.stream().map((guild) -> String.format("%d: `%s (%d)` ", (guilds.indexOf(guild) + 1), guild.getName(), guild.getIdLong())).forEach(ret::add);
+            guilds.stream().map((guild) -> format("%d: `%s (%d)` ", (guilds.indexOf(guild) + 1), guild.getName(), guild.getIdLong())).forEach(ret::add);
         }
         return ret;
     }
