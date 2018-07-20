@@ -14,6 +14,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import java.util.Arrays;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static java.lang.String.format;
 
 public class Permissions implements ICommand {
 
@@ -41,15 +42,15 @@ public class Permissions implements ICommand {
                     if (event.getMessage().getMentionedMembers().isEmpty()) {
                         var targetRole = event.getMessage().getMentionedRoles().get(0);
                         guild.getMemberCache().stream().filter((m) -> m.getRoles().contains(targetRole)).forEach((m) -> database.changePermissionLevel(m, level));
-                        sendMessage(channel, Type.SUCCESS, String.format("Permission level of role `%s` successfully set to `%d`.", targetRole.getName(), level)).queue();
+                        sendMessage(channel, Type.SUCCESS, format("Permission level of role `%s` successfully set to `%d`.", targetRole.getName(), level)).queue();
                     } else {
                         var targetMember = guild.getMember(event.getMessage().getMentionedUsers().get(0));
                         database.changePermissionLevel(targetMember, level);
-                        sendMessage(channel, Type.SUCCESS, String.format("Permission level of member `%#s` successfully set to `%d`.", targetMember.getUser(), level)).queue();
+                        sendMessage(channel, Type.SUCCESS, format("Permission level of member `%#s` successfully set to `%d`.", targetMember.getUser(), level)).queue();
                     }
                 }
             } else {
-                sendMessage(channel, Type.ERROR, "You do not have permission to manage try-catch-permissions. Request help for more. " + member.getAsMention()).queue();
+                sendMessage(channel, Type.ERROR, format("You do not have permission to manage %s-permissions. Request help for more. " + member.getAsMention(), Bot.getBotName())).queue();
             }
         }, (v) -> {});
     }
@@ -60,11 +61,11 @@ public class Permissions implements ICommand {
         String prefix = settings.getPrefix(member.getGuild().getIdLong());
         String[] prefixArr = new String[10];
         Arrays.fill(prefixArr, prefix);
-        String ret = member.getRoles().stream().map(Role::getName).anyMatch((role) -> role.equals("try-catch"))
-                ? String.format("Manage try-catch permissions and configure the different permission levels.\n```\nLevel 0: %shelp\nLevel 1: %suserinfo\nLevel 2: " +
+        String ret = member.getRoles().stream().map(Role::getName).anyMatch((role) -> role.equals(Bot.getBotName()))
+                ? format("Manage %s-permissions and configure the different permission levels.\n```\nLevel 0: %shelp\nLevel 1: %suserinfo\nLevel 2: " +
                 "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote and %smail\nLevel 5: %ssettings and %srole```\n\nUsage: `%s[permission|perms|perm] [<@Member>|<@Role>] " +
-                "<level>` (level may be 0-5)\n\nTo execute this command, the member needs to have a role named \"try-catch\".", prefixArr)
-                : "This command is not available for you.\n **Permissions needed**: `try-catch` role.";
+                "<level>` (level may be 0-5)\n\nTo execute this command, the member needs to have a role named \"%s\".", Bot.getBotName(), prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, Bot.getBotName())
+                : format("This command is not available for you.\n **Permissions needed**: `%s` role.", Bot.getBotName());
         return ret;
     }
 

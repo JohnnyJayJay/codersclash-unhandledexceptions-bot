@@ -78,14 +78,15 @@ public class MuteManager {
             var guild = getGuild();
             Roles.getMutedRole(guild, (mutedRole) -> {
                 GuildController controller = guild.getController();
-                settings.addChannelsToBlacklist(guild.getTextChannelCache().stream().map(TextChannel::getIdLong).collect(Collectors.toList()));
                 controller.createTextChannel("guild-mute")
                         .addPermissionOverride(mutedRole, Collections.emptyList(), List.of(Permission.MESSAGE_READ))
-                        .addPermissionOverride(member, List.of(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION), Collections.emptyList()).queue((textChannel) -> {
-                    guild.getMemberCache().forEach((m) -> controller.addSingleRoleToMember(m, mutedRole).queue());
+                        .addPermissionOverride(member, List.of(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION), Collections.emptyList())
+                        .addPermissionOverride(member, List.of(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION), Collections.emptyList())
+                        .addPermissionOverride(guild.getSelfMember(), List.of(Permission.MESSAGE_WRITE), Collections.emptyList()).queue((textChannel) -> {
                     sendMessage((TextChannel) textChannel, Messages.Type.SUCCESS, String.format("This guild has been muted. To unmute the guild, please type `%s[guildmute|muteguild|lockdown]` " +
                             "again.", Bot.getPrefix(guild.getIdLong())), true).queue();
                     ((TextChannel) textChannel).sendMessage(member.getAsMention()).queue();
+                    settings.addChannelsToBlacklist(guild.getTextChannelCache().stream().map(TextChannel::getIdLong).filter((TextChannel) -> TextChannel != textChannel.getIdLong()).collect(Collectors.toList()));
                     guildMuted = true;
                 });
             }, (v) -> {});

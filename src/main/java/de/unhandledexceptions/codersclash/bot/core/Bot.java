@@ -195,4 +195,6 @@ public class Bot {
     public static List getBotOwners() {
         return config.getBotOwners();
     }
+
+    public static String getBotName(){return config.getBotName();}
 }
