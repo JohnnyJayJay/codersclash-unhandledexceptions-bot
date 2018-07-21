@@ -10,7 +10,10 @@ import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.MessageReaction;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
@@ -21,13 +24,14 @@ import org.jfree.chart.ChartUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
-
-import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 /**
  * @author oskar
@@ -124,7 +128,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         votes.put(guild.getIdLong(), vote);
 
         sendTimeReactionMessage(vote, event);
-        vote.getVoteCreator().setState(VoteState.REACTON);
+        vote.getVoteCreator().setState(VoteState.REACTION);
     }
 
     @Override
@@ -161,7 +165,6 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
         if (creator.getState() == VoteState.TIME)
         {
-
             if (!event.getMessage().getContentRaw().matches("\\d{1,6}"))
             {
                 sendMessage(channel, Type.ERROR, "Just insert digits please or your number is too long. (Max is 6 digits)!").queue();
@@ -177,14 +180,6 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             }
 
             vote.setTime(time);
-            vote.getVoteCreator().setState(VoteState.TOPIC);
-            sendTopicMessage(event);
-            return;
-        }
-
-        if (creator.getState() == VoteState.TOPIC)
-        {
-            vote.setTopic(event.getMessage().getContentRaw());
             vote.getVoteCreator().setState(VoteState.CHANNEL);
             sendChannelMessage(event);
             return;
@@ -201,7 +196,8 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             TextChannel targetChannel = event.getMessage().getMentionedChannels().get(0);
 
-            if(!guild.getSelfMember().hasPermission(targetChannel, Permission.MESSAGE_WRITE)){
+            if (!guild.getSelfMember().hasPermission(targetChannel, Permission.MESSAGE_WRITE))
+            {
                 sendMessage(channel, Type.ERROR, "I don't have permissions to write in this channel!").queue();
                 return;
             }
@@ -209,8 +205,16 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             vote.setTargetChannel(targetChannel);
             sendMessage(channel, Messages.Type.SUCCESS, String.format("Successfully set <#%s> as channel!", targetChannel.getId())).queue();
 
-            sendPossibilitiesMessage(event);
+            sendTopicMessage(event);
+            creator.setState(VoteState.TOPIC);
+            return;
+        }
+
+        if (creator.getState() == VoteState.TOPIC)
+        {
+            vote.setTopic(event.getMessage().getContentRaw());
             vote.getVoteCreator().setState(VoteState.POSSIBILITIES);
+            sendPossibilitiesMessage(event);
             return;
         }
 
@@ -224,36 +228,62 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                     return;
                 }
 
-                vote.getVoteCreator().setState(VoteState.FINISHED);
-                sendSetupFinishMessage(event);
-                finish(vote);
+                vote.getVoteCreator().setState(VoteState.VOTES);
+                sendVotesMessage(event);
                 return;
             }
 
 
             if (vote.getVoteAnswers().size() == 9)
             {
-                vote.getVoteCreator().setState(VoteState.FINISHED);
-                sendSetupFinishMessage(event);
-                finish(vote);
+                vote.getVoteCreator().setState(VoteState.VOTES);
+                sendVotesMessage(event);
                 return;
             }
 
-            if (!vote.getVoteAnswers().add(new VoteAnswer(event.getMessage().getContentDisplay(), vote.getVoteCreator(), vote, vote.getVoteAnswers().size() + 1)))
+
+            for (VoteAnswer answer : vote.getVoteAnswers())
             {
-                sendMessage(channel, Type.ERROR, "You already submit this possibility. Send a new one or finish the setup by typing 'finished'.").queue();
-                return;
+                if (answer.getAnswer().equals(event.getMessage().getContentRaw()))
+                {
+                    sendMessage(channel, Type.ERROR, "You already submit this possibility. Send a new one or finish the setup by typing 'finished'.").queue();
+                    return;
+                }
             }
 
-
+            vote.getVoteAnswers().add(new VoteAnswer(event.getMessage().getContentRaw(), vote.getVoteCreator(), vote, vote.getVoteAnswers().size() + 1));
 
             sendMessage(event.getChannel(), Type.SUCCESS, String.format("Received answer. Answer count: %s.", vote.getVoteAnswers().size())).queue();
+        }
+
+        if (creator.getState() == VoteState.VOTES)
+        {
+            if (event.getMessage().getContentRaw().matches("\\d{1,2}"))
+            {
+                int i = Integer.parseInt(event.getMessage().getContentRaw());
+
+                if (vote.getVoteAnswers().size() < i)
+                {
+                    sendMessage(channel, Type.ERROR, "Users can't have more votes then possibilities!").queue();
+                    return;
+                }
+
+                vote.setVotesPerUser(i);
+                sendMessage(channel, Type.SUCCESS, "Successfully set votes per user!").queue();
+
+                sendSetupFinishMessage(event);
+                creator.setState(VoteState.FINISHED);
+                finish(vote);
+                return;
+            } else
+            {
+                sendMessage(channel, Type.ERROR, "Just insert digits please or your number is too long. (Max is 2 digits)!").queue();
+            }
         }
     }
 
     private long convertTime(TimeUnit timeUnit, long time)
     {
-
         if (timeUnit == TimeUnit.MINUTES)
             return time * 60000;
 
@@ -268,12 +298,17 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
     private void sendTopicMessage(GuildMessageReceivedEvent event)
     {
-        sendMessage(event.getChannel(), Type.INFO, "What is the vote?").queue();
+        sendMessage(event.getChannel(), Type.QUESTION, "What is the vote?").queue();
     }
 
     private void sendPossibilitiesMessage(GuildMessageReceivedEvent event)
     {
-        sendMessage(event.getChannel(), Type.INFO, "Insert now the answer possibilities! If you finished type 'finished'.").queue();
+        sendMessage(event.getChannel(), Type.QUESTION, "What are the possibilities? If you finished type 'finished'.").queue();
+    }
+
+    private void sendVotesMessage(GuildMessageReceivedEvent event)
+    {
+        sendMessage(event.getChannel(), Type.QUESTION, "How many votes should each user have?").queue();
     }
 
     private void sendTimeReactionMessage(Vote vote, GuildMessageReceivedEvent event)
@@ -332,13 +367,13 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         Vote vote = votes.get(event.getGuild().getIdLong());
 
         String voteStats = String.format(
-                        "**Your vote stats**\n\n" +
-                        "%s Time:\t%s %s\n" +
-                        "%s Channel:\t<#%s>\n" +
-                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size());
+                "**Your vote settings**\n\n" +
+                        "%s Time:\t\t\t%s %s\n" +
+                        "%s Channel:\t\t<#%s>\n" +
+                        "%s Votes per user: %s\n" +
+                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size(), Reactions.USER, vote.getVotesPerUser());
 
         sendMessage(event.getChannel(), Type.INFO, voteStats).queue();
-
     }
 
     private void sendStartInfoMessage(GuildMessageReceivedEvent event)
@@ -363,7 +398,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
         for (int i = 1; i < vote.getVoteAnswers().size() + 1; i++)
         {
-            stringBuilder.append(Reactions.getNumber(i)).append(" \t").append(vote.getVoteAnswers().get(i-1).getAnswer()).append("\n");
+            stringBuilder.append(Reactions.getNumber(i)).append(" \t").append(vote.getVoteAnswers().get(i - 1).getAnswer()).append("\n");
             vote.getEmotes().add(Reactions.getNumber(i));
         }
 
@@ -408,12 +443,20 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             for (VoteAnswer answer : vote.getVoteAnswers())
             {
-                tiles.add(new PieTile(answer.getAnswer(), reactionCount.get(Reactions.getNumber(answer.getPosition()))));
+                if (!(reactionCount.get(Reactions.getNumber(answer.getPosition())) == 0))
+                    tiles.add(new PieTile(answer.getAnswer(), reactionCount.get(Reactions.getNumber(answer.getPosition()))));
+            }
+
+            if (tiles.size() == 0)
+            {
+                sendMessage(vote.getTargetChannel(), Type.ERROR, "Nobody voted so no result can be created!").queue();
+                votes.remove(vote);
+                return;
             }
 
             chart.create();
 
-            File chartFile = new File(vote.getGuild().getName() + "_chart.jpeg");
+            File chartFile = new File("logs\\votecharts\\" + vote.getGuild().getName() + "_chart.jpeg");
 
             try
             {
@@ -425,10 +468,25 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue();
 
-            vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS);
+            vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS, msg ->
+                    chartFile.delete());
+
+            int total = 0;
+
+            for (int i : reactionCount.values())
+            {
+                total = total + i;
+            }
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+
+
+            String msg = "Vote results:\n\n" + stringBuilder.toString();
+
+            
 
             votes.remove(vote.getGuildId());
-            chartFile.delete();
         });
     }
 
@@ -436,7 +494,6 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event)
     {
-
         if (!votes.containsKey(event.getGuild().getIdLong()))
             return;
 
@@ -452,7 +509,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     {
 
         if (!votes.containsKey(event.getGuild().getIdLong()))
-        return;
+            return;
 
         if (event.getChannel() == votes.get(event.getGuild().getIdLong()).getTargetChannel())
         {
@@ -461,23 +518,46 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         }
     }
 
-        @Override
-        public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event)
+    @Override
+    public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event)
+    {
+
+        if (!votes.containsKey(event.getGuild().getIdLong()))
+            return;
+
+        String name = event.getReactionEmote().getName();
+        if (event.getMessageIdLong() == votes.get(event.getGuild().getIdLong()).getMessageId())
         {
 
-            if (!votes.containsKey(event.getGuild().getIdLong()))
-                return;
+            Vote vote = votes.get(event.getGuild().getIdLong());
 
-            String name = event.getReactionEmote().getName();
-            if (event.getMessageIdLong() == votes.get(event.getGuild().getIdLong()).getMessageId())
+            if (vote.getEmotes().stream().noneMatch(name::equals))
             {
+                event.getReaction().removeReaction(event.getUser()).queue();
+                return;
+            } else
+            {
+                vote.getMessage().queue(message -> {
 
-                if(votes.get(event.getGuild().getIdLong()).getEmotes().stream().noneMatch(name::equals))
-                {
-                    event.getReaction().removeReaction(event.getUser()).queue();
-                }
+                    List<MessageReaction> reactions = message.getReactions();
+
+                    for (MessageReaction reaction : reactions)
+                    {
+                        reaction.getUsers().queue(users -> {
+
+                            int userVoted = 0;
+
+                            if (users.contains(event.getUser()))
+                                userVoted++;
+
+                            if (userVoted > vote.getVotesPerUser())
+                                event.getReaction().removeReaction().queue();
+                        });
+                    }
+                });
             }
         }
+    }
 
     @Override
     public void onGuildLeave(GuildLeaveEvent event)

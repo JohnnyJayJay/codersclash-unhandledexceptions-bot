@@ -12,6 +12,7 @@ public enum VoteState {
     DEFAULT(),
     REACTION(),
     TIME(),
+    VOTES(),
     CHANNEL(),
     TOPIC(),
     POSSIBILITIES(),
