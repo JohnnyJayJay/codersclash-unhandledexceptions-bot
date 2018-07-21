@@ -1,4 +1,4 @@
-package de.unhandledexceptions.codersclash.bot.commands.connection;
+package de.unhandledexceptions.codersclash.bot.core.connection;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -84,6 +85,25 @@ public class LinkManager {
             guilds.remove(guild.getIdLong());
             channelIds.remove(guild.getIdLong(), this.getLinkedChannel(guild));
             return channelIds.size() < 2;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.getGuilds());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+
+            boolean equals = false;
+            if (obj instanceof Link) {
+                Link other = (Link) obj;
+                equals =  Objects.equals(other.getGuilds(), this.getGuilds());
+            }
+
+            return equals;
         }
 
         private void send(Guild source, String text) {

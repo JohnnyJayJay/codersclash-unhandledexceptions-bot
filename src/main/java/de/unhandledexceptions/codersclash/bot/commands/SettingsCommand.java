@@ -5,6 +5,7 @@ import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
+import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
@@ -51,8 +52,8 @@ public class SettingsCommand implements ICommand {
             if (args.length == 0) {
                 var builder = new EmbedBuilder();
                 event.getMessage().delete().queue();
-                channel.sendMessage(builder.setDescription("Loading Main Menu...").build()).queue((msg) ->
-                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU, builder), Messages.defaultFailure(channel));
+                Main.otherThread(() -> channel.sendMessage(builder.setDescription("Loading Main Menu...").build()).queue((msg) ->
+                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU, builder), Messages.defaultFailure(channel)));
             } else {
                 wrongUsageMessage(channel, member, this);
             }
