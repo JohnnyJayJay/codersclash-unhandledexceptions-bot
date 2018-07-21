@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
@@ -95,8 +96,9 @@ public class LinkCommand implements ICommand {
                         msg.delete().queue();
                         requests.remove(guild.getIdLong());
                         manager.addGuild(link, guild);
-                        if (!listener.containsLink(link))
+                        if (!listener.containsLink(link)) {
                             listener.addLink(link);
+                        }
                         running.put(guild.getIdLong(), link);
                         Guild linkedGuild;
                         for (var guildId : link.getGuilds()) {
@@ -145,6 +147,8 @@ public class LinkCommand implements ICommand {
                                     }, (v) -> channel.sendMessage(expired).queue());
                                 });
                             });
+                        } else if (selectedGuild == guild) {
+                            sendMessage(channel, Type.ERROR, "That's literally your own guild!").queue();
                         } else {
                             Reactions.newYesNoMenu(member.getUser(), channel, String.format("Do you want to invite `%s - Owner: %#s` to this link?", selectedGuild, selectedGuild.getOwner().getUser()), (msg) -> {
                                 addCustomMessage(member, channel, guild, link, msg, selectedGuild);
@@ -159,7 +163,11 @@ public class LinkCommand implements ICommand {
                                         Matcher matcher = SearchCommand.FIND_ID.matcher(selected);
                                         matcher.find();
                                         Guild selectedGuild = shardManager.getGuildById(matcher.group().replaceAll("[\\(\\)]", ""));
-                                        addCustomMessage(member, channel, guild, link, msg2, selectedGuild);
+                                        if (selectedGuild != guild) {
+                                            addCustomMessage(member, channel, guild, link, msg2, selectedGuild);
+                                        } else {
+                                            sendMessage(channel, Type.ERROR, "That's literally your own guild!").queue();
+                                        }
                                     }, (v) -> msg2.delete().queue()));
                         } else {
                             sendMessage(channel, Type.ERROR, "No matches found for this search.").queue();
@@ -207,6 +215,9 @@ public class LinkCommand implements ICommand {
         if (guild == null) {
             sendMessage(channel, Type.ERROR, "No guild found with this id!").queue(Messages::deleteAfterFiveSec);
             addAnotherGuild(guilds, channel, member);
+        } else if (guild == member.getGuild()) {
+            sendMessage(channel, Type.ERROR, "That's literally your own guild!").queue(Messages::deleteAfterFiveSec);
+            addAnotherGuild(guilds, channel, member);
         } else {
             Long mailChannel = database.getMailChannel(guild);
             if (mailChannel == null || mailChannel == 0) {
@@ -227,11 +238,14 @@ public class LinkCommand implements ICommand {
             channel.sendMessage(found.size() + " guilds found for this name. Please select one or abort:").queue((msg2) ->
                     ListDisplay.displayListSelection(found, msg2, member.getUser(), 10, (selected) -> {
                         msg2.delete().queue();
-                        Matcher matcher = searchCommand.FIND_ID.matcher(selected);
+                        Matcher matcher = SearchCommand.FIND_ID.matcher(selected);
                         matcher.find();
                         Guild guild = shardManager.getGuildById(matcher.group().replaceAll("[\\(\\)]", ""));
                         Long mailChannel = database.getMailChannel(guild);
-                        if (mailChannel == null || mailChannel == 0) {
+                        if (guild == member.getGuild()) {
+                            sendMessage(channel, Type.ERROR, "That's literally your own guild!").queue(Messages::deleteAfterFiveSec);
+                            addAnotherGuild(guilds, channel, member);
+                        } else if (mailChannel == null || mailChannel == 0) {
                             sendMessage(channel, Type.ERROR, "The given guild hasn't set a mail channel! Please contact their administrators.").queue(Messages::deleteAfterFiveSec);
                             addAnotherGuild(guilds, channel, member);
                         } else if (guild.getTextChannelById(mailChannel) == null){
@@ -296,6 +310,13 @@ public class LinkCommand implements ICommand {
 
     @Override
     public String info(Member member) {
-        return " ";
+        int permLvl = Permissions.getPermissionLevel(member);
+        return permLvl < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
+                "`3`\nYour permission level: `" + permLvl + "`"
+                : "**Description:** Links your guild with up to 9 other guilds\n\n"
+                + Bot.getPrefix(member.getGuild().getIdLong()) + "link [request|accept|disconnect|invite]`\nNote that " +
+                "you may only use `invite` and `disconnect` if you're currently connected.\n\n A guild may only have one link or one request " +
+                "at a time. As soon as you request a link, your guild is linked.\nIn order to send a new request, you need to " +
+                "disconnect first.\n\n**Permission level:** `4`";
     }
 }

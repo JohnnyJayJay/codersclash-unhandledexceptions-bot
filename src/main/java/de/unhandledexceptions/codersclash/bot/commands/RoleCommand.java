@@ -24,7 +24,7 @@ import static java.lang.String.format;
  */
 
 public class RoleCommand implements ICommand {
-    //TODO if role above bot
+
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
@@ -51,6 +51,7 @@ public class RoleCommand implements ICommand {
                 } else if (args[0].equalsIgnoreCase("add")) {
                     List<Role> roles = event.getGuild().getRolesByName(role, true);
                     if (roles.size() > 1) {
+                        roles.stream().filter(event.getGuild().getSelfMember()::canInteract).collect(Collectors.toList());
                         Reactions.newYesNoMenu(member.getUser(), channel, "Multiple roles with this name detected. Do you want to add all of them?\n"
                                 + Reactions.YES_EMOTE + " Yes, add all of them.\n"
                                 + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
@@ -72,37 +73,46 @@ public class RoleCommand implements ICommand {
                             });
                         });
                     } else {
-                        event.getGuild().getController().addSingleRoleToMember(target, roles.get(0)).queue(
-                                (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                        if (!event.getGuild().getSelfMember().canInteract(event.getGuild().getRolesByName(role, false).get(0))) {
+                            sendMessage(channel, Type.WARNING, "Bot can't interact with the role because it is higher or equal his own!", false).queue();
+                        } else {
+                            event.getGuild().getController().addSingleRoleToMember(target, roles.get(0)).queue(
+                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                        }
                     }
                 } else if (args[0].equalsIgnoreCase("remove")) {
                     List<Role> roles = event.getGuild().getRolesByName(role, true);
-                    if (roles.size() > 1) {
-                        Reactions.newYesNoMenu(member.getUser(), channel, "Multiple roles with this name detected. Do you want to remove all of them?\n"
-                                + Reactions.YES_EMOTE + " Yes, remove all of them.\n"
-                                + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
-                            msg.delete().queue();
-                            event.getGuild().getController().removeRolesFromMember(target, roles).queue(
-                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
-                        }, (msg) -> {
-                            msg.delete().queue();
-                            sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
-                                ListDisplay.displayListSelection(roles.stream().map((role1) -> format("%d: %s (%d)", roles.indexOf(role1) + 1, role1.getAsMention(), role1.getIdLong())).collect(Collectors.toList()),
-                                        msg2, member.getUser(), 5, (selected) -> {
-                                            msg2.delete().queue();
-                                            event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
-                                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
-                                        }, (v) -> {
-                                            msg.delete().queue();
-                                            msg2.delete().queue();
-                                        });
+                        if (roles.size() > 1) {
+                            roles.stream().filter(event.getGuild().getSelfMember()::canInteract).collect(Collectors.toList());
+                            Reactions.newYesNoMenu(member.getUser(), channel, "Multiple roles with this name detected. Do you want to remove all of them?\n"
+                                    + Reactions.YES_EMOTE + " Yes, remove all of them.\n"
+                                    + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
+                                msg.delete().queue();
+                                event.getGuild().getController().removeRolesFromMember(target, roles).queue(
+                                        (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                            }, (msg) -> {
+                                msg.delete().queue();
+                                sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
+                                    ListDisplay.displayListSelection(roles.stream().map((role1) -> format("%d: %s (%d)", roles.indexOf(role1) + 1, role1.getAsMention(), role1.getIdLong())).collect(Collectors.toList()),
+                                            msg2, member.getUser(), 5, (selected) -> {
+                                                msg2.delete().queue();
+                                                event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
+                                                        (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                            }, (v) -> {
+                                                msg.delete().queue();
+                                                msg2.delete().queue();
+                                            });
+                                });
                             });
-                        });
-                    } else {
-                        event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRolesByName(role, true).get(0)).queue(
+                        } else {
+                            if (!event.getGuild().getSelfMember().canInteract(event.getGuild().getRolesByName(role, false).get(0))) {
+                                sendMessage(channel, Type.WARNING, "Bot can't interact with the role because it is higher or equal it's own!", false).queue();
+                            } else {
+                                event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRolesByName(role, true).get(0)).queue(
                                 (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
-                    }
-                } else {
+                            }
+                        }
+                        } else {
                     wrongUsageMessage(channel, member, this);
                 }
             }

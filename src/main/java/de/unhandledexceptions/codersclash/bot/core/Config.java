@@ -11,16 +11,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Config {
 
     private static Logger logger = Logging.getLogger();
 
-    // Konstanten, die beim erstellen der Config automatisch eingetragen werden
-    private final int DEFAULT_MAX_SHARDS = 3;
     private final long[] BOT_OWNERS = {261083609148948488L,234343108773412864L,226011931935375360L,138607604506165248L};
     private final String BOT_NAME = "try-catch";
-    private final String VERSION = "Dev. Build";
+    private final String VERSION = "1.0";
     private final String ICON_URL = "https://i.imgur.com/DRKwhqj.png";
     private final String DEFAULT_PREFIX = "tc!";
     private final long COMMAND_COOLDOWN = 0;
@@ -71,6 +70,7 @@ public class Config {
 
     // Das, was am Anfang in der config stehen soll (default)
     private String defaultConfigContent() {
+        String emoteGuildName = Long.toString(ThreadLocalRandom.current().nextLong());
         return new JSONStringer().object()
                 .key("BOTINFO").object()
                 .key("OWNER").value(BOT_OWNERS)
@@ -80,7 +80,7 @@ public class Config {
                 .key("TOKEN").value(null)
                 .key("DEFAULT_PREFIX").value(DEFAULT_PREFIX)
                 .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
-                .key("MAX_SHARDS").value(DEFAULT_MAX_SHARDS)
+                .key("EMOTE_GUILD_NAME").value(emoteGuildName)
                 .key("DATABASE").object()
                 .key("IP").value(null)
                 .key("PORT").value(null)
@@ -112,10 +112,6 @@ public class Config {
         return config.getJSONObject("BOTINFO").getJSONArray("OWNER").toList();
     }
 
-    public int getMaxShards() {
-        return config.getInt("MAX_SHARDS");
-    }
-
     public String getToken() {
         return config.getString("TOKEN");
     }
@@ -142,6 +138,10 @@ public class Config {
 
     public String getDBPassword() {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
+    }
+
+    public String getEmoteGuildName() {
+        return config.getString("EMOTE_GUILD_NAME");
     }
 
 }

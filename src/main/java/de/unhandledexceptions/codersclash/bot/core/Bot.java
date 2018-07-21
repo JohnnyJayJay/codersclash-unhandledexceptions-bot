@@ -5,7 +5,6 @@ import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
-import de.unhandledexceptions.codersclash.bot.core.reactions.TestClass;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.*;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -16,7 +15,6 @@ import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +43,6 @@ public class Bot {
 
     public void start() {
         builder.setAutoReconnect(true)
-                .setShardsTotal(config.getMaxShards())
                 .setGame(Game.listening("@" + config.getBotName() + " | Ping me!"))
                 .setToken(config.getToken());
         try {
@@ -94,16 +91,12 @@ public class Bot {
                 .put(new MuteCommand(muteManager), "mute", "silence")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(mailCommand, "mail", "contact")
-                //.put(new ConnectionCommand(searchCommand, mailCommand), "connect")
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new ScoreBoardCommand(database, commandSettings), "scoreboard", "sb")
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
-                .put(new InfoCommand(), "info", "status")
-                .put(new EvalCommand(config, shardManager, voteCommand), "eval")
                 .put(new HelpCommand(commandSettingsHandler), "help", "helpme", "commands")
-                .put(new TestClass(), "test")
                 .getCommandSettings()
                 .setCooldown(3000)
                 .activate();

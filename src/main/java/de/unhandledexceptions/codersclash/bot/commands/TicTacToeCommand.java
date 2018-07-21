@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
@@ -10,6 +11,8 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
@@ -52,5 +55,13 @@ public class TicTacToeCommand implements ICommand {
         Reactions.newYesNoMenu(player2.getUser(), channel, "Do you want to play against " + player1.getAsMention() + ", " + player2.getAsMention() + "?", (msg) -> {
             Messages.sendMessage(channel, Messages.Type.NO_TYPE, "Starting game...").queue((msg2) -> game.start(msg2, player1, player2, size));
         }, true);
+    }
+
+    @Override
+    public String info(Member member) {
+        String prefix = Bot.getPrefix(member.getGuild().getIdLong());
+        String ret = format("**Description**: Starts a game of Tic-Tac-Toe.\n\n" +
+                "**Usage**: `%s[ttt|tictactoe]`\n\n**Permission level**: `0`", prefix, prefix);
+        return ret;
     }
 }

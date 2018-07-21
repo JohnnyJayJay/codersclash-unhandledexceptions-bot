@@ -6,6 +6,8 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Hax
@@ -18,9 +20,9 @@ import java.util.HashMap;
 public class CommandSettingsHandler {
 
     private CommandSettings commandSettings;
-    private HashMap<ICommand, String> hashMap = new HashMap<>(); // Command, Alias aka label
-    private ArrayList<ICommand> commands = new ArrayList<>(); // All commands
-    private HashMap<String, ICommand> hashMap2 = new HashMap<>(); // labels, Command
+    private Map<ICommand, String> hashMap = new HashMap<>(); // Command, Alias aka label
+    private List<ICommand> commands = new ArrayList<>(); // All commands
+    private Map<String, ICommand> hashMap2 = new HashMap<>(); // labels, Command
     public CommandSettingsHandler(CommandSettings commandSettings) {
         this.commandSettings = commandSettings;
     }
@@ -37,15 +39,15 @@ public class CommandSettingsHandler {
         return this;
     }
 
-    public HashMap<String, ICommand> getCommandfromLabel() {
+    public Map<String, ICommand> getCommandfromLabel() {
         return hashMap2;
     }
 
-    public HashMap<ICommand, String> getLabelFromCommand() {
+    public Map<ICommand, String> getLabelFromCommand() {
         return hashMap;
     }
 
-    public ArrayList<ICommand> getCommands() {
+    public List<ICommand> getCommands() {
         return commands;
     }
 

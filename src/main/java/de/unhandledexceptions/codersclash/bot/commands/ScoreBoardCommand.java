@@ -25,7 +25,6 @@ public class ScoreBoardCommand implements ICommand {
         this.database = database;
         this.settings = settings;
     }
-    //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
         if (!commandEvent.getGuild().getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE))
@@ -83,7 +82,7 @@ public class ScoreBoardCommand implements ICommand {
     }
     @Override
     public String info(Member member) {
-        return format("**Description**: Gives you informations about your score and who is the best.\n\n**Usage**: `%s[scoreboard, sb]`\n\n**Permission level**: `0`",
+        return format("**Description**: Gives you information about your score and the best scores.\n\n**Usage**: `%s[scoreboard|sb]`\n\n**Permission level**: `1`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }
 }

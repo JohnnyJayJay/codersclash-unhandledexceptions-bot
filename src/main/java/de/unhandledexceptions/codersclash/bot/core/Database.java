@@ -379,7 +379,6 @@ public class Database {
     }
 
     public ArrayList<String> orderBy(String table, String orderby) {
-        // TODO anpassen
         try (var connection = dataSource.getConnection();
              var preparedstatement = connection.prepareStatement("SELECT * FROM "+table)) {
             var resultSet = preparedstatement.executeQuery();

@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
@@ -123,9 +124,16 @@ public class SearchCommand implements ICommand {
         }
         return ret;
     }
-    // TODO
+
     @Override
     public String info(Member member) {
-        return "TODO";
+        String prefix = Bot.getPrefix(member.getGuild().getIdLong());
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 2
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Let's you search for a specific user/guild.\nOr let's you display all users/guilds.\n\n" +
+                "**Usage**: `%ssearch [user|guild] <name>`\n\t\t\t  `%ssearch display [users|guilds]`\n\n**Permission level**: `2`", prefix, prefix);
+        return ret;
     }
 }

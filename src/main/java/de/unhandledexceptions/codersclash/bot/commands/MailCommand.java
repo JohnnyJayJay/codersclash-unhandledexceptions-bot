@@ -43,7 +43,7 @@ public class MailCommand implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
             return;
 
-        if (Permissions.getPermissionLevel(member) >= 5) {
+        if (Permissions.getPermissionLevel(member) >= 4) {
             if (args.length > 1) {
                 var shardManager = event.getJDA().asBot().getShardManager();
                 Guild guild;
@@ -122,12 +122,11 @@ public class MailCommand implements ICommand {
 
     }
 
-
     @Override
     public String info(Member member) {
         int permLevel = Permissions.getPermissionLevel(member);
         String ret = permLevel < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
-                "`3`\nYour permission level: `" + permLevel + "`"
+                "`4`\nYour permission level: `" + permLevel + "`"
                 : "**Description:** Send a \"mail\" to a guild the bot is also on!\n\n"
                 + "**Usage:** `" + Bot.getPrefix(member.getGuild().getIdLong()) + "[mail|contact] <Guild-ID> <Message>`\nIf you don't have an id, replace it with \"NOID\". "
                 + "You may then search a guild by name.\nTo add a topic to your mail, put `##your-topic##` somewhere "

@@ -149,7 +149,6 @@ public class Reactions {
         private static final long NO_CHANNEL = -1;
         private static final long NO_GUILD = -2;
 
-        // TODO mit einem Consumer für mehrere Nachrichten (andThen)
         //private final int howMany;
         private final long userId;
         private final long channelId;

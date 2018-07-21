@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
@@ -13,6 +14,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static java.lang.String.format;
 
 /**
  * @author Johnny_JayJay
@@ -57,7 +59,13 @@ public class GuildMuteCommand implements ICommand {
 
     @Override
     public String info(Member member) {
-        // TODO info
-        return " ";
+        String prefix = Bot.getPrefix(member.getGuild().getIdLong());
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 3
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `3`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Mutes the whole guild so no one can write.\n\n" +
+                "**Usage**: `%s[muteguild|guildmute|lockdown]`\n\n**Permission level**: `3`", prefix);
+        return ret;
     }
 }
