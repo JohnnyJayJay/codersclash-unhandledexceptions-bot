@@ -331,14 +331,14 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                 "**Your vote information**\n\n" +
                         "%s Time:\t\t\t%s %s\n" +
                         "%s Channel:\t\t<#%s>\n" +
-                        "%s Votes per user: %s\n" +
+                        "%s Votes per user:\t%s\n" +
                         "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size(), Reactions.USER, vote.getVotesPerUser());
 
         sendMessage(event.getChannel(), Type.INFO, voteStats, false).queue();
     }
 
     private void sendStartInfoMessage(GuildMessageReceivedEvent event) {
-        sendMessage(event.getChannel(), Type.INFO, "Your vote can not go longer then `1` week! \nYou can only submit up to 10 answer possibilities.\nYou can cancel the vote any time by typing `cancel`").queue();
+        sendMessage(event.getChannel(), Type.INFO, "Your vote can not go longer then `1` week! \nYou can only submit up to `10` answer possibilities.\nYou can cancel the vote any time by typing `cancel`").queue();
 
     }
 
@@ -412,20 +412,22 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             chart.create();
 
-            File chartFile = new File("logs\\votecharts\\" + vote.getGuild().getName() + "_chart.jpeg");
+            File chartFile = new File(vote.getGuild().getName() + "_chart.jpeg");
 
-            try {
+            try
+            {
                 ChartUtils.saveChartAsJPEG(chartFile, chart.getChart(), WIDTH, HEIGHT);
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Something went wrong while creating your file!").queue();
             }
 
-            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next `10` seconds!").queue(Messages::deleteAfterFiveSec);
+            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue(Messages::deleteAfterFiveSec);
 
-            if (chartFile.exists()) {
-                vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS, msg ->
-                        chartFile.delete());
-            }
+            vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS);
+
+            votes.remove(vote.getGuildId());
+            chartFile.delete();
 
 
             int total = 0;
