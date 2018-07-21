@@ -24,6 +24,7 @@ import org.jfree.chart.ChartUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -367,13 +368,13 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         Vote vote = votes.get(event.getGuild().getIdLong());
 
         String voteStats = String.format(
-                "**Your vote settings**\n\n" +
+                "**Your vote information**\n\n" +
                         "%s Time:\t\t\t%s %s\n" +
                         "%s Channel:\t\t<#%s>\n" +
                         "%s Votes per user: %s\n" +
                         "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size(), Reactions.USER, vote.getVotesPerUser());
 
-        sendMessage(event.getChannel(), Type.INFO, voteStats).queue();
+        sendMessage(event.getChannel(), Type.INFO, voteStats, false).queue();
     }
 
     private void sendStartInfoMessage(GuildMessageReceivedEvent event)
@@ -384,13 +385,12 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
     private void finish(Vote vote)
     {
-
         var targetChannel = vote.getTargetChannel();
-        var embedBuilder = new EmbedBuilder();
-
-        embedBuilder.setColor(vote.getGuild().getSelfMember().getColor());
-        embedBuilder.setTitle(Reactions.NEWSPAPER + " New vote!");
-        embedBuilder.setAuthor(vote.getVoteCreator().getMember().getEffectiveName(), null, vote.getVoteCreator().getMember().getUser().getEffectiveAvatarUrl());
+        var embedBuilder = new EmbedBuilder()
+                .setColor(vote.getGuild().getSelfMember().getColor())
+                .setTitle(Reactions.NEWSPAPER + " New vote!")
+                .setAuthor(vote.getVoteCreator().getMember().getEffectiveName(), null, vote.getVoteCreator().getMember().getUser().getEffectiveAvatarUrl())
+                .setTimestamp(Instant.now());
 
         var stringBuilder = new StringBuilder();
 
@@ -450,7 +450,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             if (tiles.size() == 0)
             {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Nobody voted so no result can be created!").queue();
-                votes.remove(vote);
+                votes.remove(vote.getGuildId());
                 return;
             }
 
@@ -480,12 +480,15 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             StringBuilder stringBuilder = new StringBuilder();
 
-
+            for (VoteAnswer voteAnswer : vote.getVoteAnswers())
+            {
+                String emoteName = Reactions.getNumber(voteAnswer.getPosition());
+                stringBuilder.append(emoteName + " " + reactionCount.get(emoteName) / total * 100 + "%\n");
+            }
 
             String msg = "Vote results:\n\n" + stringBuilder.toString();
 
-            
-
+            sendMessage(vote.getTargetChannel(), Type.INFO, msg).queue();
             votes.remove(vote.getGuildId());
         });
     }
