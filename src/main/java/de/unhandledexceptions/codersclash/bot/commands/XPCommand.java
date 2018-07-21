@@ -30,7 +30,7 @@ import static java.lang.String.format;
 
 public class XPCommand extends ListenerAdapter implements ICommand {
 
-    private static final long multiplicator = 8;
+    private static final long multiplicator = 32;
 
 
     private CommandSettings settings;

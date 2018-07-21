@@ -25,7 +25,7 @@ public class ScoreBoardCommand implements ICommand {
     //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
-        String[] strings1 = "user,member".split(",");
+        String[] strings1 = "member,user".split(",");
         EmbedBuilder embedBuilder = new EmbedBuilder();
         ShardManager shardManager = member.getJDA().asBot().getShardManager();
         for (String type:strings1) {
