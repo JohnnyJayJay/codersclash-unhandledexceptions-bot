@@ -19,8 +19,4 @@ public interface Link {
     void addChannel(TextChannel channel);
 
     boolean remove(Guild guild);
-
-    int hashCode();
-
-    boolean equals(Object obj);
 }
