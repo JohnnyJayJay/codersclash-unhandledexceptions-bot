@@ -31,6 +31,7 @@ public class Vote {
     private String topic;
     private final ShardManager shardManager;
     private ScheduledFuture scheduledFuture;
+    private int votesPerUser;
 
     public Vote(Guild guild, TextChannel setupChannel, ShardManager shardManager)
     {
@@ -194,6 +195,16 @@ public class Vote {
     public void setScheduledFuture(ScheduledFuture scheduledFuture)
     {
         this.scheduledFuture = scheduledFuture;
+    }
+
+    public int getVotesPerUser()
+    {
+        return votesPerUser;
+    }
+
+    public void setVotesPerUser(int votesPerUser)
+    {
+        this.votesPerUser = votesPerUser;
     }
 
     public boolean isRunning()
