@@ -394,7 +394,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
         var stringBuilder = new StringBuilder();
 
-        stringBuilder.append(vote.getTopic()).append("\n\n**Answers**\n");
+        stringBuilder.append(vote.getTopic()).append("\n\n**Answers:**\n");
 
         for (int i = 1; i < vote.getVoteAnswers().size() + 1; i++)
         {
@@ -466,7 +466,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Something went wrong while creating your file!").queue();
             }
 
-            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue();
+            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue(Messages::deleteAfterFiveSec);
 
             vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS, msg ->
                     chartFile.delete());
