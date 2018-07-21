@@ -7,7 +7,10 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 
 public class Management extends ListenerAdapter {
 
@@ -21,9 +24,10 @@ public class Management extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+        String prefix = Bot.getPrefix(event.getGuild().getIdLong());
+        String regex = prefix + "(?i)manage (((status)|(restart)|(shutdown)) ((complete)|(\\d)))";
+        String regexWrongUsage = prefix + "(?i)manage.*";
         if (Bot.getBotOwners().contains(event.getAuthor().getIdLong())) {
-            String prefix = Bot.getPrefix(event.getGuild().getIdLong());
-            String regex = prefix + "(?i)manage (((status)|(restart)|(shutdown)) ((complete)|(\\d)))";
             var argsList = Arrays.asList(event.getMessage().getContentRaw().replaceFirst(Bot.getPrefix(event.getGuild().getIdLong()), "")
                     .split("\\s+"));
             String[] args = argsList.subList(1, argsList.size()).toArray(new String[argsList.size()]);
@@ -75,8 +79,10 @@ public class Management extends ListenerAdapter {
                     bot.getCommandSettings().activate();
                     event.getChannel().sendMessage("CommandSettings wurden aktiviert.").queue();
                 }
-            }
-        }
+            } else if (event.getMessage().getContentRaw().matches(regexWrongUsage))
+                sendMessage(event.getChannel(), Type.WARNING, "Wrong Usage.").queue((msg) -> msg.delete().queueAfter(10, TimeUnit.SECONDS));
+        } else if (event.getMessage().getContentRaw().matches(regex))
+            sendMessage(event.getChannel(), Type.ERROR, "Nothing to see here. **Bot Owners only.** " + event.getMember().getAsMention()).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
     }
 
     private TimerTask timerTaskOf(Consumer<Void> consumer) {

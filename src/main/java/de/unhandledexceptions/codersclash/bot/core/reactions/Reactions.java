@@ -61,6 +61,8 @@ public class Reactions {
     public static final String[] DIGITS = {"1\u20E3", "2\u20E3", "3\u20E3", "4\u20E3", "5\u20E3", "6\u20E3", "7\u20E3", "8\u20E3", "9\u20E3", "\uD83D\uDD1F"};
     public static final String SMALL_ARROW_LEFT = "◀";
     public static final String SMALL_ARROW_RIGHT = "▶";
+    public static final String SPEAKER = "\uD83D\uDD08";
+    public static final String GEAR = "\u2699";
     public static final String USER = "\uD83D\uDC64";
 
     private static final Consumer<Message> deleteMsg = (msg) -> msg.delete().queue();
@@ -221,7 +223,7 @@ public class Reactions {
             if (user == event.getJDA().getSelfUser() || event.getMessageIdLong() != messageId)
                 return;
 
-            event.getReaction().removeReaction(user).queue();
+            event.getReaction().removeReaction(user).queue( placeholder -> {}, placeholder -> {});
 
             String emoji = event.getReactionEmote().getName();
             if (user.getIdLong() == userId) {

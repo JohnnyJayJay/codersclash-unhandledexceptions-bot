@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -21,21 +22,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static java.lang.String.format;
 
-// TODO Fortschritt verlangsamen
 public class XPCommand extends ListenerAdapter implements ICommand {
 
-    private static final Map<String, String> urls = new HashMap<>() {{
-        put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
-        put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
-        put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
-        put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
-        put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
-        put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
-    }};
+    private static final long multiplicator = 32;
+
 
     private CommandSettings settings;
     private Database database;
@@ -44,10 +40,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         this.settings = settings;
         this.database = database;
     }
-    //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
-        if (!database.xpSystemActivated(event.getGuild().getIdLong()) || !event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
+
+        if (!event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
             return;
 
         if (event.getMessage().getMentionedMembers().size()==1) {
@@ -55,7 +51,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         }
 
         if (member.getUser().isBot()) {
-            sendMessage(channel, Type.INFO, "Bots aren't invited to the super XP Command!").queue();
+            sendMessage(channel, Type.INFO, "Bots aren't allowed to use the XP Command!").queue();
             return;
         }
 
@@ -63,38 +59,33 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         long userXp = database.getUserXp(member.getUser());
         long memberLevel = database.getGuildLvl(member);
         long userLevel = database.getUserLvl(member.getUser());
-        long maxUserXp = userLevel * 8;
-        long maxMemberXp = memberLevel * 8;
-        if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-            try {
-                for (String name : urls.keySet()) {
-                    var emotes = event.getJDA().asBot().getShardManager().getEmotesByName(name, false);
-                    if (emotes.isEmpty() || emotes.get(0).getImageUrl().equals(urls.get(name))) {
-                        event.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
-                    }
-                }
-            } catch (IOException e) {
-                Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
-                return;
-            }
+        long maxUserXp = userLevel * multiplicator;
+        long maxMemberXp = memberLevel * multiplicator;
+
+        if (!database.xpSystemActivated(event.getGuild().getIdLong())) {
+            sendMessage(channel, Type.WARNING, format("The XP-System is currently `deactivated`.\nUse `%ssettings` to re-enable it or contact your Server Admins.",
+                    settings.getPrefix(member.getGuild().getIdLong()))).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
+        } else if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
+
+
             EmbedBuilder embedBuilder = new EmbedBuilder()
-                    .addField("Guild", "Level: " + memberLevel +
-                                    "\nXp: " + memberXp + "/" + maxMemberXp +
+                    .addField("Server", "Level: " + memberLevel +
+                                    "\nXP: " + memberXp + "/" + maxMemberXp +
                                     "\n" + getProgressBar(memberXp, maxMemberXp, member)
                             ,true)
-                    .addField("User", "Level: "+userLevel +
-                                    "\nXp: " + userXp + "/"+maxUserXp +
+                    .addField("Global", "Level: "+userLevel +
+                                    "\nXP: " + userXp + "/"+maxUserXp +
                                     "\n" + getProgressBar(userXp, maxUserXp, member)
                             , true);
-            sendMessage(channel, Type.DEFAULT, "Take a look at your xp status:", "Level information", true, embedBuilder).queue();
+            sendMessage(channel, Type.DEFAULT, "Take a look at your XP stats:", "Level information", false, embedBuilder).queue();
         } else {
-            sendMessage(channel, Type.WARNING, "The Bot needs to have permission to manage Custom emotes in order to display your xp status!").queue();
+            sendMessage(channel, Type.WARNING, "The Bot needs to have permission to manage custom emotes in order to display your xp stats!").queue();
         }
     }
 
     @Override
     public String info(Member member) {
-        return String.format("**Description**: Gives you information about your level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
+        return format("**Description**: Gives you information about your level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
                 settings.getPrefix(member.getGuild().getIdLong()));
     }
 
@@ -102,7 +93,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     public void onGenericGuildMessage(GenericGuildMessageEvent origevent) {
         if (origevent instanceof GuildMessageDeleteEvent || !database.xpSystemActivated(origevent.getGuild().getIdLong()))
             return;
-        // FIXME errorresponseactions bei nachrichten, die beim reacten gelöscht werden
         if (origevent instanceof GuildMessageReactionAddEvent) {
             GuildMessageReactionAddEvent event = (GuildMessageReactionAddEvent) origevent;
             event.getChannel().getMessageById(event.getMessageIdLong()).queue((msg) -> {
@@ -181,10 +171,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     }
 
     private void checkLvl(Member member) {
-        if (database.getUserXp(member.getUser())>=(database.getUserLvl(member.getUser())) * 8) {
+        if (database.getUserXp(member.getUser())>=(database.getUserLvl(member.getUser())) * multiplicator) {
             database.addUserLvl(member.getUser());
         }
-        if (database.getGuildXp(member)>=(database.getGuildLvl(member) * 8)) {
+        if (database.getGuildXp(member)>=(database.getGuildLvl(member) * multiplicator)) {
             database.addGuildLvl(member);
         }
     }

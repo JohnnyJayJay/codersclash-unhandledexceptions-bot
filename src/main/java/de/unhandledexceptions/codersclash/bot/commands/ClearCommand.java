@@ -70,8 +70,7 @@ public class ClearCommand implements ICommand {
 
     // Standard success callback
     private void success(TextChannel channel) {
-        sendMessage(channel, Type.SUCCESS, "Successfully deleted message(s)! Note that some messages might not have been deleted because they are older than two weeks.")
-                .queue((msg) -> msg.delete().queueAfter(8, TimeUnit.SECONDS));
+        sendMessage(channel, Type.SUCCESS, "Successfully deleted message(s)! Note that some messages might not have been deleted because they are older than two weeks.").queue((msg) -> msg.delete().queueAfter(8, TimeUnit.SECONDS));
     }
 
     @Override

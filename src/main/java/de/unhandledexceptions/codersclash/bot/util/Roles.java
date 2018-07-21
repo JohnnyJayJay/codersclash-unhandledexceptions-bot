@@ -21,11 +21,19 @@ public class Roles {
             success.accept(role);
         } else if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
             if (!guild.getSelfMember().getRoles().isEmpty()) {
+<<<<<<< HEAD
                 guild.getController().createRole().setName(Bot.getBotName() + "-perms").setColor(guild.getSelfMember().getColor()).queue((role) ->
                         guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(0).getPosition() - 1).queue((v) ->
                                 success.accept(role)));
             } else {
                 guild.getController().createRole().setName(Bot.getBotName() + "-perms").setColor(guild.getSelfMember().getColor()).queue(success, (t) -> failure.accept(null));
+=======
+                guild.getController().createRole().setName(Bot.getBotName()).setColor(guild.getSelfMember().getColor()).queue((role) ->
+                        guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(0).getPosition() - 1).queue((v) ->
+                                success.accept(role)));
+            } else {
+                guild.getController().createRole().setName(Bot.getBotName()).setColor(guild.getSelfMember().getColor()).queue(success, (t) -> failure.accept(null));
+>>>>>>> 9b47d40990063d8006e0ebc7dd66c405a85423b5
             }
         } else {
             failure.accept(null);
