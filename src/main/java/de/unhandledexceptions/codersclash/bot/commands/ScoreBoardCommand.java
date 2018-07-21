@@ -1,6 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
+import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.ScoreBoardUser;
@@ -9,13 +10,17 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
-//TODO
+
+import static java.lang.String.format;
+
 public class ScoreBoardCommand implements ICommand {
 
     Database database;
+    CommandSettings settings;
 
-    public ScoreBoardCommand(Database database) {
+    public ScoreBoardCommand(Database database, CommandSettings settings) {
         this.database = database;
+        this.settings = settings;
     }
     //TODO Perms, wrong usage und help message
     @Override
@@ -71,6 +76,7 @@ public class ScoreBoardCommand implements ICommand {
 
     @Override
     public String info(Member member) {
-        return "TODO";
+        return format("**Description**: Gives you informations about your score and who is the best.\n\n**Usage**: `%s[scoreboard, sb]`\n\n**Permission level**: `0`",
+                settings.getPrefix(member.getGuild().getIdLong()));
     }
 }

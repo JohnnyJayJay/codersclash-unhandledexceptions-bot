@@ -34,15 +34,6 @@ public class Bot {
 
     private static Logger logger = Logging.getLogger();
 
-    /*private final Map<String, String> emotes = new HashMap<>() {{
-        put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
-        put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
-        put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
-        put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
-        put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
-        put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
-    }};*/
-
     public Bot(Config config, Database database) {
         this.failCount = 0;
         Bot.config = config;
@@ -108,39 +99,22 @@ public class Bot {
                 .put(new RoleCommand(), "role")
                 .put(new InviteCommand(config), "invite")
                 .put(searchCommand, "search", "lookfor", "browse")
-                .put(new ScoreBoardCommand(database), "scoreboard", "sb")
+                .put(new ScoreBoardCommand(database, commandSettings), "scoreboard", "sb")
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
                 .put(new InfoCommand(), "info", "status")
                 .put(new EvalCommand(config, shardManager, voteCommand), "eval")
 
                 .activate();
 
-        RestAction.setPassContext(false);
-        listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
+        RestAction.setPassContext(true);
+        RestAction.DEFAULT_FAILURE = Throwable::printStackTrace;
+
+        listeners.addAll(List.of(voteCommand,
+                // xpCommand,
+                new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this), linkListener, new AutoChannelListener(database)));
         listeners.forEach(shardManager::addEventListener);
     }
-
-    // FIXME geht noch nicht
-    /*private void checkAndCreateEmotes() {
-        if (emotes.keySet().stream().anyMatch((name) -> {
-            var emoteList = shardManager.getEmotesByName(name, false);
-            return emoteList.isEmpty() || !emoteList.get(0).getImageUrl().equals(emotes.get(name));
-        })) {
-            long random = ThreadLocalRandom.current().nextLong(2137673435212321312L);
-            JDA shard = shardManager.getShardById(0);
-            shard.createGuild(Long.toString(random)).queue((v) -> {
-                var controller = shard.getGuildsByName(Long.toString(random), false).get(0).getController();
-                emotes.keySet().forEach((name) -> {
-                    try {
-                        controller.createEmote(name, Icon.from(new URL(emotes.get(name)).openStream())).queue();
-                    } catch (IOException e) {
-                        logger.error("IOException while creating emotes.", e);
-                    }
-                });
-            });
-        }
-    }*/
 
     public void restart(int shard) {
         var jda = shardManager.getShardById(shard);

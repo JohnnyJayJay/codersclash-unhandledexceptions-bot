@@ -28,7 +28,6 @@ import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 import static java.lang.String.format;
 
-// TODO Fortschritt verlangsamen
 public class XPCommand extends ListenerAdapter implements ICommand {
 
     private static final long multiplicator = 8;
@@ -41,7 +40,6 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         this.settings = settings;
         this.database = database;
     }
-    //TODO Perms, wrong usage und help message
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
 
