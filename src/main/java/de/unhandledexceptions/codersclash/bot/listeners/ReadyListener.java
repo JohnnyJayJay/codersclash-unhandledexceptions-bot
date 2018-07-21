@@ -60,9 +60,6 @@ public class ReadyListener extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-
-        List<Guild> guilds = event.getJDA().getGuilds().stream().collect(Collectors.toList());
-        //TODO List<VoiceChannel> voiceChannels = database.getAutoChannel();
         SelfUser selfUser = event.getJDA().getSelfUser();
         try {
             if (selfUser.getAvatarUrl() == null) {

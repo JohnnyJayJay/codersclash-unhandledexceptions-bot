@@ -146,11 +146,6 @@ public class Bot {
         Runtime.getRuntime().exit(0);
     }
 
-    public void addListener(Object listener) {
-        listeners.add(listener);
-        shardManager.addEventListener(listener);
-    }
-
     public ShardManager getAPI() {
         return shardManager;
     }
