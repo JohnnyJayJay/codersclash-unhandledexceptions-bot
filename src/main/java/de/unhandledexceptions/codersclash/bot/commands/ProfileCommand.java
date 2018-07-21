@@ -5,25 +5,21 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
-import de.unhandledexceptions.codersclash.bot.util.Logging;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.io.IOException;
-import java.net.URL;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 /**
