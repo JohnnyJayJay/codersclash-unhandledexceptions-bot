@@ -45,7 +45,7 @@ public class ScoreBoardCommand implements ICommand {
                     } else {
                         if (type.equals("member")&&!member.getGuild().getId().equals(user.getGuildid())) {
                             i2++;
-                        }
+                        } else
                         builder.append(shardManager.getUserById(user.getUserid()).getName() + "#" +
                                 shardManager.getUserById(user.getUserid()).getDiscriminator() + "   " +
                                 "\tLevel: " + user.getLvl() + "   " + "\tXP: " + user.getXp() + "\n");
@@ -54,10 +54,12 @@ public class ScoreBoardCommand implements ICommand {
                 }
             }
             builder.append("```");
-            for (int i3 =0; list.size()>i3; i3++) {
+            boolean run =true;
+            for (int i3 =0; list.size()>i3&&run; i3++) {
                 var user = list.get(i3);
                 if (user.getUserid().equals(member.getUser().getId())) {
                     if (!builder.toString().contains(":arrow_right: **Your place**\n")) {
+                        run=false;
                         builder.append(":arrow_right: **Your place**\n" + String.valueOf(i3+1));
                     }
                 }
