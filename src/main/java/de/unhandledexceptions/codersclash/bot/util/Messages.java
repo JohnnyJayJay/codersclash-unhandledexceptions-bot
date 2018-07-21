@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 public class Messages {
 
     private static MessageEmbed buildMessage(Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
-        embedBuilder.setDescription(content);
+        embedBuilder.appendDescription(content);
         if (type.color != null) {
             embedBuilder.setColor(type.color);
         }

@@ -20,6 +20,7 @@ public class CommandSettingsHandler {
     private CommandSettings commandSettings;
     private HashMap<ICommand, String> hashMap = new HashMap<>(); // Command, Alias aka label
     private ArrayList<ICommand> commands = new ArrayList<>(); // All commands
+    private HashMap<String, ICommand> hashMap2 = new HashMap<>(); // labels, Command
     public CommandSettingsHandler(CommandSettings commandSettings) {
         this.commandSettings = commandSettings;
     }
@@ -30,9 +31,14 @@ public class CommandSettingsHandler {
                 hashMap.put(executor, label);
                 commands.add(executor);
             }
+            hashMap2.put(label, executor);
             commandSettings.put(executor, labels);
         }
         return this;
+    }
+
+    public HashMap<String, ICommand> getCommandfromLabel() {
+        return hashMap2;
     }
 
     public HashMap<ICommand, String> getLabelFromCommand() {
