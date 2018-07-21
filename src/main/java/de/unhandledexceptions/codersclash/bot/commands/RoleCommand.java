@@ -30,14 +30,14 @@ public class RoleCommand implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
             return;
 
-        if(Permissions.getPermissionLevel(member) >= 5) {
+        if (Permissions.getPermissionLevel(member) >= 5) {
             if (args.length >= 2 && event.getCommand().getJoinedArgs().matches("(?i)(add|remove) <@!?\\d+>( .+)?") && !event.getMessage().getMentionedMembers().isEmpty()) {
                 var target = event.getMessage().getMentionedMembers().get(0);
                 String role = event.getCommand().getJoinedArgs(2);
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
                     sendMessage(channel, Type.ERROR, String.format("%s doesn't have permissions to manage roles!", event.getGuild().getSelfMember().getEffectiveName())).queue((msg) ->
                             msg.delete().queueAfter(7, TimeUnit.SECONDS));
-                } else if (event.getGuild().getRolesByName(role, false).isEmpty()){
+                } else if (event.getGuild().getRolesByName(role, false).isEmpty()) {
                     sendMessage(channel, Type.ERROR, String.format("Role `%s` doesn't exist!", role)).queue((msg) -> msg.delete().queueAfter(7, TimeUnit.SECONDS));
                     Reactions.newYesNoMenu(member.getUser(), channel, "Do you wish to create the Role `" + role + "`?",
                             (msg) -> {
@@ -62,26 +62,49 @@ public class RoleCommand implements ICommand {
                             sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
                                 ListDisplay.displayListSelection(roles.stream().map((role1) -> String.format("%d: %s (%d)", roles.indexOf(role1) + 1, role1.getAsMention(), role1.getIdLong())).collect(Collectors.toList()),
                                         msg2, member.getUser(), 5, (selected) -> {
-                                    msg2.delete().queue();
-                                    event.getGuild().getController().addSingleRoleToMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
-                                            (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully gave Role `%s` to `%#s`. Executor: %s",  role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
-                                }, (v) -> {
-                                    msg.delete().queue();
-                                    msg2.delete().queue();
-                                });
+                                            msg2.delete().queue();
+                                            event.getGuild().getController().addSingleRoleToMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
+                                                    (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                        }, (v) -> {
+                                            msg.delete().queue();
+                                            msg2.delete().queue();
+                                        });
                             });
                         });
                     } else {
                         event.getGuild().getController().addSingleRoleToMember(target, roles.get(0)).queue(
-                                (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully gave Role `%s` to `%#s`. Executor: %s",  role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
                     }
                 } else if (args[0].equalsIgnoreCase("remove")) {
-                    // TODO wie bei add
-                    event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRolesByName(role, true).get(0)).queue();
-                    sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` from `%#s` by %s",  role, target.getUser(), member), true).queue();
+                    List<Role> roles = event.getGuild().getRolesByName(role, true);
+                    if (roles.size() > 1) {
+                        Reactions.newYesNoMenu(member.getUser(), channel, "Multiple roles with this name detected. Do you want to remove all of them?\n"
+                                + Reactions.YES_EMOTE + " Yes, remove all of them.\n"
+                                + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
+                            msg.delete().queue();
+                            event.getGuild().getController().removeRolesFromMember(target, roles).queue(
+                                    (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully removed `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                        }, (msg) -> {
+                            msg.delete().queue();
+                            sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
+                                ListDisplay.displayListSelection(roles.stream().map((role1) -> String.format("%d: %s (%d)", roles.indexOf(role1) + 1, role1.getAsMention(), role1.getIdLong())).collect(Collectors.toList()),
+                                        msg2, member.getUser(), 5, (selected) -> {
+                                            msg2.delete().queue();
+                                            event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
+                                                    (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                        }, (v) -> {
+                                            msg.delete().queue();
+                                            msg2.delete().queue();
+                                        });
+                            });
+                        });
+                    } else {
+                        event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRolesByName(role, true).get(0)).queue(
+                                (v) -> sendMessage(channel, Type.SUCCESS, String.format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                    }
+                } else {
+                    wrongUsageMessage(channel, member, this);
                 }
-            } else {
-                wrongUsageMessage(channel, member, this);
             }
         } else {
             noPermissionsMessage(channel, member);
