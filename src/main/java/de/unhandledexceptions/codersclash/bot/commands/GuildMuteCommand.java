@@ -44,7 +44,7 @@ public class GuildMuteCommand implements ICommand {
                             msg.clearReactions().queue();
                             msg.editMessage(MUTING_GUILD).queue();
                             muteState.muteGuild(member);
-                        }, (no) -> msg.delete().queue());
+                        });
                     });
                 }
             } else {

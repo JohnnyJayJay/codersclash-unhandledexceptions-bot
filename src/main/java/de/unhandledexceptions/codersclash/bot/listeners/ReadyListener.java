@@ -1,5 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.listeners;
 
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Config;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -75,7 +76,7 @@ public class ReadyListener extends ListenerAdapter {
         }
 
         try {
-            String guildName = "§§$%§%$§%§$%§$&%$§$%§ - EMOTE GUILD - §§$%§%$§%§$%§$&%$§$%§";
+            String guildName = "Emote Guild by " + Bot.getBotName();
             boolean createGuild = true;
             ShardManager shardManager = event.getJDA().asBot().getShardManager();
             for (Guild guild : shardManager.getGuilds()) {
@@ -86,7 +87,7 @@ public class ReadyListener extends ListenerAdapter {
             }
             if (createGuild) {
                 if (event.getJDA().getGuilds().size()>9) {
-                    logger.warn("Can't create Emoteguild... Please create one with the name \""+guildName+"\" (Without \"), \ninvite me and give me the MANAGE_EMOTES Permission (https://discordapp.com/oauth2/authorize?&client_id="+event.getJDA().getSelfUser().getId()+"&scope=bot&permissions=0)");
+                    logger.warn("Can't create Emoteguild... Please create one with the name \""+guildName+"\", \ninvite me and give me the MANAGE_EMOTES Permission (https://discordapp.com/oauth2/authorize?&client_id="+event.getJDA().getSelfUser().getId()+"&scope=bot&permissions=0)");
                     return;
                 }
                 event.getJDA().createGuild(guildName).queue();

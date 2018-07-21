@@ -9,9 +9,11 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import java.util.HashSet;
 import java.util.Set;
 
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+
 /**
  * @author Johnny_JayJay
- * @version 0.1-SNAPSHOT
  */
 public class LinkListener extends ListenerAdapter {
 
@@ -36,13 +38,15 @@ public class LinkListener extends ListenerAdapter {
     public void onTextChannelDelete(TextChannelDeleteEvent event) {
         Guild guild = event.getGuild();
         links.stream().filter((link) -> link.getGuilds().contains(guild.getIdLong())).forEach((link) -> {
+            String addition = "";
             if (link.remove(guild)) {
-                var leftGuild = link.getGuilds().stream().findFirst();
-                leftGuild.ifPresent(id -> {
-                    var guild1 = shardManager.getGuildById(id);
-                    guild1.getTextChannelById(link.getLinkedChannel(guild1)).sendMessage("Guild `" + guild + "` has left the link. You are the last guild in this link, so it will be closed.").queue();
-                });
                 links.remove(link);
+                addition = "You are the last guild in this link, so it will be closed.";
+            }
+            Guild rest;
+            for (long id : link.getGuilds()) {
+                rest = shardManager.getGuildById(id);
+                sendMessage(rest.getTextChannelById(link.getLinkedChannel(rest)), Type.INFO, "Guild `" + guild + "` has left the link. " + addition).queue();
             }
         });
     }
@@ -53,5 +57,9 @@ public class LinkListener extends ListenerAdapter {
 
     public void removeLink(Link link) {
         links.remove(link);
+    }
+
+    public boolean containsLink(Link link) {
+        return links.contains(link);
     }
 }

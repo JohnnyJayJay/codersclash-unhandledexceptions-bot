@@ -42,7 +42,7 @@ public class HelpCommand implements ICommand {
             }
             builder.addField("Commands", format("```\n%s```", join(format(", %s", prefix), labels.toString())), true);
             sendMessage(textChannel, Messages.Type.NO_TYPE,
-                    format("To learn more about a specific command, just call `%s[help|helpme|commands]` <label>.\nThe following commands are currently available:", prefix), "Help", false, builder).queue();
+                    format("To learn more about a specific command, just call `%s[help|helpme|commands] <label>`.\nThe following commands are currently available:", prefix), "Help", false, builder).queue();
         } else if (strings.length == 1 && commandSettingsHandler.getCommandfromLabel().containsKey(strings[0])) {
             builder.appendDescription(format("**Command Info for:** `%s`\n\n", strings[0]))
                     .appendDescription(commandSettingsHandler.getCommandfromLabel().get(strings[0]).info(member));

@@ -60,5 +60,7 @@ public class AutoChannelListener extends ListenerAdapter {
                     guild.getController().moveVoiceMember(member, (VoiceChannel) channel).queue();
                     channel.createPermissionOverride(member).setAllow(Permission.ALL_CHANNEL_PERMISSIONS).queue();
                 });
+        guild.getController().createTextChannel("Channel by " + member.getEffectiveName())
+                .setTopic("")
     }
 }

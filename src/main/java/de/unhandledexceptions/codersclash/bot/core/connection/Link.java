@@ -14,9 +14,8 @@ public interface Link {
 
     long getLinkedChannel(Guild guild);
 
-    long getLinkedGuild(TextChannel channel);
-
     void addChannel(TextChannel channel);
 
     boolean remove(Guild guild);
+
 }

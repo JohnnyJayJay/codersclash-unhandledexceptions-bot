@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 
+import java.awt.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +16,8 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * @author Johnny_JayJay
  */
-public class TicTacToe {
 
+public class TicTacToe {
 
     private final List<String> REACTIONS = List.of(Reactions.ARROW_UP, Reactions.ARROW_DOWN, Reactions.SMALL_ARROW_LEFT, Reactions.SMALL_ARROW_RIGHT, Reactions.YES_EMOTE, Reactions.NO_EMOTE);
     private final String BLANK_FIELD = "◻";
@@ -29,7 +30,7 @@ public class TicTacToe {
         boolean first = ThreadLocalRandom.current().nextBoolean();
         var current = new SimpleEntry<Member, String>(first ? player1 : player2, first ? X : O);
         var next = new SimpleEntry<Member, String>(first ? player2 : player1, first ? O : X);
-        String[][] fields = new String[size][size]; // TODO dynamisch user entscheiden lassen
+        String[][] fields = new String[size][size];
         for (String[] row : fields)
             Arrays.fill(row, BLANK_FIELD);
         game(new EmbedBuilder().setTitle(current.getKey().getEffectiveName() + " " + current.getValue() + " vs. " + next.getKey().getEffectiveName() + " " + next.getValue()), fields, message, current, next, 0, 0, new int[fields.length]);
@@ -47,16 +48,16 @@ public class TicTacToe {
         Reactions.newMenu(current.getKey().getUser(), message, (emoji) -> {
             switch (emoji) {
                 case Reactions.ARROW_DOWN:
-                    game(builder, fields, message, current, next, currentRow == fields.length - 1 ? currentRow : currentRow + 1, currentColumn, columns);
+                    game(builder, fields, message, current, next, currentRow == fields.length - 1 ? 0 : currentRow + 1, currentColumn, columns);
                     break;
                 case Reactions.ARROW_UP:
-                    game(builder, fields, message, current, next, currentRow == 0 ? currentRow : currentRow - 1, currentColumn, columns);
+                    game(builder, fields, message, current, next, currentRow == 0 ? fields.length - 1 : currentRow - 1, currentColumn, columns);
                     break;
                 case Reactions.SMALL_ARROW_LEFT:
-                    game(builder, fields, message, current, next, currentRow, currentColumn == 0 ? currentColumn : currentColumn - 1, columns);
+                    game(builder, fields, message, current, next, currentRow, currentColumn == 0 ? fields.length - 1 : currentColumn - 1, columns);
                     break;
                 case Reactions.SMALL_ARROW_RIGHT:
-                    game(builder, fields, message, current, next, currentRow, currentColumn == fields.length - 1 ? currentColumn : currentColumn + 1, columns);
+                    game(builder, fields, message, current, next, currentRow, currentColumn == fields.length - 1 ? 0 : currentColumn + 1, columns);
                     break;
                 case Reactions.YES_EMOTE:
                     if (fields[currentRow][currentColumn].equals(X) || fields[currentRow][currentColumn].equals(O)) {
@@ -65,9 +66,13 @@ public class TicTacToe {
                         fields[currentRow][currentColumn] = current.getValue();
                         boolean won = checkColumns(fields, current.getValue(), columns) || checkRows(fields, current.getValue()) || checkDiagonal(fields, current.getValue());
                         if (won) {
-                            message.editMessage(builder.clear().setDescription(current.getKey().getEffectiveName() + " gewinnt!").setColor(current.getKey().getColor()).setFooter("Yay", null).build()).queue();
+                            builder.setDescription(current.getKey().getEffectiveName() + " wins!\n").setFooter("GG", null).setColor(current.getKey().getColor());
+                            buildFieldsWithoutSelection(builder, fields);
+                            message.editMessage(builder.build()).queue();
                         } else if (Arrays.stream(fields).allMatch((row) -> Arrays.stream(row).noneMatch(BLANK_FIELD::equals))) {
-                            message.editMessage(builder.clear().setDescription("Unentschieden!").setFooter("Nay", null).build()).queue();
+                            builder.setDescription("Draw!\n").setFooter("C'mon, don't be boring", null).setColor(Color.WHITE);
+                            buildFieldsWithoutSelection(builder, fields);
+                            message.editMessage(builder.build()).queue();
                         } else {
                             game(builder, fields, message, next, current, 0, 0, columns);
                         }
@@ -78,6 +83,15 @@ public class TicTacToe {
                     break;
             }
         }, REACTIONS);
+    }
+
+    private void buildFieldsWithoutSelection(EmbedBuilder builder, String[][] fields) {
+        for (String[] row : fields) {
+            for (String field : row) {
+                builder.appendDescription(field);
+            }
+            builder.appendDescription("\n");
+        }
     }
 
     private boolean checkDiagonal(String[][] fields, String lookFor) {
@@ -111,5 +125,4 @@ public class TicTacToe {
         }
         return false;
     }
-
 }
