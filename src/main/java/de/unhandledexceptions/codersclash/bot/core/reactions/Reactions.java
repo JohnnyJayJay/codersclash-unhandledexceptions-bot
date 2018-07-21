@@ -63,6 +63,7 @@ public class Reactions {
     public static final String SMALL_ARROW_RIGHT = "▶";
     public static final String SPEAKER = "\uD83D\uDD08";
     public static final String GEAR = "\u2699";
+    public static final String USER = "\uD83D\uDC64";
 
     private static final Consumer<Message> deleteMsg = (msg) -> msg.delete().queue();
 

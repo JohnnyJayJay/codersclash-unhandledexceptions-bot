@@ -60,21 +60,21 @@ public class LinkCommand implements ICommand {
             noPermissionsMessage(channel, member);
             return;
         }
-
         var guild = event.getGuild();
 
+        // if guild already have requested a connection -> option to close
         if (requesters.containsKey(guild.getIdLong())) {
             Reactions.newYesNoMenu(member.getUser(), channel, "You have already requested a connection. Would you like to delete it?", (msg) -> {
                 var link = requesters.get(guild.getIdLong());
                 TextChannel linkedChannel;
-                if ((linkedChannel = event.getJDA().getTextChannelById(link.getLinkedChannel(guild))) != null) {
+                if ((linkedChannel = event.getJDA().asBot().getShardManager().getTextChannelById(link.getLinkedChannel(guild))) != null) {
                     linkedChannel.delete().queue();
                 }
                 link.getGuilds().forEach(requests::remove);
                 requesters.remove(guild.getIdLong());
                 sendMessage(channel, Type.SUCCESS, "Successfully cancelled request. You may now send a new one.").queue();
             }, true);
-
+        // if connection is open -> option to invite and disconnect
         } else if (running.containsKey(guild.getIdLong())) {
             var shardManager = event.getJDA().asBot().getShardManager();
             // FIXME Mail kommt zwar an, aber guild wird nicht zu den requests hinzugefügt (kann nicht annehmen)
@@ -140,6 +140,7 @@ public class LinkCommand implements ICommand {
             } else {
                 wrongUsageMessage(channel, member, this);
             }
+        // if there is any request from another guild -> option to accept or deceline it
         } else if (requests.containsKey(guild.getIdLong())) {
             var shardManager = event.getJDA().asBot().getShardManager();
             sendMessage(channel, Type.INFO, "There is a request for this guild. Would you like to accept it?").queue((msg) -> Reactions.newYesNoMenu(member.getUser(), msg, (yes) -> {

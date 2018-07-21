@@ -5,6 +5,7 @@ import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
+import de.unhandledexceptions.codersclash.bot.core.reactions.TestClass;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.*;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -80,10 +81,8 @@ public class Bot {
         var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
         var muteManager = new MuteManager(shardManager, commandSettings);
 
-        commandSettings.addHelpLabels("help", "helpme", "commands")
-                .setHelpCommandColor(Color.CYAN)
-                .setCooldown(3000)
-                .put(linkCommand, "link")
+        CommandSettingsHandler commandSettingsHandler = new CommandSettingsHandler(commandSettings);
+        commandSettingsHandler.put(linkCommand, "link")
                 .put(new ClearCommand(), "clear", "clean", "delete")
                 .put(new GuildMuteCommand(muteManager), "muteguild", "guildmute", "lockdown")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
@@ -103,7 +102,10 @@ public class Bot {
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
                 .put(new InfoCommand(), "info", "status")
                 .put(new EvalCommand(config, shardManager, voteCommand), "eval")
-
+                .put(new HelpCommand(commandSettingsHandler), "help", "helpme", "commands")
+                .put(new TestClass(), "test")
+                .getCommandSettings()
+                .setCooldown(3000)
                 .activate();
 
         RestAction.setPassContext(true);
