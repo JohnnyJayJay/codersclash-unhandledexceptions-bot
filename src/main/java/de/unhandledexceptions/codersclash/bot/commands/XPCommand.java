@@ -31,14 +31,7 @@ import static java.lang.String.format;
 // TODO Fortschritt verlangsamen
 public class XPCommand extends ListenerAdapter implements ICommand {
 
-    private static final Map<String, String> urls = new HashMap<>() {{
-        put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
-        put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
-        put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
-        put("empty1", "http://www.baggerstation.de/testseite/bots/empty1.png");
-        put("empty2", "http://www.baggerstation.de/testseite/bots/empty2.png");
-        put("empty3", "http://www.baggerstation.de/testseite/bots/empty3.png");
-    }};
+    private static final long multiplicator = 8;
 
     private CommandSettings settings;
     private Database database;
@@ -67,25 +60,13 @@ public class XPCommand extends ListenerAdapter implements ICommand {
         long userXp = database.getUserXp(member.getUser());
         long memberLevel = database.getGuildLvl(member);
         long userLevel = database.getUserLvl(member.getUser());
-        long maxUserXp = userLevel * 8;
-        long maxMemberXp = memberLevel * 8;
+        long maxUserXp = userLevel * multiplicator;
+        long maxMemberXp = memberLevel * multiplicator;
 
         if (!database.xpSystemActivated(event.getGuild().getIdLong())) {
             sendMessage(channel, Type.WARNING, format("The XP-System is currently `deactivated`.\nUse `%ssettings` to re-enable it or contact your Server Admins.",
                     settings.getPrefix(member.getGuild().getIdLong()))).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
         } else if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-            try {
-                for (String name : urls.keySet()) {
-                    var emotes = event.getJDA().asBot().getShardManager().getEmotesByName(name, false);
-                    if (emotes.isEmpty() || emotes.get(0).getImageUrl().equals(urls.get(name))) {
-                        event.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
-                    }
-                }
-            } catch (IOException e) {
-                Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
-                return;
-            }
-
             EmbedBuilder embedBuilder = new EmbedBuilder()
                     .addField("Server", "Level: " + memberLevel +
                                     "\nXP: " + memberXp + "/" + maxMemberXp +
@@ -190,10 +171,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
     }
 
     private void checkLvl(Member member) {
-        if (database.getUserXp(member.getUser())>=(database.getUserLvl(member.getUser())) * 8) {
+        if (database.getUserXp(member.getUser())>=(database.getUserLvl(member.getUser())) * multiplicator) {
             database.addUserLvl(member.getUser());
         }
-        if (database.getGuildXp(member)>=(database.getGuildLvl(member) * 8)) {
+        if (database.getGuildXp(member)>=(database.getGuildLvl(member) * multiplicator)) {
             database.addGuildLvl(member);
         }
     }

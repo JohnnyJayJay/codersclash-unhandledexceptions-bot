@@ -33,12 +33,6 @@ import static java.lang.String.format;
 public class ProfileCommand implements ICommand {
 
     private ReportCommand reportCommand;
-    private static final Map<String, String> urls = new HashMap<>() {{
-        put("online", "https://i.imgur.com/JZwNdVZ.png");
-        put("idle", "https://i.imgur.com/z4Noqb7.png");
-        put("dnd", "https://i.imgur.com/Er0johC.png");
-        put("offline", "https://i.imgur.com/fPB7iQm.png");
-    }};
 
     public ProfileCommand(ReportCommand reportCommand){
         this.reportCommand = reportCommand;
@@ -50,7 +44,6 @@ public class ProfileCommand implements ICommand {
             return;
         if (Permissions.getPermissionLevel(member) >= 1) {
             if (args.length <= 1 && event.getCommand().getJoinedArgs().matches("(<@!?\\d+>)?")) {
-                uploadEmotes(event, channel);
                 var jda = event.getJDA().asBot().getShardManager();
                 Member target = member;
                 if (event.getMessage().getMentionedMembers().size() == 1) {
@@ -143,25 +136,6 @@ public class ProfileCommand implements ICommand {
             }
         } else {
             noPermissionsMessage(channel, member);
-        }
-    }
-
-
-    private void uploadEmotes(CommandEvent event, TextChannel channel){
-        if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
-            try {
-                for (String name : urls.keySet()) {
-                    var emotes = event.getJDA().asBot().getShardManager().getEmotesByName(name, false);
-                    if (emotes.isEmpty() || emotes.get(0).getImageUrl().equals(urls.get(name))) {
-                        event.getGuild().getController().createEmote(name, Icon.from(new URL(urls.get(name)).openStream())).queue();
-                    }
-                }
-            } catch (IOException e) {
-                Logging.getLogger().error("An Exception occurred while creating/parsing emotes:", e);
-                return;
-            }
-        } else {
-            sendMessage(channel, Messages.Type.WARNING, "The Bot needs to have permission to manage custom emotes in order to display your profile!").queue();
         }
     }
         @Override
