@@ -2,5 +2,5 @@
 
 ## Command Template
 Aliases: 
-Usage:
-Description:
+Usage:  
+Description: 
