@@ -5,6 +5,7 @@ import de.unhandledexceptions.codersclash.bot.commands.*;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkListener;
 import de.unhandledexceptions.codersclash.bot.core.connection.LinkManager;
 import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
+import de.unhandledexceptions.codersclash.bot.core.reactions.TestClass;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.listeners.*;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
@@ -102,6 +103,7 @@ public class Bot {
                 .put(new InfoCommand(), "info", "status")
                 .put(new EvalCommand(config, shardManager, voteCommand), "eval")
                 .put(new HelpCommand(commandSettingsHandler), "help", "helpme", "commands")
+                .put(new TestClass(), "test")
                 .getCommandSettings()
                 .setCooldown(3000)
                 .activate();
