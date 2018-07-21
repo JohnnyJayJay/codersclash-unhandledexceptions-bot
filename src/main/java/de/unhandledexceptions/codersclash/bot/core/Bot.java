@@ -76,7 +76,7 @@ public class Bot {
         commandSettings = new CommandSettings(config.getPrefix(), this.shardManager, true);
         logger.info("CommandSettings are being configured");
 
-        // command settings einstellen
+        // Command settings einstellen
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
 
         var xpCommand = new XPCommand(commandSettings, database);

@@ -65,7 +65,6 @@ public class SettingsCommand implements ICommand {
     private void menu(User user, Message message, Layer current, Layer before, EmbedBuilder builder) {
         message.clearReactions().queue((v) -> {
             editMessage(message, current, builder);
-            //builder.clear().setColor(message.getGuild().getSelfMember().getColor());
             Reactions.newMenu(user, message, (emoji) -> {
                 if (emoji.equals(Reactions.BACK)) {
                     menu(user, message, before, current, builder);
@@ -86,11 +85,8 @@ public class SettingsCommand implements ICommand {
                             case Reactions.SPEECH_BUBBLE:
                                 menu(user, message, Layer.CHANNEL_MANAGEMENT, current, builder);
                                 break;
-                            case Reactions.FLOPPY:
+                            case Reactions.GEAR:
                                 menu(user, message, Layer.FEATURES, current, builder);
-                                break;
-                            case Reactions.CONTROLLER:
-                                menu(user, message, Layer.GAME, current, builder);
                                 break;
                             case Reactions.QUESTION_MARK:
                                 menu(user, message, Layer.HELP, current, builder);
@@ -168,8 +164,6 @@ public class SettingsCommand implements ICommand {
                             menu(user, message, Layer.MAIN_MENU, Layer.XP_SYSTEM, builder);
                         }
                         break;
-                    case GAME: // TODO
-                        break;
                     case AUTO_CHANNEL:
                         switch (emoji) {
                             case Reactions.PENCIL:
@@ -178,10 +172,11 @@ public class SettingsCommand implements ICommand {
                                 message.editMessage(builder.build()).queue();
                                 Reactions.newMessageWaiter(user, textChannel, 30, (msg) -> {
                                     msg.delete().queue();
-                                    Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set " + msg.getContentRaw() + " as the new AutoChannel?", (m) -> {
+                                    Reactions.newYesNoMenu(user, message.getTextChannel(), "Do you want to set" + Reactions.SPEAKER+  "`" + msg.getContentRaw() + "` as the new AutoChannel?", (m) -> {
                                         m.delete().queue();
-                                        database.setAutoChannel(guild.getIdLong(), guild.getVoiceChannelsByName(msg.getContentRaw() , false).get(0).getIdLong());
-                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to `" + msg.getContentRaw() + "`").queue(Messages::deleteAfterFiveSec);
+                                        database.setAutoChannel(guild.getIdLong(), guild.getVoiceChannelsByName(msg.getContentRaw(), false).get(0).getIdLong());
+                                        VoiceChannel voiceChannel = guild.getVoiceChannelById(database.getAutoChannel(guild));
+                                        sendMessage(textChannel, Type.SUCCESS, format("AutoChannel successfully set to " + Reactions.SPEAKER + "`%s (%s)`", voiceChannel.getName(), voiceChannel.getId())).queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder);
                                     }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder));
                                 }, (v3) -> {
@@ -190,7 +185,7 @@ public class SettingsCommand implements ICommand {
                                 });
                                 break;
                             case Reactions.CLIPBOARD:
-                                List<String> channels = guild.getVoiceChannelCache().stream().map((voiceChannel -> format("`%s (%s)`", voiceChannel.getName(), voiceChannel.getId()))).collect(Collectors.toList());
+                                List<String> channels = guild.getVoiceChannelCache().stream().map((voiceChannel -> format(Reactions.SPEAKER + "`%s (%s)`", voiceChannel.getName(), voiceChannel.getId()))).collect(Collectors.toList());
                                 message.clearReactions().queue((aVoid) -> {
                                     ListDisplay.displayListSelection(channels, message, user, channels.size() > 50 ? 20 : 10, (selected) -> {
                                         var matcher = FIND_ID.matcher(selected);
@@ -205,7 +200,7 @@ public class SettingsCommand implements ICommand {
                             case Reactions.BOT:
                                 sendMessage(textChannel, Type.DEFAULT, "Creating the channel...").queue((msg) -> {
                                     if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-                                        guild.getController().createVoiceChannel("Create Channel").queue((channel) -> {
+                                        guild.getController().createVoiceChannel("Join to create Channel").queue((channel) -> {
                                             msg.delete().queue();
                                             database.setAutoChannel(guild.getIdLong(), channel.getIdLong());
                                             sendMessage(textChannel, Type.SUCCESS, "Success! Your new AutoChannel is `"
@@ -226,9 +221,20 @@ public class SettingsCommand implements ICommand {
                                 break;
                             case Reactions.PUT_LITTER_IN_ITS_PLACE:
                                 Reactions.newYesNoMenu(user, textChannel, "Do you want to reset your AutoChannel and therefore deactivate the AutoChannel function?", (msg) -> {
+                                    if (database.getAutoChannel(guild) == 0 || database.getAutoChannel(guild) == null) {
+                                        sendMessage(textChannel, Type.WARNING, "AutoChannel is not set.").queue(Messages::deleteAfterFiveSec);
+                                    } else {
+                                        Reactions.newYesNoMenu(user, textChannel, "Do you want to delete the AutoChannel too?", (yes) -> {
+                                            guild.getVoiceChannelById(database.getAutoChannel(guild)).delete().queue();
+                                            yes.delete().queue();
+                                            database.setAutoChannel(guild.getIdLong(), 0);
+                                            sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully reset and deleted.").queue(Messages::deleteAfterFiveSec);
+                                        }, (no) -> {
+                                            database.setAutoChannel(guild.getIdLong(), 0);
+                                            sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully reset.").queue(Messages::deleteAfterFiveSec);
+                                        });
+                                    }
                                     msg.delete().queue();
-                                    database.setAutoChannel(guild.getIdLong(), 0);
-                                    sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully reset.").queue(Messages::deleteAfterFiveSec);
                                     menu(user, message, Layer.MAIN_MENU, current, builder);
                                 }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                         }
@@ -286,10 +292,21 @@ public class SettingsCommand implements ICommand {
                                 });
                                 break;
                             case Reactions.CLOSED_INBOX:
-                                Reactions.newYesNoMenu(user, textChannel, "Do you want to reset your auto channel and therefore deactivate the auto function?", (msg) -> {
+                                Reactions.newYesNoMenu(user, textChannel, "Do you want to reset your Mail Channel and therefore deactivate the mail function?", (msg) -> {
+                                    if (database.getMailChannel(guild) == 0 || database.getMailChannel(guild) == null) {
+                                        sendMessage(textChannel, Type.WARNING, "Mail Channel is not set.").queue(Messages::deleteAfterFiveSec);
+                                    } else {
+                                        Reactions.newYesNoMenu(user, textChannel, "Do you want to delete the mail channel too?", (yes) -> {
+                                            guild.getTextChannelById(database.getMailChannel(guild)).delete().queue();
+                                            yes.delete().queue();
+                                            database.setMailChannel(guild.getIdLong(), 0);
+                                            sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully reset and deleted.").queue(Messages::deleteAfterFiveSec);
+                                        }, (no) -> {
+                                            database.setMailChannel(guild.getIdLong(), 0);
+                                            sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
+                                        });
+                                    }
                                     msg.delete().queue();
-                                    database.setMailChannel(guild.getIdLong(), 0);
-                                    sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully reset.").queue(Messages::deleteAfterFiveSec);
                                     menu(user, message, Layer.MAIN_MENU, current, builder);
                                 }, (v3) -> menu(user, message, Layer.MAIN_MENU, current, builder));
                         }
@@ -306,8 +323,7 @@ public class SettingsCommand implements ICommand {
                 builder.setTitle("Main Menu")
                         .setDescription("This is the main menu. Select one of the options below!\n"
                                 + Reactions.SPEECH_BUBBLE + " Channel Settings\n"
-                                + Reactions.FLOPPY + " Feature/Command Settings\n"
-                                + Reactions.CONTROLLER + " Game Settings\n"
+                                + Reactions.GEAR + " Feature/Command Settings\n"
                                 + Reactions.QUESTION_MARK + " Show help\n"
                                 + Reactions.BACK + " Go back\n"
                                 + Reactions.M + " Jump to main menu\n"
@@ -315,20 +331,20 @@ public class SettingsCommand implements ICommand {
                 break;
             case CHANNEL_MANAGEMENT:
                 builder.setTitle("Channel Management")
-                        .setDescription("Set your Mail Channel and your Autochannel here!\n"
-                                + Reactions.MAIL + " Set Mail Channel\n"
-                                + Reactions.REPEAT + " Set AutoChannel");
+                        .setDescription("Manage your Mail Channel and your AutoChannel here!\n"
+                                + Reactions.MAIL + " Manage Mail Channel\n"
+                                + Reactions.REPEAT + " Manage AutoChannel");
                 break;
             case FEATURES:
                 builder.setTitle("Feature Management").setDescription("Settings for the bot's features.\n"
-                        + Reactions.STAR + " Disable/Enable the XP-system.\n"
+                        + Reactions.STAR + " Disable/Enable the XP-System.\n"
                         + Reactions.EXCLAMATION_MARK + " Configure report settings\n"
                         + Reactions.P + " Change the command prefix");
                 break;
             case XP_SYSTEM:
                 builder.setTitle("XP System").setDescription((database.xpSystemActivated(message.getGuild().getIdLong())
-                        ? "The xp system is currently activated for this guild. Would you like to deactivate it?"
-                        : "The xp system is currently deactivated for this guild. Would you like to activate it?")
+                        ? "The XP-System is currently `activated` for this guild.\n Would you like to `deactivate` it?"
+                        : "The XP-System is currently `deactivated` for this guild.\n Would you like to `activate` it?")
                         + "\n" + Reactions.Y + " Yes\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
                 break;
             case REPORTS:
@@ -357,17 +373,14 @@ public class SettingsCommand implements ICommand {
                                 + "`, the default prefix is `" + Bot.getPrefix(-1) + "`. Would you like to change this guild's prefix?\n"
                                 + Reactions.Y + " Yes, let me set a new prefix\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
                 break;
-            case GAME:
-                builder.setTitle("Game channel").setDescription(""); // TODO
-                break;
             case AUTO_CHANNEL:
                 Long idAuto = database.getAutoChannel(message.getGuild());
                 String currentAutoChannel;
-                if (idAuto != null && message.getGuild().getTextChannelById(idAuto) != null)
-                    currentAutoChannel = "`" + message.getGuild().getVoiceChannelById(idAuto) + "`";
+                if (idAuto != null && message.getGuild().getVoiceChannelById(idAuto) != null)
+                    currentAutoChannel = "`" + message.getGuild().getVoiceChannelById(idAuto).getName() + "`";
                 else
-                    currentAutoChannel = "Not Set";
-                builder.setTitle("AutoChannel").setDescription("Set this guild's AutoChannel here! Current channel: " + currentAutoChannel
+                    currentAutoChannel = "Not set";
+                builder.setTitle("AutoChannel").setDescription("Manage this guild's AutoChannel here!\nCurrent channel: " + Reactions.SPEAKER + "`" + currentAutoChannel + "`"
                         + "\nDo you want to change that?\n"
                         + Reactions.PENCIL + " Yes, let me set a new channel\n"
                         + Reactions.CLIPBOARD + " Yes, let me select a new channel\n"
@@ -383,8 +396,8 @@ public class SettingsCommand implements ICommand {
                 if (idMail != null && message.getGuild().getTextChannelById(idMail) != null)
                     currentMailChannel = message.getGuild().getTextChannelById(idMail).getAsMention();
                 else
-                    currentMailChannel = "Not Set";
-                builder.setTitle("Mail Channel/Inbox").setDescription("Set this guild's inbox channel here! Current channel: " + currentMailChannel
+                    currentMailChannel = "Not set";
+                builder.setTitle("Mail Channel/Inbox").setDescription("Manage this guild's inbox channel here!\nCurrent channel: " + currentMailChannel
                         + "\nDo you want to change that?\n"
                         + Reactions.PENCIL + " Yes, let me set a new channel\n"
                         + Reactions.CLIPBOARD + " Yes, let me select a new channel\n"
@@ -401,14 +414,13 @@ public class SettingsCommand implements ICommand {
     }
 
     private enum Layer {
-        MAIN_MENU(Reactions.SPEECH_BUBBLE, Reactions.FLOPPY, Reactions.CONTROLLER, Reactions.QUESTION_MARK),
+        MAIN_MENU(Reactions.SPEECH_BUBBLE, Reactions.GEAR, Reactions.QUESTION_MARK),
         CHANNEL_MANAGEMENT(Reactions.MAIL, Reactions.REPEAT),
         FEATURES(Reactions.STAR, Reactions.EXCLAMATION_MARK, Reactions.P),
         HELP(),
         REPORTS(Reactions.Y),
         XP_SYSTEM(Reactions.Y),
         PREFIX(Reactions.Y),
-        GAME(),
         MAIL_CHANNEL(Reactions.PENCIL, Reactions.CLIPBOARD, Reactions.BOT, Reactions.CLOSED_INBOX),
         AUTO_CHANNEL(Reactions.PENCIL, Reactions.CLIPBOARD, Reactions.BOT, Reactions.PUT_LITTER_IN_ITS_PLACE);
 

@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
+import org.checkerframework.checker.units.qual.C;
 
 import java.awt.*;
 import java.time.Instant;
@@ -72,7 +73,7 @@ public class Messages {
         ERROR("Error", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Dialog-error-round.svg/2000px-Dialog-error-round.svg.png", Color.RED),
         SUCCESS("Success", "https://cdn.pixabay.com/photo/2012/04/11/17/44/check-mark-29114_960_720.png", Color.GREEN),
         QUESTION("Question", "https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-question-mark-512.png", new Color(60,132,167)), //Hell: 70, 159, 204 Dunkel: 60,132,167
-        DEFAULT("Message", null, Color.WHITE),
+        DEFAULT(null, null, Color.WHITE),
         NO_TYPE(null, null, null);
 
         private final String footer, footerUrl;
