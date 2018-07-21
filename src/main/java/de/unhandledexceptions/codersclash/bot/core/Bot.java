@@ -44,7 +44,6 @@ public class Bot {
 
     public void start() {
         builder.setAutoReconnect(true)
-                .setShardsTotal(config.getMaxShards())
                 .setGame(Game.listening("@" + config.getBotName() + " | Ping me!"))
                 .setToken(config.getToken());
         try {

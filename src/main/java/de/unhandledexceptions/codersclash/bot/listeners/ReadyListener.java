@@ -1,14 +1,12 @@
 package de.unhandledexceptions.codersclash.bot.listeners;
 
 import de.unhandledexceptions.codersclash.bot.core.Config;
-import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Icon;
 import net.dv8tion.jda.core.entities.SelfUser;
-import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -26,15 +24,13 @@ import java.util.stream.Collectors;
  */
 
 public class ReadyListener extends ListenerAdapter {
-
-    private Database database;
+    
     private Config config;
     private URL iconURL;
 
     private static Logger logger = Logging.getLogger();
 
     public ReadyListener(Config config) {
-        this.database = database;
         this.config = config;
         try {
             this.iconURL = new URL(config.getIconURL());
@@ -43,7 +39,7 @@ public class ReadyListener extends ListenerAdapter {
         }
     }
 
-    private static final Map<String, String> urls = new HashMap<>() {{
+    private final Map<String, String> urls = new HashMap<>() {{
         put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
         put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
         put("full3", "http://www.baggerstation.de/testseite/bots/full3.png");
