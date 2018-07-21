@@ -222,7 +222,7 @@ public class Reactions {
             if (user == event.getJDA().getSelfUser() || event.getMessageIdLong() != messageId)
                 return;
 
-            event.getReaction().removeReaction(user).queue();
+            event.getReaction().removeReaction(user).queue( placeholder -> {}, placeholder -> {});
 
             String emoji = event.getReactionEmote().getName();
             if (user.getIdLong() == userId) {
