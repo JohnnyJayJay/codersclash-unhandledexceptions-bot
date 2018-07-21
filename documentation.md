@@ -1,6 +1,6 @@
 # Command Documentation
 
 ## Command Template
-Aliases: 
+Aliases:  
 Usage:  
 Description: 
