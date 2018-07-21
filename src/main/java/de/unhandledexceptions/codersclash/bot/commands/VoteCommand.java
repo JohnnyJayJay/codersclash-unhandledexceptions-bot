@@ -21,6 +21,7 @@ import org.jfree.chart.ChartUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -332,12 +333,12 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         Vote vote = votes.get(event.getGuild().getIdLong());
 
         String voteStats = String.format(
-                        "**Your vote stats**\n\n" +
+                        "**Your vote information**\n\n" +
                         "%s Time:\t%s %s\n" +
                         "%s Channel:\t<#%s>\n" +
-                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size());
+                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size());
 
-        sendMessage(event.getChannel(), Type.INFO, voteStats).queue();
+        sendMessage(event.getChannel(), Type.INFO, voteStats, false).queue();
 
     }
 
@@ -353,13 +354,14 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         var targetChannel = vote.getTargetChannel();
         var embedBuilder = new EmbedBuilder();
 
-        embedBuilder.setColor(vote.getGuild().getSelfMember().getColor());
-        embedBuilder.setTitle(Reactions.NEWSPAPER + " New vote!");
-        embedBuilder.setAuthor(vote.getVoteCreator().getMember().getEffectiveName(), null, vote.getVoteCreator().getMember().getUser().getEffectiveAvatarUrl());
+        embedBuilder.setColor(vote.getGuild().getSelfMember().getColor())
+                    .setTitle(Reactions.NEWSPAPER + " New vote!")
+                    .setAuthor(vote.getVoteCreator().getMember().getEffectiveName(), null, vote.getVoteCreator().getMember().getUser().getEffectiveAvatarUrl())
+                    .setTimestamp(Instant.now());
 
         var stringBuilder = new StringBuilder();
 
-        stringBuilder.append(vote.getTopic()).append("\n\n**Answers**\n");
+        stringBuilder.append(vote.getTopic()).append("\n\n**Answers:**\n");
 
         for (int i = 1; i < vote.getVoteAnswers().size() + 1; i++)
         {
@@ -423,7 +425,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Something went wrong while creating your file!").queue();
             }
 
-            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue();
+            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue(Messages::deleteAfterFiveSec);
 
             vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS);
 
