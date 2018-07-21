@@ -43,7 +43,6 @@ public class ReadyListener extends ListenerAdapter {
         }
     }
 
-
     private static final Map<String, String> urls = new HashMap<>() {{
         put("full1", "http://www.baggerstation.de/testseite/bots/full1.png");
         put("full2", "http://www.baggerstation.de/testseite/bots/full2.png");
@@ -55,6 +54,8 @@ public class ReadyListener extends ListenerAdapter {
         put("idle", "https://i.imgur.com/z4Noqb7.png");
         put("dnd", "https://i.imgur.com/Er0johC.png");
         put("offline", "https://i.imgur.com/fPB7iQm.png");
+        put("activated", "https://i.imgur.com/6K6Ng4r.png");
+        put("deactivated", "https://i.imgur.com/afdM7SK.png");
     }};
 
     @Override

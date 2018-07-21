@@ -67,6 +67,7 @@ public class XPCommand extends ListenerAdapter implements ICommand {
                     settings.getPrefix(member.getGuild().getIdLong()))).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
         } else if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_EMOTES)) {
 
+
             EmbedBuilder embedBuilder = new EmbedBuilder()
                     .addField("Server", "Level: " + memberLevel +
                                     "\nXP: " + memberXp + "/" + maxMemberXp +
