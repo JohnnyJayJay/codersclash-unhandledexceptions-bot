@@ -34,13 +34,14 @@ public class LinkManager {
     public void addGuild(Link link, Guild guild) {
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
             guild.getController().createTextChannel("connection").queue(
-                    (channel) ->  { link.addChannel((TextChannel) channel);
-            Guild linkedGuild;
-            for (var guildId : link.getGuilds()) {
-                linkedGuild = shardManager.getGuildById(guildId);
-                sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Type.INFO, "Guild `" + guild + "` joined the link!").queue();
-            }
-            });
+                    (channel) -> {
+                        link.addChannel((TextChannel) channel);
+                        Guild linkedGuild;
+                        for (var guildId : link.getGuilds()) {
+                            linkedGuild = shardManager.getGuildById(guildId);
+                            sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Type.INFO, "Guild `" + guild + "` joined the link!").queue();
+                        }
+                    });
         }
     }
 
@@ -112,6 +113,5 @@ public class LinkManager {
                 }
             });
         }
-        public Class getLinkManager() {return getClass();}
     }
 }

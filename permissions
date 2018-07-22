@@ -11,6 +11,7 @@ Level 1:
 
 Level 2:
 - Block Command
+- Info Command
 
 Level 3:
 - Mute Command
@@ -20,7 +21,7 @@ Level 4:
 - Vote Command
 - Clear Command
 - Mail Command
-- Link command
+- Link Command
 
 Level 5:
 - Settings Command
