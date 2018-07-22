@@ -7,7 +7,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
-import org.checkerframework.checker.units.qual.C;
 
 import java.awt.*;
 import java.time.Instant;
@@ -17,7 +16,7 @@ import java.util.function.Consumer;
 public class Messages {
 
     private static MessageEmbed buildMessage(Type type, String content, String title, boolean timestamp, EmbedBuilder embedBuilder) {
-        embedBuilder.setDescription(content);
+        embedBuilder.appendDescription(content);
         if (type.color != null) {
             embedBuilder.setColor(type.color);
         }
@@ -60,7 +59,7 @@ public class Messages {
     }
 
     public static void wrongUsageMessage(MessageChannel channel, Member member, ICommand command) {
-        sendMessage(channel, Type.WARNING, "Wrong usage. Command Info:\n\n" + command.info(member)).queue((msg) -> msg.delete().queueAfter(25, TimeUnit.SECONDS));
+        sendMessage(channel, Type.WARNING, "Wrong usage. Command Info:\n\n" + command.info(member)).queue();
     }
 
     public static void deleteAfterFiveSec(Message message) {

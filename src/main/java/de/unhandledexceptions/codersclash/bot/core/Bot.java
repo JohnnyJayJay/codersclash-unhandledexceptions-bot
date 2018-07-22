@@ -11,11 +11,9 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,34 +77,29 @@ public class Bot {
         var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
         var muteManager = new MuteManager(shardManager, commandSettings);
 
-        commandSettings.addHelpLabels("help", "helpme", "commands")
-                .setHelpCommandColor(Color.CYAN)
-                .setCooldown(3000)
-                .put(linkCommand, "link")
+        CommandSettingsHandler commandSettingsHandler = new CommandSettingsHandler(commandSettings);
+        commandSettingsHandler
+                .put(new BlockCommand(), "block", "deny")
                 .put(new ClearCommand(), "clear", "clean", "delete")
                 .put(new GuildMuteCommand(muteManager), "muteguild", "guildmute", "lockdown")
-                .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
-                .put(xpCommand, "xp", "level", "lvl")
-                .put(new ReportCommand(database), "report", "rep", "reports")
-                .put(voteCommand, "vote", "v")
-                .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
-                .put(new BlockCommand(), "block", "deny")
-                .put(new MuteCommand(muteManager), "mute", "silence")
-                .put(new SettingsCommand(database, commandSettings), "settings", "control")
-                .put(mailCommand, "mail", "contact")
-                //.put(new ConnectionCommand(searchCommand, mailCommand), "connect")
-                .put(new RoleCommand(), "role")
+                .put(new HelpCommand(commandSettingsHandler), "help", "helpme", "commands")
                 .put(new InviteCommand(config), "invite")
-                .put(searchCommand, "search", "lookfor", "browse")
-                .put(new ScoreBoardCommand(database, commandSettings), "scoreboard", "sb")
+                .put(linkCommand, "link")
+                .put(mailCommand, "mail", "contact")
+                .put(new MuteCommand(muteManager), "mute", "silence")
+                .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
-                .put(new InfoCommand(), "info", "status")
-                .put(new EvalCommand(config, shardManager, voteCommand), "eval")
-
+                .put(new ReportCommand(database), "report", "rep", "reports")
+                .put(new RoleCommand(), "role")
+                .put(new ScoreBoardCommand(database, commandSettings), "scoreboard", "sb")
+                .put(searchCommand, "search", "lookfor", "browse")
+                .put(new SettingsCommand(database, commandSettings), "settings", "control")
+                .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
+                .put(voteCommand, "vote", "v")
+                .put(xpCommand, "xp", "level", "lvl")
+                .getCommandSettings()
+                .setCooldown(config.getCommandCooldown())
                 .activate();
-
-        RestAction.setPassContext(true);
-        RestAction.DEFAULT_FAILURE = Throwable::printStackTrace;
 
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this), linkListener, new AutoChannelListener(database)));
@@ -143,11 +136,6 @@ public class Bot {
         commandSettings.deactivate();
         shardManager.shutdown();
         Runtime.getRuntime().exit(0);
-    }
-
-    public void addListener(Object listener) {
-        listeners.add(listener);
-        shardManager.addEventListener(listener);
     }
 
     public ShardManager getAPI() {

@@ -56,22 +56,21 @@ public class ClearCommand implements ICommand {
                 if (size == 0) { // keine messages können mehr glöscht werden
                     // zwei möglichkeiten: es wurde KEINE message gelöscht oder 100 und dann keine mehr. Was genau passiert ist, ist schwierig zu bestimmen.
                     // Deshalb: einfach immer success
-                    this.success(channel, amount);
+                    this.success(channel);
                 } else if (size == 1) { // nur noch eine message kann gelöscht werden
                     deletableMsgs.get(0).delete().queue(
-                            (v) -> this.success(channel, amount), defaultFailure(channel));
+                            (v) -> this.success(channel), defaultFailure(channel));
                 } else { // zwischen 1 und 100 messages können gelöscht werden
                     channel.deleteMessages(deletableMsgs).queue(
-                            (v) -> this.success(channel, amount), defaultFailure(channel));
+                            (v) -> this.success(channel), defaultFailure(channel));
                 }
             }
         });
     }
 
     // Standard success callback
-    private void success(TextChannel channel, int amount) {
-        sendMessage(channel, Type.SUCCESS, format("Successfully deleted `%s` message(s)! Note that some messages might not have been deleted because they are older than two weeks.", amount))
-                .queue((msg) -> msg.delete().queueAfter(8, TimeUnit.SECONDS));
+    private void success(TextChannel channel) {
+        sendMessage(channel, Type.SUCCESS, "Successfully deleted message(s)! Note that some messages might not have been deleted because they are older than two weeks.").queue((msg) -> msg.delete().queueAfter(8, TimeUnit.SECONDS));
     }
 
     @Override

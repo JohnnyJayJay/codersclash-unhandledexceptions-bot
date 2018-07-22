@@ -4,5 +4,4 @@ target/*
 bot-master.iml
 config.yml
 config.json
-*.json
 *.properties

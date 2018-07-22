@@ -63,6 +63,7 @@ public class Reactions {
     public static final String SMALL_ARROW_RIGHT = "▶";
     public static final String SPEAKER = "\uD83D\uDD08";
     public static final String GEAR = "\u2699";
+    public static final String USER = "\uD83D\uDC64";
 
     private static final Consumer<Message> deleteMsg = (msg) -> msg.delete().queue();
 
@@ -83,7 +84,6 @@ public class Reactions {
             if (emoji.equals(YES_EMOTE))
                 yes.accept(message);
             else {
-                message.delete().queue();
                 no.accept(message);
             }
         }, user.getIdLong(), message.getIdLong(), 20, true));
@@ -149,7 +149,6 @@ public class Reactions {
         private static final long NO_CHANNEL = -1;
         private static final long NO_GUILD = -2;
 
-        // TODO mit einem Consumer für mehrere Nachrichten (andThen)
         //private final int howMany;
         private final long userId;
         private final long channelId;

@@ -15,17 +15,17 @@ import java.util.function.Consumer;
 public class Roles {
 
     public static void getTryCatchRole(Guild guild, Consumer<Role> success, Consumer<Void> failure) {
-        var tcRoles = guild.getRolesByName(Bot.getBotName(), false);
+        var tcRoles = guild.getRolesByName(Bot.getBotName() + "-perms", false);
         if (!tcRoles.isEmpty()) {
             var role = tcRoles.get(0);
             success.accept(role);
         } else if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
             if (!guild.getSelfMember().getRoles().isEmpty()) {
-                guild.getController().createRole().setName(Bot.getBotName()).setColor(guild.getSelfMember().getColor()).queue((role) ->
+                guild.getController().createRole().setName(Bot.getBotName() + "-perms").setColor(guild.getSelfMember().getColor()).queue((role) ->
                         guild.getController().modifyRolePositions().selectPosition(role).moveTo(guild.getSelfMember().getRoles().get(0).getPosition() - 1).queue((v) ->
                                 success.accept(role)));
             } else {
-                guild.getController().createRole().setName(Bot.getBotName()).setColor(guild.getSelfMember().getColor()).queue(success, (t) -> failure.accept(null));
+                guild.getController().createRole().setName(Bot.getBotName() + "-perms").setColor(guild.getSelfMember().getColor()).queue(success, (t) -> failure.accept(null));
             }
         } else {
             failure.accept(null);

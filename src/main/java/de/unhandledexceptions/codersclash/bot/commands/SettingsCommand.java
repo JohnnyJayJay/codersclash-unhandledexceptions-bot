@@ -18,7 +18,6 @@ import net.dv8tion.jda.core.entities.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.commands.SearchCommand.FIND_ID;
@@ -176,7 +175,7 @@ public class SettingsCommand implements ICommand {
                                         m.delete().queue();
                                         database.setAutoChannel(guild.getIdLong(), guild.getVoiceChannelsByName(msg.getContentRaw(), false).get(0).getIdLong());
                                         VoiceChannel voiceChannel = guild.getVoiceChannelById(database.getAutoChannel(guild));
-                                        sendMessage(textChannel, Type.SUCCESS, format("AutoChannel successfully set to " + Reactions.SPEAKER + "`%s (%s)`", voiceChannel.getName(), voiceChannel.getId())).queue(Messages::deleteAfterFiveSec);
+                                        sendMessage(textChannel, Type.SUCCESS, format("AutoChannel successfully set to\n" + Reactions.SPEAKER + "`%s (%s)`", voiceChannel.getName(), voiceChannel.getId())).queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder);
                                     }, (m) -> menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder));
                                 }, (v3) -> {
@@ -192,7 +191,7 @@ public class SettingsCommand implements ICommand {
                                         matcher.find();
                                         var channel = guild.getVoiceChannelById(matcher.group().replaceAll("[\\(\\)]", ""));
                                         database.setAutoChannel(guild.getIdLong(), channel.getIdLong());
-                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to `" + selected + "`").queue(Messages::deleteAfterFiveSec);
+                                        sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to\n" + selected).queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder);
                                     }, (anotherVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder));
                                 }, Messages.defaultFailure(textChannel));
@@ -203,7 +202,7 @@ public class SettingsCommand implements ICommand {
                                         guild.getController().createVoiceChannel("Join to create Channel").queue((channel) -> {
                                             msg.delete().queue();
                                             database.setAutoChannel(guild.getIdLong(), channel.getIdLong());
-                                            sendMessage(textChannel, Type.SUCCESS, "Success! Your new AutoChannel is `"
+                                            sendMessage(textChannel, Type.SUCCESS, "Success! Your new AutoChannel is" + Reactions.SPEAKER + "`"
                                                     + (channel).getName() + "`").queue(Messages::deleteAfterFiveSec);
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         }, (t) -> {
