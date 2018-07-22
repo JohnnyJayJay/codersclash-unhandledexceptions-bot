@@ -1,10 +1,10 @@
 # Command Documentation
 
-## BLock
+## Block
 Aliases: block, deny
 Usage: [Prefix][block|deny] @Member #Channel <reason>
 Description: Denies permission for a specific user in a specific channel.
-Permission level: 2
+Permission level: 2 
 
 ## Clear
 Aliases: clear, clean, delete
