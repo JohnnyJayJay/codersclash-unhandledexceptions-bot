@@ -11,7 +11,6 @@ import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 
 import javax.security.auth.login.LoginException;
@@ -29,7 +28,6 @@ public class Bot {
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
     private static CommandSettings commandSettings;
-    private static ReportCommand reportCommand;
 
     private static Logger logger = Logging.getLogger();
 
@@ -69,16 +67,21 @@ public class Bot {
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
 
         var xpCommand = new XPCommand(commandSettings, database);
-        var linkListener = new LinkListener(shardManager);
+        var linkListener = new LinkListener();
+        var linkManager = new LinkManager(shardManager);
+        linkListener.setLinkManager(linkManager);
+        linkManager.setLinkListener(linkListener);
 
         var voteCommand = new VoteCommand(shardManager);
         var ticTacToe = new TicTacToe();
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
-        var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
+        ReportCommand reportCommand = new ReportCommand(database);
+        var linkCommand = new LinkCommand(linkManager, linkListener, searchCommand, mailCommand, database);
         var muteManager = new MuteManager(shardManager, commandSettings);
 
         CommandSettingsHandler commandSettingsHandler = new CommandSettingsHandler(commandSettings);
+
         commandSettingsHandler
                 .put(new BlockCommand(), "block", "deny")
                 .put(new ClearCommand(), "clear", "clean", "delete")
@@ -90,7 +93,7 @@ public class Bot {
                 .put(new MuteCommand(muteManager), "mute", "silence")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
-                .put(new ReportCommand(database), "report", "rep", "reports")
+                .put(reportCommand, "report", "rep", "reports")
                 .put(new RoleCommand(), "role")
                 .put(new ScoreBoardCommand(database, commandSettings), "scoreboard", "sb")
                 .put(searchCommand, "search", "lookfor", "browse")
@@ -99,7 +102,7 @@ public class Bot {
                 .put(voteCommand, "vote", "poll")
                 .put(xpCommand, "xp", "level", "lvl")
                 .getCommandSettings()
-                .setCooldown(3000)
+                .setCooldown(config.getCommandCooldown())
                 .activate();
 
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),

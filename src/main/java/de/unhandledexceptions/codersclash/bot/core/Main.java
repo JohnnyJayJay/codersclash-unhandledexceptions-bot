@@ -24,6 +24,8 @@ public class Main {
             logger.info("config.json has been created.");
             logger.warn("Please enter database connection info, the bot token and the default command prefix. Restart the bot afterwards. Every value that is currently NULL " +
                     "has to be a String!");
+            logger.info("You may change the existing values as well. If you do so, please make sure that every new value has the correct type.");
+            logger.info("The database will be created automatically if it doesn't exist.");
         } else if (!config.load()) {
             logger.error("config.json could not be loaded. Make sure all the values have been set correctly (not null) and restart the bot.");
             logger.warn("Please enter database connection info, the bot token and the default command prefix. Restart the bot afterwards. Every value that is currently NULL " +

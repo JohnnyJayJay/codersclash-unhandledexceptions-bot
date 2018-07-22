@@ -1,6 +1,5 @@
 package de.unhandledexceptions.codersclash.bot.core.connection;
 
-import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -9,21 +8,15 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import java.util.HashSet;
 import java.util.Set;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-
 /**
  * @author Johnny_JayJay
  */
 public class LinkListener extends ListenerAdapter {
 
     private Set<Link> links;
-    private ShardManager shardManager;
     private LinkManager linkManager;
 
-    public LinkListener(ShardManager shardManager) {
-        this.shardManager = shardManager;
-        this.linkManager = linkManager;
+    public LinkListener() {
         this.links = new HashSet<>();
     }
 
@@ -55,5 +48,9 @@ public class LinkListener extends ListenerAdapter {
 
     public boolean containsLink(Link link) {
         return links.contains(link);
+    }
+
+    public void setLinkManager(LinkManager linkManager) {
+        this.linkManager = linkManager;
     }
 }

@@ -22,7 +22,7 @@ public class Config {
     private final String VERSION = "1.0";
     private final String ICON_URL = "https://i.imgur.com/DRKwhqj.png";
     private final String DEFAULT_PREFIX = "tc!";
-    private final long COMMAND_COOLDOWN = 0;
+    private final long COMMAND_COOLDOWN = 1000;
 
     private Path file; // config.json Datei
     private JSONObject config; // Inhalt von config.json
@@ -77,10 +77,10 @@ public class Config {
                 .key("VERSION").value(VERSION)
                 .key("NAME").value(BOT_NAME)
                 .key("ICON").value(ICON_URL).endObject()
+                .key("EMOTE_GUILD_NAME").value(emoteGuildName)
                 .key("TOKEN").value(null)
                 .key("DEFAULT_PREFIX").value(DEFAULT_PREFIX)
                 .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
-                .key("EMOTE_GUILD_NAME").value(emoteGuildName)
                 .key("DATABASE").object()
                 .key("IP").value(null)
                 .key("PORT").value(null)
@@ -138,6 +138,10 @@ public class Config {
 
     public String getDBPassword() {
         return config.getJSONObject("DATABASE").getString("PASSWORD");
+    }
+
+    public int getCommandCooldown() {
+        return config.getInt("COMMAND_COOLDOWN");
     }
 
     public String getEmoteGuildName() {
