@@ -61,8 +61,7 @@ public class HelpCommand implements ICommand {
     @Override
     public String info(Member member) {
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
-        String ret = format("**Description**: Provides you with help.\n\n" +
+        return format("**Description**: Provides you with help.\n\n" +
                 "**Usage**: `%s[help|helpme|command]`\n\n**Permission level**: `0`", prefix);
-        return ret;
     }
 }

@@ -68,11 +68,10 @@ public class InviteCommand implements ICommand {
     @Override
     public String info(Member member) {
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 1
+        return permLevel < 1
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : "**Description**: Opens the invite dialogue where you can choose between an invite for the bot or this guild.\n\n**Usage**: `" + Bot.getPrefix(member.getGuild().getIdLong())
                 + "invite`\n\n**Permission level**: `1`";
-        return ret;
     }
 }

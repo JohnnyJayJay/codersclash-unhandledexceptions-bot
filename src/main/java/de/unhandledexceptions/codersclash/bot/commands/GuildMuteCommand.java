@@ -68,11 +68,10 @@ public class GuildMuteCommand implements ICommand {
     public String info(Member member) {
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 3
+        return permLevel < 3
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Mutes the whole guild so no one can write.\n\n" +
                 "**Usage**: `%s[muteguild|guildmute|lockdown]`\n\n**Permission level**: `5`", prefix);
-        return ret;
     }
 }

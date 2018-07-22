@@ -316,6 +316,7 @@ public class SettingsCommand implements ICommand {
     }
 
     private void editMessage(Message message, Layer layer, EmbedBuilder builder) {
+        boolean helpMessage = layer == Layer.HELP;
         builder.clear().setColor(message.getGuild().getSelfMember().getColor());
         switch (layer) {
             case MAIN_MENU:
@@ -323,10 +324,7 @@ public class SettingsCommand implements ICommand {
                         .setDescription("This is the main menu. Select one of the options below!\n"
                                 + Reactions.SPEECH_BUBBLE + " Channel Settings\n"
                                 + Reactions.GEAR + " Feature/Command Settings\n"
-                                + Reactions.QUESTION_MARK + " Show help\n"
-                                + Reactions.BACK + " Go back\n"
-                                + Reactions.M + " Jump to main menu\n"
-                                + Reactions.NO_EMOTE + " Exit");
+                                + Reactions.QUESTION_MARK + " Show help\n");
                 break;
             case CHANNEL_MANAGEMENT:
                 builder.setTitle("Channel Management")
@@ -347,7 +345,7 @@ public class SettingsCommand implements ICommand {
                 builder.setTitle("XP System").setDescription((database.xpSystemActivated(message.getGuild().getIdLong())
                         ? format("The XP-System is currently %s for this guild.\n Would you like to %s it?", activated, deactivated)
                         : format("The XP-System is currently %s for this guild.\n Would you like to `%s` it?", deactivated, activated)
-                        + "\n" + Reactions.Y + " Yes\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit"));
+                        + "\n" + Reactions.Y + " Yes\n"));
                 break;
             case REPORTS:
                 int currentValue = database.getReportsUntilBan(message.getGuild());
@@ -356,10 +354,7 @@ public class SettingsCommand implements ICommand {
                         ? "Currently, members will not be banned for reports."
                         : "Currently, a member will be banned after `" + currentValue + "` reports.");
                 builder.appendDescription("\nWould you like to change that?\n"
-                        + Reactions.Y + " Yes, let me change that.\n"
-                        + Reactions.BACK + " Go Back\n"
-                        + Reactions.M + " Main Menu\n"
-                        + Reactions.NO_EMOTE + " Exit");
+                        + Reactions.Y + " Yes, let me change that.\n");
                 break;
             case HELP:
                 builder.setTitle("Help")
@@ -373,7 +368,7 @@ public class SettingsCommand implements ICommand {
                 builder.setTitle("Prefix settings")
                         .setDescription("The bot's prefix on this guild is `" + Bot.getPrefix(message.getGuild().getIdLong())
                                 + "`, the default prefix is `" + Bot.getPrefix(-1) + "`. Would you like to change this guild's prefix?\n"
-                                + Reactions.Y + " Yes, let me set a new prefix\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
+                                + Reactions.Y + " Yes, let me set a new prefix\n");
                 break;
             case AUTO_CHANNEL:
                 Long idAuto = database.getAutoChannel(message.getGuild());
@@ -387,10 +382,7 @@ public class SettingsCommand implements ICommand {
                         + Reactions.PENCIL + " Yes, let me set a new channel\n"
                         + Reactions.CLIPBOARD + " Yes, let me select a new channel\n"
                         + Reactions.BOT + " Yes, create one for me\n"
-                        + Reactions.PUT_LITTER_IN_ITS_PLACE+ " Deactivate the AutoChannel by deactivating current AutoChannel\n"
-                        + Reactions.BACK + " Go Back\n"
-                        + Reactions.M + " Main Menu\n"
-                        + Reactions.NO_EMOTE + " Exit");
+                        + Reactions.PUT_LITTER_IN_ITS_PLACE+ " Deactivate the AutoChannel by deactivating current AutoChannel\n");
                 break;
             case MAIL_CHANNEL:
                 Long idMail = database.getMailChannel(message.getGuild());
@@ -404,12 +396,13 @@ public class SettingsCommand implements ICommand {
                         + Reactions.PENCIL + " Yes, let me set a new channel\n"
                         + Reactions.CLIPBOARD + " Yes, let me select a new channel\n"
                         + Reactions.BOT + " Yes, create one for me\n"
-                        + Reactions.CLOSED_INBOX + " Deactivate the mail function by deactivating current mail channel\n"
-                        + Reactions.BACK + " Go Back\n"
-                        + Reactions.M + " Main Menu\n"
-                        + Reactions.NO_EMOTE + " Exit");
+                        + Reactions.CLOSED_INBOX + " Deactivate the mail function by deactivating current mail channel\n");
                 break;
-
+        }
+        if (!helpMessage) {
+            builder.appendDescription(Reactions.BACK + " Go Back\n"
+                    + Reactions.M + " Main Menu\n"
+                    + Reactions.NO_EMOTE + " Exit");
         }
         layer.EMOJIS.forEach((emoji) -> message.addReaction(emoji).queue());
         message.editMessage(builder.build()).queue();
@@ -436,12 +429,6 @@ public class SettingsCommand implements ICommand {
             this.EMOJIS.add(Reactions.NO_EMOTE);
         }
 
-        Layer(List<String> emojis) {
-            this.EMOJIS = emojis;
-            this.EMOJIS.add(Reactions.BACK);
-            this.EMOJIS.add(Reactions.M);
-            this.EMOJIS.add(Reactions.NO_EMOTE);
-        }
     }
 
     @Override

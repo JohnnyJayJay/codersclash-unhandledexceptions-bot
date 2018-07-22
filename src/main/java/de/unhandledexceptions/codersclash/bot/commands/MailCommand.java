@@ -129,13 +129,12 @@ public class MailCommand implements ICommand {
     @Override
     public String info(Member member) {
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
+        return permLevel < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
                 "`4`\nYour permission level: `" + permLevel + "`"
                 : "**Description:** Send a \"mail\" to a guild the bot is also on!\n\n"
                 + "**Usage:** `" + Bot.getPrefix(member.getGuild().getIdLong()) + "[mail|contact] <Guild-ID> <Message>`\nIf you don't have an id, replace it with \"NOID\". "
                 + "You may then search a guild by name.\nTo add a topic to your mail, put `##your-topic##` somewhere "
                 + "(replace \"your-topic\" with the topic you want).\nThis *only* works if the other guild has set a mail channel.\n\n"
                 + "**Permission Level:** `4`";
-        return ret;
     }
 }
