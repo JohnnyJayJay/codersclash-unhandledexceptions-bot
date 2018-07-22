@@ -81,7 +81,6 @@ public class Config {
                 .key("TOKEN").value(null)
                 .key("DEFAULT_PREFIX").value(DEFAULT_PREFIX)
                 .key("COMMAND_COOLDOWN").value(COMMAND_COOLDOWN)
-                .key("EMOTE_GUILD_NAME").value(emoteGuildName)
                 .key("DATABASE").object()
                 .key("IP").value(null)
                 .key("PORT").value(null)

@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.core;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
+import de.unhandledexceptions.codersclash.bot.commands.ScoreBoardCommand;
 import de.unhandledexceptions.codersclash.bot.util.Logging;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -264,11 +265,11 @@ public class Database {
         return ret;
     }
 
-    public List<ScoreBoardUser> getScoreBoard(String table, String order) {
+    public List<ScoreBoardCommand.ScoreBoardUser> getScoreBoard(String table, String order) {
         try (var connection = dataSource.getConnection();
              var preparedstatement = connection.prepareStatement("SELECT * FROM "+table+" ORDER BY "+order+" DESC;")) {
             var resultset = preparedstatement.executeQuery();
-            var list = new ArrayList<ScoreBoardUser>();
+            var list = new ArrayList<ScoreBoardCommand.ScoreBoardUser>();
             String prefix = "";
             String guildid = "";
             if (table.equals("discord_user")) {
@@ -279,7 +280,7 @@ public class Database {
                 guildid = "guild_id";
             }
             while (resultset.next()) {
-                list.add(new ScoreBoardUser(resultset.getString("user_id"), resultset.getString(guildid),
+                list.add(new ScoreBoardCommand.ScoreBoardUser(resultset.getString("user_id"), resultset.getString(guildid),
                         resultset.getLong(prefix+"_xp"), resultset.getLong(prefix+"_lvl")));
             }
             return list;

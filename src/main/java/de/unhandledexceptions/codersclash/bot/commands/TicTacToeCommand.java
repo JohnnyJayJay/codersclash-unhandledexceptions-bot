@@ -7,6 +7,7 @@ import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import de.unhandledexceptions.codersclash.bot.game.TicTacToe;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
@@ -28,6 +29,9 @@ public class TicTacToeCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_WRITE))
+            return;
+
         List<Member> mentionedMembers = event.getMessage().getMentionedMembers();
         if (args.length > 0 && !mentionedMembers.isEmpty()) {
             var target = mentionedMembers.get(0);

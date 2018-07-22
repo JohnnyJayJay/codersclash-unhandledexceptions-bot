@@ -58,7 +58,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args)
     {
-        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION))
             return;
 
         if (args.length > 0) {
@@ -106,16 +106,18 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         }
 
 
-        sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!").queue();
-        sendStartInfoMessage(event);
+        Main.otherThread(() -> {
+            sendMessage(channel, Type.SUCCESS, "Okay great! Let's create your vote!").queue();
+            sendStartInfoMessage(event);
 
-        Vote vote = new Vote(guild, event.getChannel(), shardManager);
-        VoteCreator creator = new VoteCreator(member, guild, vote, VoteState.TIME, shardManager);
-        vote.setVoteCreator(creator);
-        votes.put(guild.getIdLong(), vote);
+            Vote vote = new Vote(guild, event.getChannel(), shardManager);
+            VoteCreator creator = new VoteCreator(member, guild, vote, VoteState.TIME, shardManager);
+            vote.setVoteCreator(creator);
+            votes.put(guild.getIdLong(), vote);
 
-        sendTimeReactionMessage(vote, event);
-        vote.getVoteCreator().setState(VoteState.REACTION);
+            sendTimeReactionMessage(vote, event);
+            vote.getVoteCreator().setState(VoteState.REACTION);
+        });
     }
 
     @Override

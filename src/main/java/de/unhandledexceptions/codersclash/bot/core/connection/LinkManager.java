@@ -1,6 +1,5 @@
 package de.unhandledexceptions.codersclash.bot.core.connection;
 
-import com.google.common.collect.HashBiMap;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.Permission;
@@ -9,10 +8,11 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 /**
  * @author Johnny_JayJay
@@ -24,7 +24,6 @@ public class LinkManager {
 
     public LinkManager(ShardManager shardManager) {
         this.shardManager = shardManager;
-        this.linkListener = linkListener;
     }
 
     public Link createLink() {
@@ -52,8 +51,10 @@ public class LinkManager {
         } else {
             Guild linkedGuild;
             for (var guildId : link.getGuilds()) {
-                linkedGuild = shardManager.getGuildById(guildId);
-                sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Messages.Type.INFO, "Guild `" + guild + "` left the link!").queue();
+                if (guildId != guild.getIdLong()) {
+                    linkedGuild = shardManager.getGuildById(guildId);
+                    sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Messages.Type.INFO, "Guild `" + guild + "` left the link!").queue();
+                }
             }
             if (link.remove(guild)) {
                 link.getGuilds().stream().findFirst().ifPresent((id) -> {
@@ -65,12 +66,16 @@ public class LinkManager {
         }
     }
 
+    public void setLinkListener(LinkListener linkListener) {
+        this.linkListener = linkListener;
+    }
+
     private class LinkImpl implements Link {
 
         private Map<Long, Long> channelIds; // K: Guild id, V: Channel id
 
         private LinkImpl() {
-            this.channelIds = HashBiMap.create();
+            this.channelIds = new HashMap<>();
         }
 
         @Override

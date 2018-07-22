@@ -40,7 +40,7 @@ public class MailCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent event, Member member, TextChannel channel, String[] args) {
-        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
+        if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION))
             return;
 
         if (Permissions.getPermissionLevel(member) >= 4) {
@@ -86,14 +86,18 @@ public class MailCommand implements ICommand {
                         .setFooter("Inbox", null)
                         .setTimestamp(Instant.now())
                         .addField(topic, content, false);
-                mailChannel.sendMessage(builder.build()).queue(
-                        (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(),
-                        defaultFailure(channel));
+                if (guild.getSelfMember().hasPermission(mailChannel, Permission.MESSAGE_WRITE)) {
+                    mailChannel.sendMessage(builder.build()).queue(
+                            (msg) -> sendMessage(channel, Type.SUCCESS, "Mail sent!").queue(),
+                            defaultFailure(channel));
+                } else {
+                    sendMessage(channel, Type.ERROR, "I can't send a mail to guild `" + guild + "`, because I have no permissions to do that!").queue();
+                }
             } else {
-                sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild.getName() + "`, it seems like they deleted their mail channel!").queue();
+                sendMessage(channel, Type.ERROR, "I can't send a mail to `" + guild + "`, it seems like they deleted their mail channel!").queue();
             }
         } else {
-            sendMessage(channel, Type.ERROR, "The guild `" + guild.getName() + "` hasn't set a mail channel! Contact their administrators.").queue();
+            sendMessage(channel, Type.ERROR, "The guild `" + guild + "` hasn't set a mail channel! Contact their administrators.").queue();
         }
     }
 

@@ -67,14 +67,17 @@ public class Bot {
         database.getPrefixes().forEach((id, prefix) -> commandSettings.setCustomPrefix(id, prefix));
 
         var xpCommand = new XPCommand(commandSettings, database);
-        var linkListener = new LinkListener(shardManager);
+        var linkListener = new LinkListener();
+        var linkManager = new LinkManager(shardManager);
+        linkListener.setLinkManager(linkManager);
+        linkManager.setLinkListener(linkListener);
 
         var voteCommand = new VoteCommand(shardManager);
         var ticTacToe = new TicTacToe();
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
         ReportCommand reportCommand = new ReportCommand(database);
-        var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
+        var linkCommand = new LinkCommand(linkManager, linkListener, searchCommand, mailCommand, database);
         var muteManager = new MuteManager(shardManager, commandSettings);
 
         CommandSettingsHandler commandSettingsHandler = new CommandSettingsHandler(commandSettings);

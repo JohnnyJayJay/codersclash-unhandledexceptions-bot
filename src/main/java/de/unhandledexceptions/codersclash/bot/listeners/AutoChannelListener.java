@@ -60,9 +60,7 @@ public class AutoChannelListener extends ListenerAdapter {
     }
 
     private void createChannel(VoiceChannel channelJoined, Guild guild, Member member) {
-        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
-            return;
-        } else {
+        if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
             guild.getController().createVoiceChannel("Channel by " + member.getUser().getName())
                     .setUserlimit(channelJoined.getUserLimit())
                     .setParent(channelJoined.getParent())

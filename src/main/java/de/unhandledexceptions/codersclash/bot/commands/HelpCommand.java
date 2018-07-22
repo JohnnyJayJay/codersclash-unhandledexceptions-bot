@@ -6,6 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.CommandSettingsHandler;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
@@ -23,7 +24,7 @@ import static java.lang.String.join;
 
 public class HelpCommand implements ICommand {
 
-    CommandSettingsHandler commandSettingsHandler;
+    private CommandSettingsHandler commandSettingsHandler;
 
     public HelpCommand(CommandSettingsHandler commandSettingsHandler) {
         this.commandSettingsHandler = commandSettingsHandler;
@@ -31,6 +32,9 @@ public class HelpCommand implements ICommand {
 
     @Override
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
+        if (!commandEvent.getGuild().getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE))
+            return;
+
         EmbedBuilder builder = new EmbedBuilder();
         if (strings.length==0) {
             String prefix = commandSettingsHandler.getCommandSettings().getPrefix(member.getGuild().getIdLong());
