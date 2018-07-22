@@ -52,7 +52,7 @@ public class SettingsCommand implements ICommand {
                 var builder = new EmbedBuilder();
                 event.getMessage().delete().queue();
                 Main.otherThread(() -> channel.sendMessage(builder.setDescription("Loading Main Menu...").build()).queue((msg) ->
-                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU, builder), Messages.defaultFailure(channel)));
+                        menu(event.getAuthor(), msg, Layer.MAIN_MENU, Layer.MAIN_MENU, builder), defaultFailure(channel)));
             } else {
                 wrongUsageMessage(channel, member, this);
             }
@@ -194,7 +194,7 @@ public class SettingsCommand implements ICommand {
                                         sendMessage(textChannel, Type.SUCCESS, "AutoChannel successfully set to\n" + selected).queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder);
                                     }, (anotherVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.AUTO_CHANNEL, builder));
-                                }, Messages.defaultFailure(textChannel));
+                                }, defaultFailure(textChannel));
                                 break;
                             case Reactions.BOT:
                                 sendMessage(textChannel, Type.DEFAULT, "Creating the channel...").queue((msg) -> {
@@ -207,7 +207,7 @@ public class SettingsCommand implements ICommand {
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         }, (t) -> {
                                             msg.delete().queue();
-                                            Messages.defaultFailure(textChannel).accept(t);
+                                            defaultFailure(textChannel).accept(t);
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         });
                                     } else {
@@ -266,7 +266,7 @@ public class SettingsCommand implements ICommand {
                                         sendMessage(textChannel, Type.SUCCESS, "Mail Channel successfully set to " + selected).queue(Messages::deleteAfterFiveSec);
                                         menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder);
                                     }, (anotherVoid) -> menu(user, message, Layer.MAIN_MENU, Layer.MAIL_CHANNEL, builder));
-                                }, Messages.defaultFailure(textChannel));
+                                }, defaultFailure(textChannel));
                                 break;
                             case Reactions.BOT:
                                 sendMessage(textChannel, Type.DEFAULT, "Creating the channel...").queue((msg) -> {
@@ -279,7 +279,7 @@ public class SettingsCommand implements ICommand {
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         }, (t) -> {
                                             msg.delete().queue();
-                                            Messages.defaultFailure(textChannel).accept(t);
+                                            defaultFailure(textChannel).accept(t);
                                             menu(user, message, Layer.MAIN_MENU, current, builder);
                                         });
                                     } else {
@@ -341,10 +341,13 @@ public class SettingsCommand implements ICommand {
                         + Reactions.P + " Change the command prefix");
                 break;
             case XP_SYSTEM:
+                var jda = message.getJDA().asBot().getShardManager();
+                var activated = jda.getEmotesByName("activated", false).get(0).getAsMention();
+                var deactivated = jda.getEmotesByName("deactivated", false).get(0).getAsMention();
                 builder.setTitle("XP System").setDescription((database.xpSystemActivated(message.getGuild().getIdLong())
-                        ? "The XP-System is currently `activated` for this guild.\n Would you like to `deactivate` it?"
-                        : "The XP-System is currently `deactivated` for this guild.\n Would you like to `activate` it?")
-                        + "\n" + Reactions.Y + " Yes\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit");
+                        ? format("The XP-System is currently %s for this guild.\n Would you like to %s it?", activated, deactivated)
+                        : format("The XP-System is currently %s for this guild.\n Would you like to `%s` it?", deactivated, activated)
+                        + "\n" + Reactions.Y + " Yes\n" + Reactions.BACK + " Go Back\n" + Reactions.NO_EMOTE + " Exit"));
                 break;
             case REPORTS:
                 int currentValue = database.getReportsUntilBan(message.getGuild());
