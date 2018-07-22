@@ -330,13 +330,13 @@ public class SettingsCommand implements ICommand {
                 builder.setTitle("Channel Management")
                         .setDescription("Manage your Mail Channel and your AutoChannel here!\n"
                                 + Reactions.MAIL + " Manage Mail Channel\n"
-                                + Reactions.REPEAT + " Manage AutoChannel");
+                                + Reactions.REPEAT + " Manage AutoChannel\n");
                 break;
             case FEATURES:
                 builder.setTitle("Feature Management").setDescription("Settings for the bot's features.\n"
                         + Reactions.STAR + " Disable/Enable the XP-System.\n"
                         + Reactions.EXCLAMATION_MARK + " Configure report settings\n"
-                        + Reactions.P + " Change the command prefix");
+                        + Reactions.P + " Change the command prefix\n");
                 break;
             case XP_SYSTEM:
                 var jda = message.getJDA().asBot().getShardManager();
@@ -400,7 +400,7 @@ public class SettingsCommand implements ICommand {
                 break;
         }
         if (!helpMessage) {
-            builder.appendDescription(Reactions.BACK + " Go Back\n"
+            builder.appendDescription("\n" + Reactions.BACK + " Go Back\n"
                     + Reactions.M + " Main Menu\n"
                     + Reactions.NO_EMOTE + " Exit");
         }
