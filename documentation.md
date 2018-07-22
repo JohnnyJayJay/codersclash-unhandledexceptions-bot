@@ -114,12 +114,12 @@ Permission level: 0
 
 ## Vote
 Aliases: vote, poll  
-Usage: [Prefix][vote|poll]  
-Description:  
+Usage: [Prefix][vote|poll] | [Prefix][vote|poll] close  
+Description: Creates a vote and evaluates it into a percentage value and a piechart. If you desire you can close the vote early. 
 Permission level: 4  
 
 ## XP
 Aliases: xp, lvl, level  
 Usage: [Prefix][xp|lvl|level]  
 Description: Gives you information about your level.  
-Permission level: 0  
+Permission level: 1  

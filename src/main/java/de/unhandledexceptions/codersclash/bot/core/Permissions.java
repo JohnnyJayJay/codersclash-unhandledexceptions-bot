@@ -56,12 +56,12 @@ public class Permissions implements ICommand {
     @Override
     public String info(Member member) {
         String prefix = settings.getPrefix(member.getGuild().getIdLong());
-        String ret = member.getRoles().stream().map(Role::getName).anyMatch((role) -> role.equals(Bot.getBotName()))
+        String ret = member.getRoles().stream().map(Role::getName).anyMatch((role) -> role.equals(Bot.getBotName() + "-perms"))
                 ? format("Manage %s-permissions and configure the different permission levels.\n```\nLevel 0: %shelp and %sttt\nLevel 1: %sprofile, %ssearch, %sinvite, %sxp, %sscoreboard\nLevel 2: " +
                 "%sblock\nLevel 3: %smute and %sreport\nLevel 4: %svote, %smail, %slink, %sclear\nLevel 5: %ssettings, %srole, %smuteguild```\n\nUsage: `%s[permission|perms|perm] [<@Member>|<@Role>] " +
-                "<level>` (level may be 0-5)\n\nTo execute this command, the member needs to have a role named \"%s\".", Bot.getBotName(),
+                "<level>` (level may be 0-5)\n\nTo execute this command, you need to have a role named `%s-perms`.", Bot.getBotName(),
                 prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix, Bot.getBotName())
-                : format("This command is not available for you.\n **Permissions needed**: `%s-perms` role.", Bot.getBotName());
+                : format("This command is not available for you.\n **Role needed**: `%s-perms`", Bot.getBotName());
         return ret;
     }
 
