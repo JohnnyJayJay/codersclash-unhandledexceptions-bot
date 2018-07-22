@@ -2,6 +2,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
@@ -61,6 +62,11 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION))
             return;
 
+        if (Permissions.getPermissionLevel(member) < Permissions.getVotePermissionLevel()) {
+            noPermissionsMessage(channel, member);
+            return;
+        }
+
         if (args.length > 0) {
             if (args[0].equals("close")) {
                 if (votes.containsKey(event.getGuild().getIdLong())) {
@@ -92,10 +98,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
         Guild guild = event.getGuild();
 
-        if (Permissions.getPermissionLevel(member) < Permissions.getVotePermissionLevel()) {
-            noPermissionsMessage(channel, member);
-            return;
-        }
+
 
         if (votes.containsKey(guild.getIdLong())) {
             if (votes.get(guild.getIdLong()).getVoteCreator().getState() != VoteState.DEFAULT)
@@ -518,5 +521,17 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
     public Map<Long, Vote> getVotes() {
         return votes;
+    }
+
+    @Override
+    public String info(Member member) {
+        String prefix = Bot.getPrefix(member.getGuild().getIdLong());
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 4
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `4`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Creates a vote and evaluates it\ninto a percentage value and a piechart.\nIf you desire you can close the vote early.\n\n" +
+                "**Usage**: `%s[vote|poll]`\n\t\t\t  `%s[vote|poll] close`\n\n**Permission level**: `4`", prefix, prefix);
+        return ret;
     }
 }

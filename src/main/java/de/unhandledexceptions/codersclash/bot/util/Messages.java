@@ -67,6 +67,7 @@ public class Messages {
     }
 
     public enum Type {
+        SHUTDOWN("Shutdown", "https://cdn.pixabay.com/photo/2014/03/25/15/22/power-296626_960_720.png", Color.RED),
         INFO("Information", "https://vignette.wikia.nocookie.net/dragonvale/images/f/fd/Blue_Information_Sign.png/revision/latest?cb=20120415234017", Color.CYAN),
         WARNING("Warning", "https://i.imgur.com/ozSen6U.png", Color.YELLOW),
         ERROR("Error", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Dialog-error-round.svg/2000px-Dialog-error-round.svg.png", Color.RED),
