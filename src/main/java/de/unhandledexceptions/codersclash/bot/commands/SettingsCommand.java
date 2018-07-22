@@ -343,8 +343,8 @@ public class SettingsCommand implements ICommand {
                 var activated = jda.getEmotesByName("activated", false).get(0).getAsMention();
                 var deactivated = jda.getEmotesByName("deactivated", false).get(0).getAsMention();
                 builder.setTitle("XP System").setDescription((database.xpSystemActivated(message.getGuild().getIdLong())
-                        ? format("The XP-System is currently %s for this guild.\n Would you like to %s it?", activated, deactivated)
-                        : format("The XP-System is currently %s for this guild.\n Would you like to `%s` it?", deactivated, activated)
+                        ? format("The XP-System is currently %s for this guild.\n Would you like to turn it %s?", activated, deactivated)
+                        : format("The XP-System is currently %s for this guild.\n Would you like to turn it %s?", deactivated, activated)
                         + "\n" + Reactions.Y + " Yes\n"));
                 break;
             case REPORTS:
