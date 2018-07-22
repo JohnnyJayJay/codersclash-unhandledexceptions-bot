@@ -1,5 +1,5 @@
 # Command Documentation
-
+To manage the permissions you need a role called "try-catch-perms", which gets created by the Bot if you use the permissions coommand.
 ## Block
 Aliases: block, deny  
 Usage: [Prefix][block|deny] @Member #Channel <reason>  
