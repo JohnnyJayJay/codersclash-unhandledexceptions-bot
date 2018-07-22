@@ -28,7 +28,6 @@ public class Bot {
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
     private static CommandSettings commandSettings;
-    private static ReportCommand reportCommand;
 
     private static Logger logger = Logging.getLogger();
 
@@ -74,10 +73,12 @@ public class Bot {
         var ticTacToe = new TicTacToe();
         var searchCommand = new SearchCommand();
         var mailCommand = new MailCommand(database, searchCommand);
+        ReportCommand reportCommand = new ReportCommand(database);
         var linkCommand = new LinkCommand(new LinkManager(shardManager), linkListener, searchCommand, mailCommand, database);
         var muteManager = new MuteManager(shardManager, commandSettings);
 
         CommandSettingsHandler commandSettingsHandler = new CommandSettingsHandler(commandSettings);
+
         commandSettingsHandler
                 .put(new BlockCommand(), "block", "deny")
                 .put(new ClearCommand(), "clear", "clean", "delete")
@@ -89,13 +90,13 @@ public class Bot {
                 .put(new MuteCommand(muteManager), "mute", "silence")
                 .put(new Permissions(commandSettings, database), "permission", "perms", "perm")
                 .put(new ProfileCommand(reportCommand), "profile", "userinfo")
-                .put(new ReportCommand(database), "report", "rep", "reports")
+                .put(reportCommand, "report", "rep", "reports")
                 .put(new RoleCommand(), "role")
                 .put(new ScoreBoardCommand(database, commandSettings), "scoreboard", "sb")
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
-                .put(voteCommand, "vote", "v")
+                .put(voteCommand, "vote", "poll")
                 .put(xpCommand, "xp", "level", "lvl")
                 .getCommandSettings()
                 .setCooldown(config.getCommandCooldown())

@@ -19,9 +19,10 @@ Level 3:
 Level 4:
 - Vote Command
 - Clear Command
-- AutoChannel
+- Mail Command
+- Link command
 
 Level 5:
 - Settings Command
-- Mail Command
 - Role Command
+- MuteGuild Command

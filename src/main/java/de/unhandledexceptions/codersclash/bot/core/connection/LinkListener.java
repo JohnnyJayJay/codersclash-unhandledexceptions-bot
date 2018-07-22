@@ -19,9 +19,11 @@ public class LinkListener extends ListenerAdapter {
 
     private Set<Link> links;
     private ShardManager shardManager;
+    private LinkManager linkManager;
 
     public LinkListener(ShardManager shardManager) {
         this.shardManager = shardManager;
+        this.linkManager = linkManager;
         this.links = new HashSet<>();
     }
 
@@ -38,16 +40,8 @@ public class LinkListener extends ListenerAdapter {
     public void onTextChannelDelete(TextChannelDeleteEvent event) {
         Guild guild = event.getGuild();
         links.stream().filter((link) -> link.getGuilds().contains(guild.getIdLong())).forEach((link) -> {
-            String addition = "";
-            if (link.remove(guild)) {
-                links.remove(link);
-                addition = "You are the last guild in this link, so it will be closed.";
-            }
-            Guild rest;
-            for (long id : link.getGuilds()) {
-                rest = shardManager.getGuildById(id);
-                sendMessage(rest.getTextChannelById(link.getLinkedChannel(rest)), Type.INFO, "Guild `" + guild + "` has left the link. " + addition).queue();
-            }
+            if (link.getLinkedChannel(guild) == event.getChannel().getIdLong())
+            linkManager.removeGuild(link, event.getGuild(), false);
         });
     }
 
