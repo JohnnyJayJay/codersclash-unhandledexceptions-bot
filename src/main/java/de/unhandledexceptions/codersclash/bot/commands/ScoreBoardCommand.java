@@ -54,7 +54,7 @@ public class ScoreBoardCommand implements ICommand {
                         if (shardManager.getUserById(user.getUserid()).isBot()) {
                             i2++;
                         } else {
-                            if (type.equals("member") && !member.getGuild().getId().equals(user.getGuildid())) {
+                            if ("member".equals(type) && !member.getGuild().getId().equals(user.getGuildid())) {
                                 i2++;
                             } else
                                 builder.append(shardManager.getUserById(user.getUserid()).getName() + "#" +
@@ -68,11 +68,9 @@ public class ScoreBoardCommand implements ICommand {
                 boolean run = true;
                 for (int i3 = 0; list.size() > i3 && run; i3++) {
                     var user = list.get(i3);
-                    if (user.getUserid().equals(member.getUser().getId())) {
-                        if (!builder.toString().contains(":arrow_right: **Your place**\n")) {
+                    if (user.getUserid().equals(member.getUser().getId()) && !builder.toString().contains(":arrow_right: **Your place**\n")) {
                             run = false;
                             builder.append(":arrow_right: **Your place**\n" + String.valueOf(i3 + 1));
-                        }
                     }
                 }
                 embedBuilder.addField(((type.equals("member")) ? "**Server**" : "**Global**"), builder.toString(), true);

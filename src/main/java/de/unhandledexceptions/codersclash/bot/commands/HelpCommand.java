@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
 import static java.lang.String.format;
 import static java.lang.String.join;
 
@@ -43,11 +44,13 @@ public class HelpCommand implements ICommand {
                     .addField("Commands", format("```\n%s```", join(format(", %s", prefix), labels.toString())), true);
             sendMessage(textChannel, Messages.Type.NO_TYPE,
                     format("To learn more about a specific command, just call\n`%s[help|helpme|commands] <label>`.\nThe following commands are currently available:", prefix), "Help", false, builder).queue();
-        } else if (strings.length == 1 && commandSettingsHandler.getCommandfromLabel().containsKey(strings[0])) {
-            builder.setColor(commandEvent.getGuild().getSelfMember().getColor())
-                    .appendDescription(format("**Command Info for:** `%s`\n\n", strings[0]))
-                    .appendDescription(commandSettingsHandler.getCommandfromLabel().get(strings[0]).info(member));
-            sendMessage(textChannel, Messages.Type.NO_TYPE, "", "Help", false, builder).queue();
+        } else if (strings.length == 1) {
+            if (commandSettingsHandler.getCommandfromLabel().containsKey(strings[0].toLowerCase())) {
+                builder.setColor(commandEvent.getGuild().getSelfMember().getColor())
+                        .appendDescription(format("**Command Info for:** `%s`\n\n", strings[0]))
+                        .appendDescription(commandSettingsHandler.getCommandfromLabel().get(strings[0].toLowerCase()).info(member));
+                sendMessage(textChannel, Messages.Type.NO_TYPE, "", "Help", false, builder).queue();
+            } else wrongUsageMessage(textChannel, member, this);
         }
     }
 

@@ -96,7 +96,7 @@ public class Bot {
                 .put(searchCommand, "search", "lookfor", "browse")
                 .put(new SettingsCommand(database, commandSettings), "settings", "control")
                 .put(new TicTacToeCommand(ticTacToe), "ttt", "tictactoe")
-                .put(voteCommand, "vote", "v")
+                .put(voteCommand, "vote", "poll")
                 .put(xpCommand, "xp", "level", "lvl")
                 .getCommandSettings()
                 .setCooldown(3000)

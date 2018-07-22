@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 
 import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
 import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static java.lang.String.format;
 
 public class Management extends ListenerAdapter {
 
@@ -25,6 +26,9 @@ public class Management extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+        var jda = event.getJDA().asBot().getShardManager();
+        var activated = jda.getEmotesByName("activated", false).get(0).getAsMention();
+        var deactivated = jda.getEmotesByName("deactivated", false).get(0).getAsMention();
         String prefix = Bot.getPrefix(event.getGuild().getIdLong());
         String regex = prefix + "(?i)manage (((status)|(restart)|(shutdown)) ((complete)|(\\d)))";
         String regexWrongUsage = prefix + "(?i)manage.*";
@@ -37,48 +41,56 @@ public class Management extends ListenerAdapter {
                 var shardManager = bot.getAPI();
                 if (args[0].equalsIgnoreCase("restart")) {
                     if (args[1].equalsIgnoreCase("complete")) {
-                        channel.sendMessage("Alle Shards werden restartet...").complete();
+                        sendMessage(channel, Type.WARNING,":repeat: Restarting all Shards...").complete();
                         timer.schedule(timerTaskOf((v) -> bot.restart()), 5000);
                     } else if (args[1].matches("\\d")) {
                         if (shardManager.getShardsTotal() <= Short.parseShort(args[1])) {
-                            channel.sendMessage("Shard " + args[1] + " gibt es nicht!").queue();
-                            channel.sendMessage("Gesamtzahl Shards: " + shardManager.getShardsTotal() + "\nAktive Shards: " +
-                                    shardManager.getShardsRunning() + "\nInaktive Shards: " + shardManager.getShardsQueued()).queue();
+                            sendMessage(channel, Type.ERROR,"Shard " + args[1] + " doesn't exist!").queue();
+                            sendMessage(channel, Type.INFO, format("Shards total: `%s`\nShards %s: `%s`\nShards %s: `%s`" ,
+                                    shardManager.getShardsTotal(), activated, shardManager.getShardsRunning(), deactivated, shardManager.getShardsQueued())).queue();
                         } else {
-                            channel.sendMessage("Shard " + args[1] + " wird restartet").complete();
+                            sendMessage(channel, Type.WARNING, ":repeat: Restarting Shard " + args[1]).complete();
                             timer.schedule(timerTaskOf((v) -> bot.restart(Integer.parseInt(args[1])-1)), 5000);
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("status")) {
                     if (args[1].equals("complete")) {
-                        channel.sendMessage("Overall ping: " + shardManager.getAveragePing() + "ms").queue();
-                        channel.sendMessage("Gesamtzahl Shards: " + shardManager.getShardsTotal() + "\nAktive Shards: " +
-                                shardManager.getShardsRunning() + "\nInaktive Shards: " + shardManager.getShardsQueued()).queue();
+                        sendMessage(channel, Type.INFO, format("Average ping: `%s`\nShards total: `%s`\nShards %s: `%s`\nShards %s: `%s`" ,
+                                shardManager.getAveragePing(), shardManager.getShardsTotal(), activated, shardManager.getShardsRunning(), deactivated, shardManager.getShardsQueued())).queue();
                     } else if (args[1].matches("\\d")) {
-                        channel.sendMessage("Ping von Shard " + args[1] + ": " + shardManager.getShardById(Integer.parseInt(args[1])-1).getPing() + "ms").queue();
+                        sendMessage(channel, Type.INFO,"Ping from Shard " + args[1] + ": " + shardManager.getShardById(Integer.parseInt(args[1])-1).getPing() + "ms").queue();
                     }
                 } else if (args[0].equalsIgnoreCase("shutdown")) {
                     if (args[1].equals("complete")) {
-                        channel.sendMessage("Bot wird heruntergefahren.").complete();
+                        sendMessage(channel, Type.SHUTDOWN,":rotating_light: **Shutting down Bot**.").complete();
                         timer.schedule(timerTaskOf((v) -> bot.shutdown()), 5000);
                     } else if (args[1].matches("\\d")) {
                         if (shardManager.getShardsTotal() <= Short.parseShort(args[1])) {
-                            channel.sendMessage("Shard " + args[1] + " gibt es nicht!").queue();
-                            channel.sendMessage("Gesamtzahl Shards: " + shardManager.getShardsTotal() + "\nAktive Shards: " +
-                                    shardManager.getShardsRunning() + "\nInaktive Shards: " + shardManager.getShardsQueued()).queue();
+                            sendMessage(channel, Type.ERROR,"Shard " + args[1] + " doesn't exist!").queue();
+                            sendMessage(channel, Type.INFO, format("Shards total: `%s`\nShards %s: `%s`\nShards %s: `%s`" ,
+                                    shardManager.getShardsTotal(), activated, shardManager.getShardsRunning(), deactivated, shardManager.getShardsQueued())).queue();
                         } else {
-                            channel.sendMessage("Shard " + args[1] + " wird heruntergefahren").complete();
+                            sendMessage(channel, Type.SHUTDOWN,":rotating_light: Shutting down Shard `" + args[1] + "`").complete();
                             timer.schedule(timerTaskOf((v) -> bot.shutdown(Integer.parseInt(args[1])-1)), 5000);
                         }
                     }
                 }
-            } else if (event.getMessage().getContentRaw().matches(prefix + "(?i)manage commandsettings ((activate)|(deactivate))")) {
-                if (args[1].equalsIgnoreCase("deactivate") && bot.getCommandSettings().isActivated()) {
-                    bot.getCommandSettings().deactivate();
-                    event.getChannel().sendMessage("CommandSettings wurden deaktiviert.").queue();
-                } else if (args[1].equalsIgnoreCase("activate") && !bot.getCommandSettings().isActivated()) {
-                    bot.getCommandSettings().activate();
-                    event.getChannel().sendMessage("CommandSettings wurden aktiviert.").queue();
+            } else if (event.getMessage().getContentRaw().matches(prefix + "(?i)manage (commandsettings|cs) ((activate|on)|(deactivate|off))")) {
+                if (args[1].equalsIgnoreCase("deactivate") || args[1].equalsIgnoreCase("off")) {
+                    if (!bot.getCommandSettings().isActivated()) {
+                        sendMessage(event.getChannel(), Type.SUCCESS, "`CommandSettings` already " + deactivated).queue();
+                    } else {
+                        bot.getCommandSettings().deactivate();
+                        sendMessage(event.getChannel(), Type.SUCCESS,"`CommandSettings` successfully turned " + deactivated).queue();
+                    }
+
+                } else if (args[1].equalsIgnoreCase("activate") || args[1].equalsIgnoreCase("on")) {
+                     if (bot.getCommandSettings().isActivated()) {
+                         sendMessage(event.getChannel(), Type.SUCCESS, "`CommandSettings` already " + activated).queue();
+                     } else {
+                         bot.getCommandSettings().activate();
+                         sendMessage(event.getChannel(), Type.SUCCESS, "`CommandSettings` successfully turned" + activated).queue();
+                     }
                 }
             } else if (event.getMessage().getContentRaw().matches(regexWrongUsage))
                 sendMessage(event.getChannel(), Type.WARNING, "Wrong Usage.").queue((msg) -> msg.delete().queueAfter(10, TimeUnit.SECONDS));
