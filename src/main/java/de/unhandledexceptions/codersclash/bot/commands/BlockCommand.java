@@ -53,10 +53,9 @@ public class BlockCommand implements ICommand {
     public String info(Member member) {
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 2
+        return permLevel < 2
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `2`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Denies permission for a specific user in a specific channel.\n\n**Usage**: `%s[block|deny] @Member #Channel <reason>`\n\n**Permission level**: `2`", prefix);
-        return ret;
     }
 }

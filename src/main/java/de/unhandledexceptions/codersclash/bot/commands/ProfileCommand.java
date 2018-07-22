@@ -139,12 +139,11 @@ public class ProfileCommand implements ICommand {
         public String info (Member member){
             String prefix = Bot.getPrefix(member.getGuild().getIdLong());
             int permLevel = Permissions.getPermissionLevel(member);
-            String ret = permLevel < 1
+            return permLevel < 1
                     ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
                     "level: `" + permLevel + "`"
                     : format("**Description**: Provides you with Information about yourself or another member.\n\n" +
                     "**Usage**: `%s[profile|userinfo]` to view your profile\n\t\t\t  `%s[profile|userinfo] @Member` to view @Member's profile\n\n**Permission " +
                     "level**: `1`", prefix, prefix);
-            return ret;
         }
     }

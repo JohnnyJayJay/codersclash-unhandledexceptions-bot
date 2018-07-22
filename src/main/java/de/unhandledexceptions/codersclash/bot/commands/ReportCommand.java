@@ -133,7 +133,6 @@ public class ReportCommand implements ICommand {
                         "**Usage**: `%s[report|rep] @Member <reason>` to *report* \n\t\t\t  `%s[rep|report] [get|remove] @Member <index>` to *manage*\n\n**Permission " +
                         "level**: `3`",
                 database.getReportsUntilBan(member.getGuild()), prefix, prefix);
-        String ret = (database.getReportsUntilBan(member.getGuild()) == (11)) ? retNoBan : retWithBan;
-        return ret;
+        return (database.getReportsUntilBan(member.getGuild()) == (11)) ? retNoBan : retWithBan;
     }
 }

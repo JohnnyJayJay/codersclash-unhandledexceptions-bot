@@ -127,11 +127,10 @@ public class SearchCommand implements ICommand {
     public String info(Member member) {
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         int permLevel = Permissions.getPermissionLevel(member);
-        String ret = permLevel < 2
+        return permLevel < 2
                 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `5`\nYour permission " +
                 "level: `" + permLevel + "`"
                 : format("**Description**: Let's you search for a specific user/guild.\nYou don't need to input the whole name.\nIt can also display all users/guilds.\n\n" +
                 "**Usage**: `%s[search|looksfor|browse] [user|guild] <name>`\n\t\t\t  `%s[search|looksfor|browse] display [users|guilds]`\n\n**Permission level**: `2`", prefix, prefix);
-        return ret;
     }
 }
