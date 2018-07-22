@@ -13,7 +13,8 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 import static java.lang.String.format;
 
 public class ScoreBoardCommand implements ICommand {
@@ -36,10 +37,10 @@ public class ScoreBoardCommand implements ICommand {
             for (String type : strings1) {
                 String table = "";
                 String order = "";
-                if (type.equals("user")) {
+                if ("user".equals(type)) {
                     table = "discord_user";
                     order = "user_lvl";
-                } else if (type.equals("member")) {
+                } else if ("member".equals(type)) {
                     table = "discord_member";
                     order = "member_lvl";
                 }

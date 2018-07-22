@@ -1,7 +1,6 @@
 package de.unhandledexceptions.codersclash.bot.commands;
 
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
-import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.CommandSettingsHandler;
@@ -34,7 +33,6 @@ public class HelpCommand implements ICommand {
     public void onCommand(CommandEvent commandEvent, Member member, TextChannel textChannel, String[] strings) {
         EmbedBuilder builder = new EmbedBuilder();
         if (strings.length==0) {
-            String helpLabels = format("[%s]", join("|", commandSettingsHandler.getCommandSettings().getHelpLabelSet()));
             String prefix = commandSettingsHandler.getCommandSettings().getPrefix(member.getGuild().getIdLong());
 
             StringBuilder labels = new StringBuilder();

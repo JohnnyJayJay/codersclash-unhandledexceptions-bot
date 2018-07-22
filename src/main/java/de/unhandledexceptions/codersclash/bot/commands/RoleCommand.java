@@ -6,7 +6,6 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
-import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
@@ -57,7 +56,7 @@ public class RoleCommand implements ICommand {
                                 + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
                             msg.delete().queue();
                             event.getGuild().getController().addRolesToMember(target, roles).queue(
-                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully granted `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully granted `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), defaultFailure(channel));
                         }, (msg) -> {
                             msg.delete().queue();
                             sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
@@ -65,7 +64,7 @@ public class RoleCommand implements ICommand {
                                         msg2, member.getUser(), 5, (selected) -> {
                                             msg2.delete().queue();
                                             event.getGuild().getController().addSingleRoleToMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
-                                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), defaultFailure(channel));
                                         }, (v) -> {
                                             msg.delete().queue();
                                             msg2.delete().queue();
@@ -77,7 +76,7 @@ public class RoleCommand implements ICommand {
                             sendMessage(channel, Type.WARNING, "Bot can't interact with the role because it is higher or equal his own!", false).queue();
                         } else {
                             event.getGuild().getController().addSingleRoleToMember(target, roles.get(0)).queue(
-                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                    (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully gave Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), defaultFailure(channel));
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("remove")) {
@@ -89,7 +88,7 @@ public class RoleCommand implements ICommand {
                                     + Reactions.NO_EMOTE + " No, let me select one.", (msg) -> {
                                 msg.delete().queue();
                                 event.getGuild().getController().removeRolesFromMember(target, roles).queue(
-                                        (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                        (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed `%#s` provided roles. Executor: %s", target.getUser(), member), true).queue(), defaultFailure(channel));
                             }, (msg) -> {
                                 msg.delete().queue();
                                 sendMessage(channel, Type.DEFAULT, "Loading roles...").queue((msg2) -> {
@@ -97,7 +96,7 @@ public class RoleCommand implements ICommand {
                                             msg2, member.getUser(), 5, (selected) -> {
                                                 msg2.delete().queue();
                                                 event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRoleById(selected.replaceAll("((\\d+: )|([\\(\\)])|(<@&\\d+> ))", ""))).queue(
-                                                        (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                                        (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), defaultFailure(channel));
                                             }, (v) -> {
                                                 msg.delete().queue();
                                                 msg2.delete().queue();
@@ -109,7 +108,7 @@ public class RoleCommand implements ICommand {
                                 sendMessage(channel, Type.WARNING, "Bot can't interact with the role because it is higher or equal it's own!", false).queue();
                             } else {
                                 event.getGuild().getController().removeSingleRoleFromMember(target, event.getGuild().getRolesByName(role, true).get(0)).queue(
-                                (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), Messages.defaultFailure(channel));
+                                (v) -> sendMessage(channel, Type.SUCCESS, format("Successfully removed Role `%s` to `%#s`. Executor: %s", role, target.getUser(), member), true).queue(), defaultFailure(channel));
                             }
                         }
                         } else {

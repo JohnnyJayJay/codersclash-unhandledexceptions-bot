@@ -1,10 +1,5 @@
 package de.unhandledexceptions.codersclash.bot.entities;
 
-import org.apache.commons.collections4.map.ListOrderedMap;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author oskar
  * github.com/oskardevkappa/

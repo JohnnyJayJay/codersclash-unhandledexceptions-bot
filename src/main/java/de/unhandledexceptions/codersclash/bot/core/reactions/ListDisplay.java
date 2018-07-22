@@ -85,7 +85,8 @@ public class ListDisplay {
         }, SCROLL_DISPLAY_REACTIONS, true);
     }
 
-    private static void selectionDisplay(List<String> list, Message message, User user, EmbedBuilder builder, int interval, int from, int to, int pages, int current, Consumer<String> selected, Consumer<Void> abort) {
+    private static void selectionDisplay(List<String> list, Message message, User user, EmbedBuilder builder, int interval,
+                                         int from, int to, int pages, int current, Consumer<String> selected, Consumer<Void> abort) {
         builder.setDescription("");
         for (int i = from; i < to; i++)
             builder.appendDescription(list.get(i) + (i == current ? Reactions.ARROW_LEFT : "") + "\n");

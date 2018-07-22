@@ -27,9 +27,7 @@ public class VoteCreator {
         this.shardManager = shardManager;
     }
 
-    public Vote getVote()
-    {
-
+    public Vote getVote() {
         return vote;
     }
 

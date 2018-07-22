@@ -5,18 +5,15 @@ import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import org.w3c.dom.Text;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static de.unhandledexceptions.codersclash.bot.commands.SearchCommand.FIND_ID;
 import static java.lang.String.format;
 
 /**
@@ -63,23 +60,26 @@ public class AutoChannelListener extends ListenerAdapter {
     }
 
     private void createChannel(VoiceChannel channelJoined, Guild guild, Member member) {
-        guild.getController().createVoiceChannel("Channel by " + member.getUser().getName())
-                .setUserlimit(channelJoined.getUserLimit())
-                .setParent(channelJoined.getParent())
-                .queue((channel) -> {
-                    channels.add((VoiceChannel) channel);
-                    guild.getController().moveVoiceMember(member, (VoiceChannel) channel).queue();
-                    channel.createPermissionOverride(member).setAllow(Permission.ALL_CHANNEL_PERMISSIONS).queue();
-                    guild.getController().createTextChannel("channel-by-" + member.getUser().getName())
-                            .setTopic(format("This Channel is linked to the same-named Voice Channel %s %s (%s) by %s. Only people that joined the Voice Channel have access to this one.", Reactions.SPEAKER,
-                                    channel.getName(), channel.getId(), member.getUser())).queue((textChannel) -> {
-                                        textChannel.createPermissionOverride(guild.getPublicRole()).setDeny(Permission.MESSAGE_READ, Permission.MESSAGE_WRITE).queue();
-                                        textChannel.createPermissionOverride(member).setAllow(Permission.MESSAGE_READ, Permission.MESSAGE_WRITE).queue();
-                            }
+        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
+            return;
+        } else {
+            guild.getController().createVoiceChannel("Channel by " + member.getUser().getName())
+                    .setUserlimit(channelJoined.getUserLimit())
+                    .setParent(channelJoined.getParent())
+                    .queue((channel) -> {
+                        channels.add((VoiceChannel) channel);
+                        guild.getController().moveVoiceMember(member, (VoiceChannel) channel).queue();
+                        channel.createPermissionOverride(member).setAllow(Permission.ALL_CHANNEL_PERMISSIONS).queue();
+                        guild.getController().createTextChannel("channel-by-" + member.getUser().getName())
+                                .setTopic(format("This Channel is linked to the same-named Voice Channel %s %s (%s) by %s. Only people that joined the Voice Channel have access to this one.", Reactions.SPEAKER,
+                                        channel.getName(), channel.getId(), member.getUser())).queue((textChannel) -> {
+                                    textChannel.createPermissionOverride(guild.getPublicRole()).setDeny(Permission.MESSAGE_READ, Permission.MESSAGE_WRITE).queue();
+                                    textChannel.createPermissionOverride(member).setAllow(Permission.MESSAGE_READ, Permission.MESSAGE_WRITE).queue();
+                                }
 
-                    );
+                        );
 
-                });
-
+                    });
+        }
     }
 }

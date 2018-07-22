@@ -6,7 +6,7 @@ import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.reactions.ListDisplay;
 import de.unhandledexceptions.codersclash.bot.util.Messages;
-import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 /**

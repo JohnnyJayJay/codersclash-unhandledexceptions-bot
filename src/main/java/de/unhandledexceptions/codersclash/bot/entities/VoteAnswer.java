@@ -1,8 +1,5 @@
 package de.unhandledexceptions.codersclash.bot.entities;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * @author oskar
  * github.com/oskardevkappa/
@@ -17,8 +14,7 @@ public class VoteAnswer {
     private final Vote vote;
     private int position;
 
-    public VoteAnswer(String answer, VoteCreator creator, Vote vote, int position)
-    {
+    public VoteAnswer(String answer, VoteCreator creator, Vote vote, int position) {
         this.creator = creator;
         this.answer = answer;
         this.position = position;

@@ -7,7 +7,8 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Johnny_JayJay

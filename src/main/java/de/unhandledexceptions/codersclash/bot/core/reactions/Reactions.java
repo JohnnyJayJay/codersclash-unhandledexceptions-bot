@@ -84,7 +84,7 @@ public class Reactions {
             if (emoji.equals(YES_EMOTE))
                 yes.accept(message);
             else {
-                no.andThen(deleteMsg).accept(message);
+                no.accept(message);
             }
         }, user.getIdLong(), message.getIdLong(), 20, true));
     }

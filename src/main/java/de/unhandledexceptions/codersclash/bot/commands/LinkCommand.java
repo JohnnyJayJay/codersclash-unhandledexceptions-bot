@@ -150,7 +150,7 @@ public class LinkCommand implements ICommand {
                         } else if (selectedGuild == guild) {
                             sendMessage(channel, Type.ERROR, "That's literally your own guild!").queue();
                         } else {
-                            Reactions.newYesNoMenu(member.getUser(), channel, String.format("Do you want to invite `%s - Owner: %#s` to this link?", selectedGuild, selectedGuild.getOwner().getUser()), (msg) -> {
+                            Reactions.newYesNoMenu(member.getUser(), channel, format("Do you want to invite `%s - Owner: %#s` to this link?", selectedGuild, selectedGuild.getOwner().getUser()), (msg) -> {
                                 addCustomMessage(member, channel, guild, link, msg, selectedGuild);
                             }, true);
                         }
@@ -262,7 +262,7 @@ public class LinkCommand implements ICommand {
     }
 
     private void addThisGuild(Guild guild, Set<Guild> guilds, TextChannel channel, Member member) {
-        Reactions.newYesNoMenu(member.getUser(), channel, String.format("Do you want to add `%s - Owner: %#s` to your request?", guild, guild.getOwner().getUser()), (msg2) -> {
+        Reactions.newYesNoMenu(member.getUser(), channel, format("Do you want to add `%s - Owner: %#s` to your request?", guild, guild.getOwner().getUser()), (msg2) -> {
             guilds.add(guild);
             if (guilds.size() == 10) {
                 sendMessage(channel, Type.WARNING, "You've added 10 guilds to your request, that's the maximum for a link. " +
@@ -310,13 +310,13 @@ public class LinkCommand implements ICommand {
 
     @Override
     public String info(Member member) {
+        String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         int permLvl = Permissions.getPermissionLevel(member);
         return permLvl < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
-                "`3`\nYour permission level: `" + permLvl + "`"
-                : "**Description:** Links your guild with up to 9 other guilds\n\n"
-                + Bot.getPrefix(member.getGuild().getIdLong()) + "link [request|accept|disconnect|invite]`\nNote that " +
+                "`4`\nYour permission level: `" + permLvl + "`"
+                : format("**Description:** Links your guild with up to 9 other guilds with a channel.\n\n**Usage**: `%slink [request|accept|disconnect|invite]`\nNote that " +
                 "you may only use `invite` and `disconnect` if you're currently connected.\n\n A guild may only have one link or one request " +
                 "at a time. As soon as you request a link, your guild is linked.\nIn order to send a new request, you need to " +
-                "disconnect first.\n\n**Permission level:** `4`";
+                "disconnect first.\n\n**Permission level:** `4`", prefix);
     }
 }

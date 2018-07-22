@@ -30,9 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.noPermissionsMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 /**
@@ -292,8 +290,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
                 vote.getVoteCreator().setState(VoteState.TIME);
 
-                switch (reaction)
-                {
+                switch (reaction) {
                     case Reactions.DAY:
                         vote.setTimeUnit(TimeUnit.DAYS);
                         break;

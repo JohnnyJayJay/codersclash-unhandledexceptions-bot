@@ -18,7 +18,6 @@ import net.dv8tion.jda.core.entities.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static de.unhandledexceptions.codersclash.bot.commands.SearchCommand.FIND_ID;

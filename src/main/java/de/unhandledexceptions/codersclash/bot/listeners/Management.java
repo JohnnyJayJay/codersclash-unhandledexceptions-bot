@@ -10,7 +10,8 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
 
 public class Management extends ListenerAdapter {
 

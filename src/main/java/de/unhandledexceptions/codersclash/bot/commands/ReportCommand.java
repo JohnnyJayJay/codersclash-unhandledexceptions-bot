@@ -5,7 +5,7 @@ import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
-import de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+import de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import de.unhandledexceptions.codersclash.bot.util.Regex;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -14,9 +14,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.defaultFailure;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.wrongUsageMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 /**
