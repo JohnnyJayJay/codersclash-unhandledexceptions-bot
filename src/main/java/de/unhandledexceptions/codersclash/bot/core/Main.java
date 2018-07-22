@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
 
-    private static Logger logger = Logging.getLogger();
-    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(5);
+    private static final Logger logger = Logging.getLogger();
+    private static final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
 
     public static void main(String[] args) {
 
