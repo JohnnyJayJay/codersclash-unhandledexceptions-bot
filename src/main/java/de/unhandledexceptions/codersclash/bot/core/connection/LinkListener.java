@@ -5,7 +5,9 @@ import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,10 +34,12 @@ public class LinkListener extends ListenerAdapter {
     @Override
     public void onTextChannelDelete(TextChannelDeleteEvent event) {
         Guild guild = event.getGuild();
+        List<Link> linksToRemoveFrom = new ArrayList<>();
         links.stream().filter((link) -> link.getGuilds().contains(guild.getIdLong())).forEach((link) -> {
             if (link.getLinkedChannel(guild) == event.getChannel().getIdLong())
-            linkManager.removeGuild(link, event.getGuild(), false);
+                linksToRemoveFrom.add(link);
         });
+        linksToRemoveFrom.forEach((link) -> linkManager.removeGuild(link, guild, false));
     }
 
     public void addLink(Link link) {
