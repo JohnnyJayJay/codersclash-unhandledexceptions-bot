@@ -344,8 +344,8 @@ public class SettingsCommand implements ICommand {
                 var deactivated = jda.getEmotesByName("deactivated", false).get(0).getAsMention();
                 builder.setTitle("XP System").setDescription((database.xpSystemActivated(message.getGuild().getIdLong())
                         ? format("The XP-System is currently %s for this guild.\n Would you like to %s it?", activated, deactivated)
-                        : format("The XP-System is currently %s for this guild.\n Would you like to `%s` it?", deactivated, activated)
-                        + "\n" + Reactions.Y + " Yes\n"));
+                        : format("The XP-System is currently %s for this guild.\n Would you like to `%s` it?", deactivated, activated))
+                        + "\n" + Reactions.Y + " Yes\n");
                 break;
             case REPORTS:
                 int currentValue = database.getReportsUntilBan(message.getGuild());
@@ -400,7 +400,7 @@ public class SettingsCommand implements ICommand {
                 break;
         }
         if (!helpMessage) {
-            builder.appendDescription("\n" + Reactions.BACK + " Go Back\n"
+            builder.appendDescription("-----------------------\n" + Reactions.BACK + " Go Back\n"
                     + Reactions.M + " Main Menu\n"
                     + Reactions.NO_EMOTE + " Exit");
         }
