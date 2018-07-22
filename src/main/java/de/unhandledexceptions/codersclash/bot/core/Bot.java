@@ -101,9 +101,6 @@ public class Bot {
                 .setCooldown(3000)
                 .activate();
 
-        RestAction.setPassContext(true);
-        RestAction.DEFAULT_FAILURE = Throwable::printStackTrace;
-
         listeners.addAll(List.of(voteCommand, xpCommand, new DatabaseListener(database, shardManager), new MentionListener(config),
                 new ReadyListener(config), new Management(this), linkListener, new AutoChannelListener(database)));
         listeners.forEach(shardManager::addEventListener);
