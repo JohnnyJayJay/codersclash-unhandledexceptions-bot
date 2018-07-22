@@ -26,7 +26,7 @@ import static java.lang.String.format;
 /**
  * @author Johnny_JayJay
  */
-// TODO Messages für joinen, leaven usw.
+
 public class LinkCommand implements ICommand {
 
     private final MessageEmbed expired = new EmbedBuilder().setDescription("Your request expired.")
@@ -100,11 +100,6 @@ public class LinkCommand implements ICommand {
                             listener.addLink(link);
                         }
                         running.put(guild.getIdLong(), link);
-                        Guild linkedGuild;
-                        for (var guildId : link.getGuilds()) {
-                            linkedGuild = shardManager.getGuildById(guildId);
-                            sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Type.INFO, "Guild `" + guild + "` joined the link!").queue();
-                        }
                     }));
                 } else {
                     requests.remove(guild.getIdLong());
@@ -163,7 +158,7 @@ public class LinkCommand implements ICommand {
                                         Matcher matcher = SearchCommand.FIND_ID.matcher(selected);
                                         matcher.find();
                                         Guild selectedGuild = shardManager.getGuildById(matcher.group().replaceAll("[\\(\\)]", ""));
-                                        if (selectedGuild != guild) {
+                                        if (!selectedGuild.equals(guild)) {
                                             addCustomMessage(member, channel, guild, link, msg2, selectedGuild);
                                         } else {
                                             sendMessage(channel, Type.ERROR, "That's literally your own guild!").queue();
@@ -285,7 +280,7 @@ public class LinkCommand implements ICommand {
             sendMessage(channel, Type.ERROR, "No guilds added!").queue();
             return;
         }
-        final String message = "Hey, we've sent your guild a connection request - Use the link command to accept or decline it!\n\n";
+        final String message = "Hey, we've sent your guild a connection request - Use `link accept` to accept or decline it!\n\n";
         Reactions.newYesNoMenu(member.getUser(), channel, "Do you want to add a custom message to your invite?",
                 (msg) -> sendMessage(channel, Type.QUESTION, "Please type in your custom message now.").queue(
                         (msg2) -> Reactions.newMessageWaiter(member.getUser(), channel, 180, (msgReceived) -> {
@@ -314,9 +309,9 @@ public class LinkCommand implements ICommand {
         int permLvl = Permissions.getPermissionLevel(member);
         return permLvl < 4 ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: " +
                 "`4`\nYour permission level: `" + permLvl + "`"
-                : format("**Description:** Links your guild with up to 9 other guilds with a channel.\n\n**Usage**: `%slink [request|accept|disconnect|invite]`\nNote that " +
+                : format("**Description:** Links your guild with up to 9 other guilds with a channel.\n\n**Usage**: `%slink [request|accept|disconnect]`\n`%slink invite <guildname>`Note that " +
                 "you may only use `invite` and `disconnect` if you're currently connected.\n\n A guild may only have one link or one request " +
                 "at a time. As soon as you request a link, your guild is linked.\nIn order to send a new request, you need to " +
-                "disconnect first.\n\n**Permission level:** `4`", prefix);
+                "disconnect first.\n\n**Permission level:** `4`", prefix, prefix);
     }
 }

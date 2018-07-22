@@ -1,6 +1,7 @@
 package de.unhandledexceptions.codersclash.bot.core.connection;
 
 import com.google.common.collect.HashBiMap;
+import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -10,15 +11,20 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import java.util.Collection;
 import java.util.Map;
 
+import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
+
 /**
  * @author Johnny_JayJay
  */
 public class LinkManager {
 
     private ShardManager shardManager;
+    private LinkListener linkListener;
 
     public LinkManager(ShardManager shardManager) {
         this.shardManager = shardManager;
+        this.linkListener = linkListener;
     }
 
     public Link createLink() {
@@ -28,16 +34,33 @@ public class LinkManager {
     public void addGuild(Link link, Guild guild) {
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
             guild.getController().createTextChannel("connection").queue(
-                    (channel) -> link.addChannel((TextChannel) channel));
+                    (channel) ->  { link.addChannel((TextChannel) channel);
+            Guild linkedGuild;
+            for (var guildId : link.getGuilds()) {
+                linkedGuild = shardManager.getGuildById(guildId);
+                sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Type.INFO, "Guild `" + guild + "` joined the link!").queue();
+            }
+            });
         }
     }
 
     public void removeGuild(Link link, Guild guild, boolean deleteChannel) {
         if (deleteChannel && guild.getSelfMember().hasPermission(Permission.MANAGE_CHANNEL)) {
             var channel = shardManager.getTextChannelById(link.getLinkedChannel(guild));
-            channel.delete().queue((v) -> link.remove(guild));
+            channel.delete().queue();
         } else {
-            link.remove(guild);
+            Guild linkedGuild;
+            for (var guildId : link.getGuilds()) {
+                linkedGuild = shardManager.getGuildById(guildId);
+                sendMessage(linkedGuild.getTextChannelById(link.getLinkedChannel(linkedGuild)), Messages.Type.INFO, "Guild `" + guild + "` left the link!").queue();
+            }
+            if (link.remove(guild)) {
+                link.getGuilds().stream().findFirst().ifPresent((id) -> {
+                    var left = shardManager.getGuildById(id);
+                    sendMessage(left.getTextChannelById(link.getLinkedChannel(left)), Type.INFO, "You are the last guild in this link, so it will be closed").queue();
+                });
+                linkListener.removeLink(link);
+            }
         }
     }
 
@@ -84,11 +107,11 @@ public class LinkManager {
             channelIds.forEach((guildId, channelId) -> {
                 if (source.getIdLong() != guildId) {
                     var channel = shardManager.getGuildById(guildId).getTextChannelById(channelId);
-                    System.out.println(channel);
                     if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE))
                         channel.sendMessage(text).queue();
                 }
             });
         }
+        public Class getLinkManager() {return getClass();}
     }
 }

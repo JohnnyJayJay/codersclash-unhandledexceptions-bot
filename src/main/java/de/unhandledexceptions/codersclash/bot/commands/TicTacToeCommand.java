@@ -61,7 +61,7 @@ public class TicTacToeCommand implements ICommand {
     public String info(Member member) {
         String prefix = Bot.getPrefix(member.getGuild().getIdLong());
         String ret = format("**Description**: Starts a game of Tic-Tac-Toe.\n\n" +
-                "**Usage**: `%s[ttt|tictactoe]`\n\n**Permission level**: `0`", prefix, prefix);
+                "**Usage**: `%s[ttt|tictactoe] @Member`\n\n**Permission level**: `0`", prefix, prefix);
         return ret;
     }
 }
