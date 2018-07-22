@@ -3,7 +3,9 @@ package de.unhandledexceptions.codersclash.bot.commands;
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.CommandSettings;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
+import de.unhandledexceptions.codersclash.bot.core.Bot;
 import de.unhandledexceptions.codersclash.bot.core.Database;
+import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Emote;
@@ -21,8 +23,7 @@ import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static de.unhandledexceptions.codersclash.bot.util.Messages.Type;
-import static de.unhandledexceptions.codersclash.bot.util.Messages.sendMessage;
+import static de.unhandledexceptions.codersclash.bot.util.Messages.*;
 import static java.lang.String.format;
 
 public class XPCommand extends ListenerAdapter implements ICommand {
@@ -42,6 +43,10 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
         if (!event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
             return;
+
+        if (Permissions.getPermissionLevel(member) < 1) {
+            noPermissionsMessage(channel, member);
+        }
 
         if (event.getMessage().getMentionedMembers().size()==1) {
             member = event.getMessage().getMentionedMembers().get(0);
@@ -82,8 +87,13 @@ public class XPCommand extends ListenerAdapter implements ICommand {
 
     @Override
     public String info(Member member) {
-        return format("**Description**: Gives you information about your level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `0`",
-                settings.getPrefix(member.getGuild().getIdLong()));
+        String prefix = settings.getPrefix(member.getGuild().getIdLong());
+        int permLevel = Permissions.getPermissionLevel(member);
+        String ret = permLevel < 1
+                ? "Sorry, but you do not have permission to execute this command, so command help won't help you either :( \nRequired permission level: `1`\nYour permission " +
+                "level: `" + permLevel + "`"
+                : format("**Description**: Gives you information about your level.\n\n**Usage**: `%s[xp|lvl|level]`\n\n**Permission level**: `1`", prefix);
+        return ret;
     }
 
     @Override

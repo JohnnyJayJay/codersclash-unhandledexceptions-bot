@@ -62,7 +62,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION))
             return;
 
-        if (Permissions.getPermissionLevel(member) < Permissions.getVotePermissionLevel()) {
+        if (Permissions.getPermissionLevel(member) < 4) {
             noPermissionsMessage(channel, member);
             return;
         }
