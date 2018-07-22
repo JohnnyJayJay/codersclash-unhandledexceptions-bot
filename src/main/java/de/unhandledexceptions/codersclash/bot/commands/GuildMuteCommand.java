@@ -3,6 +3,7 @@ package de.unhandledexceptions.codersclash.bot.commands;
 import com.github.johnnyjayjay.discord.commandapi.CommandEvent;
 import com.github.johnnyjayjay.discord.commandapi.ICommand;
 import de.unhandledexceptions.codersclash.bot.core.Bot;
+import de.unhandledexceptions.codersclash.bot.core.Main;
 import de.unhandledexceptions.codersclash.bot.core.Permissions;
 import de.unhandledexceptions.codersclash.bot.core.mute.MuteManager;
 import de.unhandledexceptions.codersclash.bot.core.reactions.Reactions;
@@ -38,14 +39,18 @@ public class GuildMuteCommand implements ICommand {
             if (args.length == 0) {
                 var muteState = manager.getMuteState(event.getGuild());
                 if (muteState.isGuildMuted()) {
-                    muteState.unMuteGuild();
-                    channel.delete().queue();
+                    Main.otherThread(() -> {
+                        muteState.unMuteGuild();
+                        channel.delete().queue();
+                    });
                 } else {
                     sendMessage(channel, Type.WARNING, "Are you sure? This will result in a completely muted guild.").queue((msg) -> {
                         Reactions.newYesNoMenu(member.getUser(), msg, (yes) -> {
-                            msg.clearReactions().queue();
-                            msg.editMessage(MUTING_GUILD).queue();
-                            muteState.muteGuild(member);
+                            Main.otherThread(() -> {
+                                msg.clearReactions().queue();
+                                msg.editMessage(MUTING_GUILD).queue();
+                                muteState.muteGuild(member);
+                            });
                         });
                     });
                 }
