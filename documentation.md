@@ -58,6 +58,18 @@ Usage: [Prefix][mute|silence] @Member <reason>
 Description: Mutes a member so that he can't write in the whole guild.
 Permission level: 3
 
+## Permission
+Aliases: permission, perm, perms
+Usage: [Prefix][permission|perms|perm] [<@Member>|<@Role>] <level> (level may be 0-5)
+Description: Manage Dev-Bot-permissions and configure the different permission levels.
+Level 0: -help and -ttt
+Level 1: -profile, -search, -invite, -xp, -scoreboard
+Level 2: -block
+Level 3: -mute, -muteguild and -report
+Level 4: -vote, -mail, -link, -clear
+Level 5: -settings and -role
+Permission level: To execute this command, the member needs to have a role named "try-catch-perms".
+
 ## Profile
 Aliases: profile, userinfo
 Usage: [Prefix][profile|userinfo] to view your profile [Prefix][profile|userinfo] @Member to view @Member's profile
