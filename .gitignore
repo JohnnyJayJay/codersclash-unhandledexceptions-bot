@@ -1,6 +1,7 @@
 .idea/*
 logs/*
 target/*
+client/*
 try-catch.iml
 config.yml
 config.json

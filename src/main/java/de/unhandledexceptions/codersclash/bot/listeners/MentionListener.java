@@ -12,12 +12,16 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class MentionListener extends ListenerAdapter {
 
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, dd LLL yyyy kk:mm:ss O", Locale.ENGLISH).withZone(ZoneId.of("Europe/Paris"));
     private Config config;
+    private final List<Object> CREATORS = Arrays.asList(261083609148948488L,234343108773412864L,226011931935375360L, 138607604506165248L);
 
     public MentionListener(Config config) {
         this.config = config;
@@ -33,7 +37,7 @@ public class MentionListener extends ListenerAdapter {
             for (Guild guild : shardManager.getGuildCache())
                 members += guild.getMemberCache().size();
 
-            config.getBotOwners().forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
+            CREATORS.forEach((id) -> stringBuilder.append(String.format("`%#s` ", shardManager.getUserById((long) id))));
             var builder = new EmbedBuilder();
             builder.clear().setThumbnail("https://i.imgur.com/L1RgtJb.gif")
                     .addField("Name", config.getBotName(), true)
