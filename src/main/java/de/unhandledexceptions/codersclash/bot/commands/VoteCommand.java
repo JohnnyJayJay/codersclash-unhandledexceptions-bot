@@ -11,10 +11,7 @@ import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.MessageReaction;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
@@ -25,7 +22,6 @@ import org.jfree.chart.ChartUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -223,7 +219,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             for (VoteAnswer answer : vote.getVoteAnswers()) {
                 if (answer.getAnswer().equals(event.getMessage().getContentRaw()))
                 {
-                    sendMessage(channel, Type.ERROR, "You already submit this possibility. Send a new one or finish the setup by typing 'finished'.").queue();
+                    sendMessage(channel, Type.ERROR, "You already submit this possibility. Send a new one or finish the setup by typing `finished`.").queue();
                     return;
                 }
             }
@@ -335,7 +331,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                         "%s Time:\t\t\t%s %s\n" +
                         "%s Channel:\t\t<#%s>\n" +
                         "%s Votes per user:\t%s\n" +
-                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size(), Reactions.USER, vote.getVotesPerUser());
+                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), Reactions.USER, vote.getVotesPerUser(), reactions[2], vote.getVoteAnswers().size());
 
         sendMessage(event.getChannel(), Type.INFO, voteStats, false).queue();
     }
@@ -417,11 +413,9 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             File chartFile = new File(vote.getGuild().getName() + "_chart.jpeg");
 
-            try
-            {
+            try {
                 ChartUtils.saveChartAsJPEG(chartFile, chart.getChart(), WIDTH, HEIGHT);
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Something went wrong while creating your file!").queue();
             }
 
@@ -432,7 +426,6 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             votes.remove(vote.getGuildId());
 
             float total = 0;
-
 
             for (float i : reactionCount.values()) {
                 Math.round(total = total + i);
@@ -489,27 +482,16 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             Vote vote = votes.get(event.getGuild().getIdLong());
 
-            if (vote.getEmotes().stream().noneMatch(name::equals)) {
-                event.getReaction().removeReaction(event.getUser()).queue();
+            User user = event.getUser();
+            if (event.getUser().isBot())
                 return;
+
+            if (vote.getEmotes().stream().noneMatch(name::equals)) {
+                event.getReaction().removeReaction(user).queue();
             } else {
-                vote.getMessage().queue(message -> {
-
-                    List<MessageReaction> reactions = message.getReactions();
-
-                    for (MessageReaction reaction : reactions) {
-                        reaction.getUsers().queue(users -> {
-
-                            int userVoted = 0;
-
-                            if (users.contains(event.getUser()))
-                                userVoted++;
-
-                            if (userVoted > vote.getVotesPerUser())
-                                event.getReaction().removeReaction().queue();
-                        });
-                    }
-                });
+                vote.addUserVoted(user);
+                if (Collections.frequency(vote.getUsersVoted(), user.getIdLong()) > vote.getVotesPerUser())
+                    event.getReaction().removeReaction(user).queue();
             }
         }
     }
