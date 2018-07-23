@@ -11,10 +11,7 @@ import de.unhandledexceptions.codersclash.bot.util.Messages;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.MessageReaction;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
@@ -489,27 +486,13 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             Vote vote = votes.get(event.getGuild().getIdLong());
 
+            User user = event.getUser();
             if (vote.getEmotes().stream().noneMatch(name::equals)) {
-                event.getReaction().removeReaction(event.getUser()).queue();
-                return;
+                event.getReaction().removeReaction(user).queue();
             } else {
-                vote.getMessage().queue(message -> {
-
-                    List<MessageReaction> reactions = message.getReactions();
-
-                    for (MessageReaction reaction : reactions) {
-                        reaction.getUsers().queue(users -> {
-
-                            int userVoted = 0;
-
-                            if (users.contains(event.getUser()))
-                                userVoted++;
-
-                            if (userVoted > vote.getVotesPerUser())
-                                event.getReaction().removeReaction().queue();
-                        });
-                    }
-                });
+                vote.addUserVoted(user);
+                if (Collections.frequency(vote.getUsersVoted(), user.getIdLong()) > vote.getVotesPerUser())
+                    event.getReaction().removeReaction(user).queue();
             }
         }
     }
