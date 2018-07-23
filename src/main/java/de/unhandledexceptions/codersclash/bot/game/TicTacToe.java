@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TicTacToe {
 
     private final List<String> REACTIONS = List.of(Reactions.YES_EMOTE, Reactions.ARROW_UP, Reactions.ARROW_DOWN, Reactions.SMALL_ARROW_LEFT, Reactions.SMALL_ARROW_RIGHT, Reactions.NO_EMOTE);
-    private final String BLANK_FIELD = "◻";
+    private final String BLANK_FIELD = "\u25FB";
     private final String SELECTED = "\uD83D\uDD37";
     private final String X = "\uD83C\uDDFD";
     private final String O = "\uD83D\uDD34";

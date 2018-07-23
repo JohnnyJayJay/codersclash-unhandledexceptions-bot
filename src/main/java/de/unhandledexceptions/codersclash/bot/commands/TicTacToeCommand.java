@@ -21,7 +21,7 @@ import static java.lang.String.format;
 public class TicTacToeCommand implements ICommand {
 
     private TicTacToe game;
-    private final List<String> chooseGameList = List.of(Reactions.getNumber(3), Reactions.getNumber(5), Reactions.getNumber(9), Reactions.NO_EMOTE);
+    private final List<String> chooseGameList = List.of(Reactions.getNumber(1), Reactions.getNumber(3), Reactions.getNumber(5), Reactions.getNumber(9), Reactions.NO_EMOTE);
 
     public TicTacToeCommand(TicTacToe game) {
         this.game = game;
@@ -39,7 +39,9 @@ public class TicTacToeCommand implements ICommand {
                 chooseGameList.forEach((reaction) -> msg.addReaction(reaction).queue());
                 Reactions.newMenu(member.getUser(), msg, (emoji) -> {
                     msg.delete().queue();
-                    if (emoji.equals(Reactions.getNumber(3))) {
+                    if (emoji.equals(Reactions.getNumber(1))) {
+                        waitForResponse(channel, member, target, 1);
+                    }else if (emoji.equals(Reactions.getNumber(3))) {
                         waitForResponse(channel, member, target, 3);
                     } else if (emoji.equals(Reactions.getNumber(5))) {
                         waitForResponse(channel, member, target, 5);
