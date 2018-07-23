@@ -206,14 +206,6 @@ public class Vote {
         return votesPerUser;
     }
 
-    public List<Long> getUsersVoted() {
-        return usersVoted;
-    }
-
-    public void addUserVoted(User user) {
-        usersVoted.add(user.getIdLong());
-    }
-
     public void setVotesPerUser(int votesPerUser)
     {
         this.votesPerUser = votesPerUser;
