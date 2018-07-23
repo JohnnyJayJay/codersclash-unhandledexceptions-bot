@@ -22,7 +22,6 @@ import org.jfree.chart.ChartUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -220,7 +219,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             for (VoteAnswer answer : vote.getVoteAnswers()) {
                 if (answer.getAnswer().equals(event.getMessage().getContentRaw()))
                 {
-                    sendMessage(channel, Type.ERROR, "You already submit this possibility. Send a new one or finish the setup by typing 'finished'.").queue();
+                    sendMessage(channel, Type.ERROR, "You already submit this possibility. Send a new one or finish the setup by typing `finished`.").queue();
                     return;
                 }
             }
@@ -332,7 +331,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                         "%s Time:\t\t\t%s %s\n" +
                         "%s Channel:\t\t<#%s>\n" +
                         "%s Votes per user:\t%s\n" +
-                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), reactions[2], vote.getVoteAnswers().size(), Reactions.USER, vote.getVotesPerUser());
+                        "%s Answer count:\t%s", reactions[0], vote.getTime(), vote.getTimeUnit().name().toLowerCase(), reactions[1], vote.getTargetChannelId(), Reactions.USER, vote.getVotesPerUser(), reactions[2], vote.getVoteAnswers().size());
 
         sendMessage(event.getChannel(), Type.INFO, voteStats, false).queue();
     }
@@ -414,11 +413,9 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
 
             File chartFile = new File(vote.getGuild().getName() + "_chart.jpeg");
 
-            try
-            {
+            try {
                 ChartUtils.saveChartAsJPEG(chartFile, chart.getChart(), WIDTH, HEIGHT);
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Something went wrong while creating your file!").queue();
             }
 
@@ -429,7 +426,6 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             votes.remove(vote.getGuildId());
 
             float total = 0;
-
 
             for (float i : reactionCount.values()) {
                 Math.round(total = total + i);
@@ -487,6 +483,9 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
             Vote vote = votes.get(event.getGuild().getIdLong());
 
             User user = event.getUser();
+            if (event.getUser().isBot())
+                return;
+
             if (vote.getEmotes().stream().noneMatch(name::equals)) {
                 event.getReaction().removeReaction(user).queue();
             } else {

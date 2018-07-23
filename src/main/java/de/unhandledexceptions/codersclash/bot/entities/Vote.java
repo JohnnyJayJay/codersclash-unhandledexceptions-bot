@@ -43,6 +43,7 @@ public class Vote {
         this.guildId = guild.getIdLong();
         this.setupChannelId = setupChannel.getIdLong();
         this.shardManager = shardManager;
+        usersVoted = new ArrayList<>();
     }
 
     public void setTargetChannel(TextChannel targetChannel)
@@ -217,6 +218,12 @@ public class Vote {
     {
         this.votesPerUser = votesPerUser;
     }
+
+    public void addUserVoted(User user) {
+        usersVoted.add(user.getIdLong());
+    }
+
+    public List<Long> getUsersVoted() {return usersVoted;}
 
     public boolean isRunning() {
         if (scheduledFuture == null)

@@ -8,7 +8,7 @@
   },
   "EMOTE_GUILD_NAME":"Emote Guild by try-catch",
   "TOKEN":"INSERT TOKEN",
-  "DEFAULT_PREFIX":"tc:",
+  "DEFAULT_PREFIX":"tc!",
   "COMMAND_COOLDOWN":3000,
   "DATABASE":
   {
