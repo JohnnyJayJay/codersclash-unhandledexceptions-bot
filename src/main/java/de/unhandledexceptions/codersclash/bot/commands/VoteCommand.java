@@ -22,6 +22,7 @@ import org.jfree.chart.ChartUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -346,7 +347,7 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
         var targetChannel = vote.getTargetChannel();
         var embedBuilder = new EmbedBuilder()
                 .setColor(vote.getGuild().getSelfMember().getColor())
-                .setTitle(Reactions.NEWSPAPER + " New vote!")
+                .setTitle(Reactions.NEWSPAPER + " New Vote!")
                 .setAuthor(vote.getVoteCreator().getMember().getEffectiveName(), null, vote.getVoteCreator().getMember().getUser().getEffectiveAvatarUrl())
                 .setFooter(format("Duration: %s %s -> End: %s", vote.getTime(), vote.getTimeUnit().name().toLowerCase(),
                         dateTimeFormatter.format(Instant.now().plus(vote.getTime(), vote.getTimeUnit().toChronoUnit()))), null)
@@ -421,18 +422,17 @@ public class VoteCommand extends ListenerAdapter implements ICommand {
                 sendMessage(vote.getTargetChannel(), Type.ERROR, "Something went wrong while creating your file!").queue();
             }
 
-            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next 10 seconds!").queue(Messages::deleteAfterFiveSec);
+            sendMessage(vote.getTargetChannel(), Type.SUCCESS, "Your result has been created and will be posted within the next `10` seconds!").queue(Messages::deleteAfterFiveSec);
 
-            vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS);
+            vote.getTargetChannel().sendFile(chartFile).queueAfter(10, TimeUnit.SECONDS, (f) -> chartFile.delete());
 
             votes.remove(vote.getGuildId());
-            chartFile.delete();
+
+            float total = 0;
 
 
-            int total = 0;
-
-            for (int i : reactionCount.values()) {
-                total = total + i;
+            for (float i : reactionCount.values()) {
+                Math.round(total = total + i);
             }
 
             StringBuilder stringBuilder = new StringBuilder();

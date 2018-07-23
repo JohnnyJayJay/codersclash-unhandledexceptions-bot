@@ -49,7 +49,7 @@ public class MentionListener extends ListenerAdapter {
                     .addField("Servers", Long.toString(shardManager.getGuildCache().size()), true)
                     .addField("Members", Long.toString(members), true)
                     .addField("Current Uptime", this.getUptime(), true)
-                    .addField("Source Code", "[GitHub](https://github.com)", false)
+                    .addField("Source Code", "[GitHub](https://github.com/JohnnyJayJay/codersclash-unhandledexceptions-bot)", false)
                     .setColor(event.getGuild().getSelfMember().getColor());
             Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue();
             //Messages.sendMessage(event.getChannel(), Messages.Type.NO_TYPE, "Introducing... me!", "Hi!", false, builder).queue(this::reactionsAdd);

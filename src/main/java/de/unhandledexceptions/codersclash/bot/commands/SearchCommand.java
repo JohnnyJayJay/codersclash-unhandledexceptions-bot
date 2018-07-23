@@ -54,7 +54,7 @@ public class SearchCommand implements ICommand {
                         sendMessage(channel, Type.SUCCESS, "Loading results...")
                                 .queue((m) -> {
                                     ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
-                                }, Messages.defaultFailure(channel));
+                                }, defaultFailure(channel));
                     }
                 });
 
@@ -64,7 +64,7 @@ public class SearchCommand implements ICommand {
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());
                 sendMessage(channel, Type.SUCCESS, "Loading results...").queue((m) -> {
                     ListDisplay.displayList(display, m, member.getUser(), 10, (v) -> m.delete().queue());
-                }, Messages.defaultFailure(channel));
+                }, defaultFailure(channel));
             } else if (args[0].equalsIgnoreCase("display") && args[1].matches("(?i)((guilds)|(users))")) {
                 event.getMessage().delete().queue();
                 builder.setTitle("Results").setColor(Type.SUCCESS.getColor()).setFooter(Type.SUCCESS.getFooter(), Type.SUCCESS.getFooterUrl());

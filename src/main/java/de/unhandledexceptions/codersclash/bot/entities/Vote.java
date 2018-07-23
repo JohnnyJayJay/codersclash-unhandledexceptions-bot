@@ -218,9 +218,7 @@ public class Vote {
         this.votesPerUser = votesPerUser;
     }
 
-    public boolean isRunning()
-    {
-
+    public boolean isRunning() {
         if (scheduledFuture == null)
             return false;
 

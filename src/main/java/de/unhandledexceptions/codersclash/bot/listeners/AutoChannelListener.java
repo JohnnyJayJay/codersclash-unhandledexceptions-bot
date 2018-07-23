@@ -43,7 +43,6 @@ public class AutoChannelListener extends ListenerAdapter {
         if (channels.contains(left) && left.getMembers().isEmpty()) {
             left.delete().queue((v) -> channels.remove(left));
             if (!event.getGuild().getTextChannelsByName("channel-by-" + event.getMember().getUser().getName().toLowerCase(), false).isEmpty()) {
-                System.out.print("hier");
                 event.getGuild().getTextChannelsByName("channel-by-" + event.getMember().getUser().getName().toLowerCase(), false).get(0).delete().queue();
             }
         }
